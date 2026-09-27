@@ -61,10 +61,40 @@ jobs:
           name: ios-ipa
           path: gemdrake-isles-unsigned.ipa
 
+  # Installs the APK on an emulator and fails if the app doesn't stay up,
+  # so a build that crashes on launch is never published.
+  android-launch-test:
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash -c 'adb install -r gemdrake-isles.apk && adb logcat -c && adb shell am start -W -n com.gemdrake.gemdrake_isles/.MainActivity; sleep 30; adb logcat -d > logcat.txt; adb exec-out screencap -p > screen.png; if adb shell pidof com.gemdrake.gemdrake_isles; then echo "APP IS RUNNING"; grep -E " flutter|E/flutter" logcat.txt | tail -40; else echo "APP CRASHED"; grep -E "FATAL|AndroidRuntime|DEBUG|libc|flutter|gemdrake|Exception|Error" logcat.txt | tail -250; exit 1; fi'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-launch-test
+          path: |
+            logcat.txt
+            screen.png
+
   release:
-    needs: [android, ios]
-    # Publish the APK even if the iOS build fails.
-    if: always() && needs.android.result == 'success'
+    needs: [android, android-launch-test, ios]
+    # Publish even if the iOS build fails, but never an APK that crashes.
+    if: always() && needs.android.result == 'success' && needs.android-launch-test.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
