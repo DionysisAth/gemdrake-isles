@@ -82,13 +82,14 @@ jobs:
           target: google_apis
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: bash -c 'adb install -r gemdrake-isles.apk && adb logcat -c && adb shell am start -W -n com.gemdrake.gemdrake_isles/.MainActivity; sleep 30; adb logcat -d > logcat.txt; adb exec-out screencap -p > screen.png; if adb shell pidof com.gemdrake.gemdrake_isles; then echo "APP IS RUNNING"; grep -E " flutter|E/flutter" logcat.txt | tail -40; else echo "APP CRASHED"; grep -E "FATAL|AndroidRuntime|DEBUG|libc|flutter|gemdrake|Exception|Error" logcat.txt | tail -250; exit 1; fi'
+          script: bash -c 'adb install -r gemdrake-isles.apk && adb logcat -c && adb logcat -b crash -c; adb shell am start -W -n com.gemdrake.gemdrake_isles/.MainActivity; sleep 30; adb logcat -d > logcat.txt; adb logcat -d -b crash > crash.txt; adb exec-out screencap -p > screen.png; echo "=== CRASH BUFFER ==="; cat crash.txt; echo "=== APP LINES ==="; grep -E "AndroidRuntime|DEBUG|flutter|gemdrake|audioplayers|Ads|jni" logcat.txt | grep -v "Access denied" | tail -150; if adb shell pidof com.gemdrake.gemdrake_isles; then echo "APP IS RUNNING"; else echo "APP CRASHED"; exit 1; fi'
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-launch-test
           path: |
             logcat.txt
+            crash.txt
             screen.png
 
   release:
