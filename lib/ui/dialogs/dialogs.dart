@@ -759,7 +759,11 @@ class LootOddsTable extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 1),
             child: Row(
               children: [
-                SizedBox(width: 28, height: 28, child: lootIcon(e)),
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: lootIcon(e, config: config),
+                ),
                 const SizedBox(width: 6),
                 Expanded(child: Text(lootLabel(config, e))),
                 Text(
@@ -774,9 +778,18 @@ class LootOddsTable extends StatelessWidget {
   }
 }
 
-Widget lootIcon(LootEntry e) {
+Widget lootIcon(LootEntry e, {GameConfig? config}) {
   final item = e.item;
   if (item != null) return ItemIcon(item, size: 28);
+  final dragon = e.dragon;
+  if (dragon != null && config != null) {
+    return FittedBox(
+      child: DragonIcon(type: config.dragonType(dragon), level: 1, size: 40),
+    );
+  }
+  if (dragon != null) {
+    return const Icon(Icons.pets_rounded, color: Palette.accent);
+  }
   if (e.gems > 0) return const CurrencyIcon(CurrencyKind.gem, size: 24);
   if (e.energy > 0) return const CurrencyIcon(CurrencyKind.energy, size: 24);
   return const CurrencyIcon(CurrencyKind.coin, size: 24);
@@ -785,6 +798,8 @@ Widget lootIcon(LootEntry e) {
 String lootLabel(GameConfig config, LootEntry e) {
   final item = e.item;
   if (item != null) return config.item(item).name;
+  final dragon = e.dragon;
+  if (dragon != null) return '${config.dragonType(dragon).name} Dragon';
   if (e.gems > 0) return '${e.gems} gems';
   if (e.energy > 0) return '${e.energy} energy';
   return '${e.coins} coins';
@@ -824,7 +839,11 @@ Future<void> showChestRewards(
               ),
               child: Column(
                 children: [
-                  SizedBox(width: 44, height: 44, child: lootIcon(e)),
+                  SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: lootIcon(e, config: config),
+                  ),
                   Text(
                     lootLabel(config, e),
                     textAlign: TextAlign.center,

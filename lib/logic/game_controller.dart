@@ -155,18 +155,15 @@ class GameController extends ChangeNotifier {
       state.purchasedSlots < eco.storageSlotCostsGems.length
       ? eco.storageSlotCostsGems[state.purchasedSlots]
       : null;
-  double get offlineCapHours =>
-      (state.hoardLevel > 0
-          ? config
-                .meta
-                .hoardUpgrades[min(
-                      state.hoardLevel,
-                      config.meta.hoardUpgrades.length,
-                    ) -
-                    1]
-                .hours
-          : eco.offlineCapHours) +
-      perk('offlineHours');
+
+  /// Hoard size before island perks: the base, or the last shop upgrade.
+  double get hoardBaseHours {
+    final ups = config.meta.hoardUpgrades;
+    final lvl = min(state.hoardLevel, ups.length);
+    return lvl > 0 ? ups[lvl - 1].hours : eco.offlineCapHours;
+  }
+
+  double get offlineCapHours => hoardBaseHours + perk('offlineHours');
   double get dragonBoost => 1 + perk('dragonBoost');
 
   double dragonCoinsPerMinute(Dragon d) {

@@ -183,7 +183,7 @@ extension MetaSystems on GameController {
       for (final t in dc.types)
         BookGoal(
           'type:${t.id}',
-          'Raise a ${t.name} to every level',
+          'Raise ${t.name} dragons to every level',
           dc.typeCompleteGems[t.rarity] ?? 0,
           [for (var l = 1; l <= dc.maxLevel; l++) l]
               .every((l) => dragonSeen(t.id, l)),

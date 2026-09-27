@@ -204,6 +204,7 @@ class _GameButtonState extends State<GameButton> {
 }
 
 String formatDuration(Duration d) {
+  if (d.inDays >= 1) return '${d.inDays}d ${d.inHours % 24}h';
   if (d.inHours >= 1) {
     return '${d.inHours}h ${(d.inMinutes % 60).toString().padLeft(2, '0')}m';
   }

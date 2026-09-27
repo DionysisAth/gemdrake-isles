@@ -2,16 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../logic/game_controller.dart';
 import '../../logic/game_events.dart';
 import '../dialogs/dialogs.dart';
+import '../dialogs/meta_dialogs.dart';
 import '../fx_layer.dart';
 import '../game_scope.dart';
 import '../painters/sky_painter.dart';
 import '../theme.dart';
 import '../widgets/board_area.dart';
+import '../widgets/event_bar.dart';
 import '../widgets/orders_bar.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/tutorial_overlay.dart';
+import 'book_screen.dart';
+import 'event_screen.dart';
 import 'island_screen.dart';
 
 /// Top-level screen: HUD, the Board and Island tabs, popups, the per-second
@@ -83,6 +88,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     if (wb != null && !game.tutorialActive) {
       _queue(() => showWelcomeBack(context, wb));
     }
+    if (game.state.leagueResult != null) {
+      _queue(() => showLeagueResult(context));
+    }
+    if (game.loginRewardReady) _queue(() => showDaily(context));
   }
 
   void _queue(Future<void> Function() popup) {
@@ -133,7 +142,14 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     if (_tab == i) return;
     setState(() => _tab = i);
     context.game.select(null);
-    context.game.tutorialEvent(i == 1 ? 'tab_island' : 'tab_board');
+    if (i <= 1) {
+      context.game.tutorialEvent(i == 1 ? 'tab_island' : 'tab_board');
+    }
+  }
+
+  void _playFestival() {
+    context.game.setEventMode(true);
+    _setTab(0);
   }
 
   @override
@@ -157,20 +173,47 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                         children: [
                           _TabPage(
                             active: _tab == 0,
-                            child: const Column(
+                            child: Column(
                               children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 6),
-                                  child: OrdersBar(),
+                                ListenableBuilder(
+                                  listenable: context.game,
+                                  builder: (context, _) {
+                                    final game = context.game;
+                                    return Column(
+                                      children: [
+                                        // ignore: prefer_const_constructors
+                                        BoardModeSwitch(),
+                                        if (game.eventMode)
+                                          EventBar(
+                                            onOpenTrack: () => _setTab(2),
+                                          )
+                                        else
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                            ),
+                                            child: OrdersBar(),
+                                          ),
+                                      ],
+                                    );
+                                  },
                                 ),
-                                SizedBox(height: 4),
-                                Expanded(child: BoardArea()),
+                                const SizedBox(height: 4),
+                                const Expanded(child: BoardArea()),
                               ],
                             ),
                           ),
                           _TabPage(
                             active: _tab == 1,
                             child: const IslandScreen(),
+                          ),
+                          _TabPage(
+                            active: _tab == 2,
+                            child: EventScreen(onPlay: _playFestival),
+                          ),
+                          _TabPage(
+                            active: _tab == 3,
+                            child: const BookScreen(),
                           ),
                         ],
                       ),
@@ -224,6 +267,7 @@ class _BottomNav extends StatelessWidget {
             .where((t) => game.taskAvailable(t) && game.state.coins >= t.cost)
             .length;
         final islandBadge = affordable + (game.idleFull ? 1 : 0);
+        final eventLocked = !game.eventUnlocked;
         return Padding(
           padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
           child: Container(
@@ -248,7 +292,7 @@ class _BottomNav extends StatelessWidget {
                     onTap: () => onTab(0),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 6),
                 Expanded(
                   child: _NavButton(
                     key: targets.keyFor('tab:island'),
@@ -257,6 +301,28 @@ class _BottomNav extends StatelessWidget {
                     active: tab == 1,
                     badge: islandBadge,
                     onTap: () => onTab(1),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _NavButton(
+                    icon: eventLocked
+                        ? Icons.lock_rounded
+                        : Icons.celebration_rounded,
+                    label: 'Festival',
+                    active: tab == 2,
+                    badge: game.eventBadge,
+                    onTap: () => onTab(2),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _NavButton(
+                    icon: Icons.menu_book_rounded,
+                    label: 'Book',
+                    active: tab == 3,
+                    badge: game.bookBadge,
+                    onTap: () => onTab(3),
                   ),
                 ),
               ],
@@ -291,14 +357,21 @@ class _NavButton extends StatelessWidget {
       children: [
         GameButton(
           color: active ? Palette.accent : const Color(0xFFB9A6DA),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           onTap: onTap,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              const SizedBox(width: double.infinity),
               Icon(icon, size: 22),
-              const SizedBox(width: 6),
-              Text(label, style: const TextStyle(fontSize: 17)),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: const TextStyle(fontSize: 13.5, height: 1.1),
+                ),
+              ),
             ],
           ),
         ),

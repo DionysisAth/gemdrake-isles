@@ -153,6 +153,8 @@ class InfoBar extends StatelessWidget {
       next = 'Merge 2 to hatch a dragon!';
     } else if (chain.loot != null && ref.level == chain.maxLevel) {
       next = 'Open it to see what treasure is inside!';
+    } else if (chain.event && ref.level == chain.maxLevel) {
+      next = 'Offer it to the festival for points!';
     } else if (!isMergeable(chain, ref)) {
       next = 'Max level! Great for orders.';
     } else {
@@ -167,7 +169,19 @@ class InfoBar extends StatelessWidget {
       subtitle: next,
       actions: [
         _iconButton(Icons.info_outline, () => showChainInfo(context, ref)),
-        if (game.canOpen(slot!))
+        if (game.canOffer(slot!))
+          _smallButton(
+            color: Palette.pink,
+            onTap: () => game.offer(slot),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star_rounded, size: 16),
+                Text(' Offer +${config.events.offerPoints}'),
+              ],
+            ),
+          )
+        else if (game.canOpen(slot))
           _smallButton(
             color: Palette.accent,
             onTap: () => game.openChest(slot),
@@ -178,6 +192,12 @@ class InfoBar extends StatelessWidget {
                 Text(' Open!'),
               ],
             ),
+          )
+        else if (def.sell == 0)
+          _smallButton(
+            color: const Color(0xFFB0A4C4),
+            onTap: () => game.sell(slot),
+            child: const Text('Remove'),
           )
         else
           _smallButton(

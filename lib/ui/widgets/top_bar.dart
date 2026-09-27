@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../logic/game_controller.dart';
 import '../dialogs/dialogs.dart';
+import '../dialogs/meta_dialogs.dart';
 import '../game_scope.dart';
 import '../painters/board_painters.dart';
 import '../theme.dart';
@@ -52,13 +54,21 @@ class TopBar extends StatelessWidget {
                   key: targets.keyFor('hud:gems'),
                   icon: const CurrencyIcon(CurrencyKind.gem),
                   value: s.gems,
+                  onTap: () => showShop(context),
+                  plus: true,
                 ),
               ),
-              IconButton(
+              const SizedBox(width: 4),
+              _RoundButton(
+                icon: Icons.event_available_rounded,
+                tooltip: 'Daily',
+                badge: game.dailyBadge,
+                onTap: () => showDaily(context),
+              ),
+              _RoundButton(
+                icon: Icons.settings_rounded,
                 tooltip: 'Settings',
-                visualDensity: VisualDensity.compact,
-                onPressed: () => showSettings(context),
-                icon: const Icon(Icons.settings_rounded, color: Palette.ink),
+                onTap: () => showSettings(context),
               ),
             ],
           );
@@ -234,4 +244,63 @@ class _Chip extends StatelessWidget {
       height: 1.1,
     ),
   );
+}
+
+class _RoundButton extends StatelessWidget {
+  const _RoundButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    this.badge = 0,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  final int badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: 36,
+          height: 44,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Icon(icon, color: Palette.ink, size: 26),
+              if (badge > 0)
+                Positioned(
+                  right: 0,
+                  top: 4,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Palette.danger,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    child: Text(
+                      '$badge',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

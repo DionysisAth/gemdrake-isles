@@ -8,6 +8,7 @@ import '../../logic/game_controller.dart';
 import '../../logic/game_events.dart';
 import '../../model/game_state.dart';
 import '../../model/item_ref.dart';
+import '../dialogs/dialogs.dart';
 import '../game_scope.dart';
 import '../painters/board_painters.dart';
 import '../painters/item_painter.dart';
@@ -177,6 +178,13 @@ class _BoardAreaState extends State<BoardArea> {
           count: 26,
           spread: 110,
         );
+      case EventPointsEvent(:final points, :final cell?, :final milestone):
+        final g = _global(l.cellRect(cols, cell)).center;
+        fx.floatText(g, '+$points pts', color: const Color(0xFFFFB300));
+        if (milestone) {
+          fx.burst(g, color: const Color(0xFFFFB300), count: 22, spread: 90);
+          showToast(context, 'Festival reward unlocked!');
+        }
       case SoldEvent(:final coins, :final slot):
         final r = _slotRect(slot);
         if (r != null) {
@@ -233,6 +241,7 @@ class _BoardAreaState extends State<BoardArea> {
   void _onTapUp(TapUpDetails d) {
     final l = _layout;
     if (l == null) return;
+    if (game.eventMode && l.storageRect.contains(d.localPosition)) return;
     if (l.giftRect.contains(d.localPosition) && game.state.pending.isNotEmpty) {
       game.placePending();
       return;
@@ -388,6 +397,22 @@ class _BoardAreaState extends State<BoardArea> {
         ),
       ),
     );
+    final festival = game.eventMode ? game.currentEventDef : null;
+    if (festival != null) {
+      children.add(
+        Positioned.fromRect(
+          rect: l.boardRect,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: festival.colors.first.withValues(alpha: .22),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     // Drop target highlight
     final hover = _hover;
@@ -540,6 +565,36 @@ class _BoardAreaState extends State<BoardArea> {
     for (var j = 0; j < game.state.storage.length; j++) {
       final p = game.state.storage[j];
       if (p != null) addPiece(p, l.slotRect(j), hidden: false);
+    }
+    if (festival != null) {
+      // Storage belongs to the island board; grey it out here.
+      children.add(
+        Positioned.fromRect(
+          rect: Rect.fromLTRB(
+            l.giftRect.left - 6,
+            l.storageRect.top + 2,
+            l.buyRect.right + 6,
+            l.storageRect.bottom - 2,
+          ),
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .65),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Center(
+                child: Text(
+                  'Storage is for the island board',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Palette.inkSoft,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     // Locks
