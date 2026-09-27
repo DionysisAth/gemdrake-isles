@@ -81,11 +81,16 @@ BoxDecoration panelDecoration({
   Color color = Palette.panel,
   double radius = 18,
 }) => BoxDecoration(
-  color: color,
+  // A soft top-lit gradient reads as a raised, cozy card.
+  gradient: LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color.lerp(color, Colors.white, .5)!, color],
+  ),
   borderRadius: BorderRadius.circular(radius),
-  border: Border.all(color: Palette.panelEdge, width: 2),
+  border: Border.all(color: Colors.white, width: 2),
   boxShadow: const [
-    BoxShadow(color: Color(0x33301E4F), blurRadius: 8, offset: Offset(0, 3)),
+    BoxShadow(color: Color(0x40301E4F), blurRadius: 10, offset: Offset(0, 4)),
   ],
 );
 
@@ -128,35 +133,69 @@ class _GameButtonState extends State<GameButton> {
         scale: _down ? .94 : 1,
         duration: const Duration(milliseconds: 80),
         child: Container(
-          padding: widget.padding,
           decoration: BoxDecoration(
-            color: color,
             borderRadius: BorderRadius.circular(widget.radius),
-            border: Border(
-              bottom: BorderSide(color: dark, width: _down ? 1 : 4),
-            ),
+            color: dark,
             boxShadow: const [
               BoxShadow(
-                color: Color(0x33000000),
-                blurRadius: 4,
-                offset: Offset(0, 2),
+                color: Color(0x40000000),
+                blurRadius: 5,
+                offset: Offset(0, 3),
               ),
             ],
           ),
-          child: DefaultTextStyle.merge(
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-            ),
-            child: IconTheme.merge(
-              data: const IconThemeData(color: Colors.white, size: 18),
-              child: Center(
-                widthFactor: 1,
-                heightFactor: 1,
-                child: widget.child,
+          padding: EdgeInsets.only(bottom: _down ? 1 : 4),
+          child: Stack(
+            children: [
+              Container(
+                padding: widget.padding,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(widget.radius),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color.lerp(color, Colors.white, .28)!, color],
+                  ),
+                  border: Border.all(
+                    color: Color.lerp(color, Colors.white, .45)!,
+                    width: 1.2,
+                  ),
+                ),
+                child: DefaultTextStyle.merge(
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    shadows: [
+                      Shadow(color: dark, offset: const Offset(0, 1.5)),
+                    ],
+                  ),
+                  child: IconTheme.merge(
+                    data: const IconThemeData(color: Colors.white, size: 18),
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: widget.child,
+                    ),
+                  ),
+                ),
               ),
-            ),
+              // Glossy highlight across the top.
+              Positioned(
+                left: 5,
+                right: 5,
+                top: 3,
+                height: 6,
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .3),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

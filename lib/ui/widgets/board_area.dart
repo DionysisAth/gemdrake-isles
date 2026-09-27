@@ -372,20 +372,9 @@ class _BoardAreaState extends State<BoardArea> {
     // Frame + tiles
     children.add(
       Positioned.fromRect(
-        rect: l.boardRect.inflate(8),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Palette.wood,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Palette.woodDark, width: 3),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x44301E4F),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
+        rect: l.boardRect.inflate(10),
+        child: const RepaintBoundary(
+          child: CustomPaint(painter: BoardFramePainter()),
         ),
       ),
     );

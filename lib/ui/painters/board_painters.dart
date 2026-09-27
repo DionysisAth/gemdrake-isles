@@ -213,7 +213,7 @@ class LockPainter extends CustomPainter {
   void _fog(Canvas c, Size size, double s) {
     final r = RRect.fromRectAndRadius(
       Offset.zero & size,
-      Radius.circular(s * .16),
+      Radius.circular(s * .2),
     );
     c.drawRRect(
       r,
@@ -221,18 +221,40 @@ class LockPainter extends CustomPainter {
         ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFF3F0FF), Color(0xFFCFC8EC)],
+          colors: [Color(0xFFF1EEFF), Color(0xFFC9C0EA)],
         ).createShader(Offset.zero & size),
     );
-    final puff = Paint()..color = Colors.white.withValues(alpha: .8);
-    for (final (x, y, rad) in [
-      (.3, .4, .2),
-      (.62, .34, .22),
-      (.46, .62, .24),
-      (.74, .64, .16),
-    ]) {
+    // Shaded puffs: a darker underside, then the bright top.
+    final shade = Paint()..color = const Color(0xFFB7AEDD);
+    final puff = Paint()
+      ..shader = const RadialGradient(
+        center: Alignment(-.3, -.4),
+        radius: .9,
+        colors: [Colors.white, Color(0xFFE7E2FA)],
+      ).createShader(Offset.zero & size);
+    const puffs = [
+      (.3, .46, .22),
+      (.62, .38, .25),
+      (.48, .64, .24),
+      (.76, .66, .17),
+      (.22, .7, .15),
+    ];
+    for (final (x, y, rad) in puffs) {
+      c.drawCircle(
+        Offset(size.width * x, size.height * y + s * .04),
+        s * rad,
+        shade,
+      );
+    }
+    for (final (x, y, rad) in puffs) {
       c.drawCircle(Offset(size.width * x, size.height * y), s * rad, puff);
     }
+    paintSparkle(
+      c,
+      Offset(size.width * .78, size.height * .22),
+      s * .07,
+      Colors.white,
+    );
   }
 
   void _web(Canvas c, Size size) {
@@ -325,15 +347,58 @@ class BoardBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final a = Paint()..color = const Color(0xFFD7EFC0);
-    final b = Paint()..color = const Color(0xFFC6E6AA);
+    // Soil between tiles
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(cell * .22)),
+      Paint()..color = const Color(0xFF8FB872),
+    );
+    final rnd = Random(3);
+    final tuft = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = max(1.0, cell * .03)
+      ..color = const Color(0x5539802F);
     for (var y = 0; y < rows; y++) {
       for (var x = 0; x < cols; x++) {
-        final r = RRect.fromRectAndRadius(
-          Rect.fromLTWH(x * cell + 1.5, y * cell + 1.5, cell - 3, cell - 3),
-          Radius.circular(cell * .18),
+        final even = (x + y).isEven;
+        final r = Rect.fromLTWH(
+          x * cell + 1.5,
+          y * cell + 1.5,
+          cell - 3,
+          cell - 3,
         );
-        canvas.drawRRect(r, (x + y).isEven ? a : b);
+        final rr = RRect.fromRectAndRadius(r, Radius.circular(cell * .2));
+        // Darker bottom edge = bevel
+        canvas.drawRRect(
+          rr,
+          Paint()
+            ..color = even ? const Color(0xFFA9D48A) : const Color(0xFF9BCB7C),
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTRB(r.left, r.top, r.right, r.bottom - cell * .06),
+            Radius.circular(cell * .2),
+          ),
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: even
+                  ? const [Color(0xFFE6F6D2), Color(0xFFCDEBB1)]
+                  : const [Color(0xFFD9F0C0), Color(0xFFBFE3A0)],
+            ).createShader(r),
+        );
+        // Occasional grass tuft
+        if (rnd.nextDouble() < .35) {
+          final o = Offset(
+            r.left + r.width * (.2 + rnd.nextDouble() * .6),
+            r.top + r.height * (.55 + rnd.nextDouble() * .3),
+          );
+          final h = cell * .08;
+          canvas.drawLine(o, o + Offset(-h * .5, -h), tuft);
+          canvas.drawLine(o, o + Offset(0, -h * 1.3), tuft);
+          canvas.drawLine(o, o + Offset(h * .5, -h), tuft);
+        }
       }
     }
   }
@@ -341,6 +406,95 @@ class BoardBackgroundPainter extends CustomPainter {
   @override
   bool shouldRepaint(BoardBackgroundPainter old) =>
       old.cols != cols || old.rows != rows || old.cell != cell;
+}
+
+/// Wooden frame around the board with grain, a soft inner shadow and
+/// corner studs.
+class BoardFramePainter extends CustomPainter {
+  const BoardFramePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = Offset.zero & size;
+    final outer = RRect.fromRectAndRadius(r, const Radius.circular(22));
+    canvas.drawRRect(
+      outer.shift(const Offset(0, 4)),
+      Paint()
+        ..color = const Color(0x55301E4F)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+    );
+    canvas.drawRRect(outer, Paint()..color = const Color(0xFF6E4A33));
+    final face = outer.deflate(2.5);
+    canvas.drawRRect(
+      face,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFC9955F), Color(0xFFA06A40), Color(0xFF8A5A36)],
+        ).createShader(r),
+    );
+    // Grain
+    canvas.save();
+    canvas.clipRRect(face);
+    final grain = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = const Color(0x22000000);
+    for (var i = 0; i < 14; i++) {
+      final y = size.height * (i + .5) / 14;
+      canvas.drawPath(
+        Path()
+          ..moveTo(0, y)
+          ..quadraticBezierTo(size.width * .3, y + 4, size.width * .55, y - 2)
+          ..quadraticBezierTo(size.width * .8, y - 6, size.width, y + 1),
+        grain,
+      );
+    }
+    // Top highlight
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(6, 3, size.width - 12, 5),
+        const Radius.circular(3),
+      ),
+      Paint()..color = Colors.white.withValues(alpha: .25),
+    );
+    canvas.restore();
+    // Inner recess
+    final inner = RRect.fromRectAndRadius(
+      r.deflate(8),
+      const Radius.circular(14),
+    );
+    canvas.drawRRect(
+      inner.inflate(1.5),
+      Paint()..color = const Color(0xFF5A3A26),
+    );
+    // Corner studs
+    for (final c in [
+      const Offset(6, 6),
+      Offset(size.width - 6, 6),
+      Offset(6, size.height - 6),
+      Offset(size.width - 6, size.height - 6),
+    ]) {
+      canvas.drawCircle(c, 5, Paint()..color = const Color(0xFFFFD166));
+      canvas.drawCircle(
+        c,
+        5,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..color = const Color(0xFFB07A12),
+      );
+      canvas.drawCircle(
+        c + const Offset(-1.3, -1.3),
+        1.6,
+        Paint()..color = Colors.white.withValues(alpha: .8),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(BoardFramePainter old) => false;
 }
 
 enum CurrencyKind { coin, gem, energy, xp }

@@ -186,124 +186,166 @@ class _OrderCard extends StatelessWidget {
       child: _Glow(
         active: ready,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
-          decoration:
-              panelDecoration(
-                color: ready ? const Color(0xFFEFFFF0) : Palette.panel,
-                radius: 16,
-              ).copyWith(
-                border: Border.all(
-                  color: ready ? Palette.green : Palette.panelEdge,
-                  width: ready ? 3 : 2,
-                ),
+          decoration: BoxDecoration(
+            color: ready ? const Color(0xFFF1FFF0) : const Color(0xFFFFFAF1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: ready ? Palette.green : Colors.white,
+              width: ready ? 3 : 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: ready
+                    ? Palette.green.withValues(alpha: .55)
+                    : const Color(0x40301E4F),
+                blurRadius: ready ? 12 : 6,
+                offset: const Offset(0, 3),
               ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  CustomPaint(
-                    size: const Size.square(24),
-                    painter: CharacterPainter(character),
-                  ),
-                  const SizedBox(width: 3),
-                  Expanded(
-                    child: Text(
-                      // First name only: cards are narrow with 4 orders.
-                      character.name.split(' ').first,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (final line in order.lines)
-                      Flexible(
-                        child: _Requirement(
-                          line: line,
-                          have: game.countAvailable(line.item),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (ready)
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Column(
+              children: [
+                // Character header band
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 1,
-                  ),
+                  height: 25,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    color: Palette.green,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Deliver!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.lerp(character.hatColor, Colors.white, .15)!,
+                        Color.lerp(character.hatColor, Colors.black, .2)!,
+                      ],
                     ),
                   ),
-                )
-              else
-                FittedBox(
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const CurrencyIcon(CurrencyKind.coin, size: 13),
-                      Text(
-                        ' ${order.coins} ',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                      Container(
+                        width: 21,
+                        height: 21,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: CustomPaint(
+                          painter: CharacterPainter(character),
                         ),
                       ),
-                      const CurrencyIcon(CurrencyKind.xp, size: 13),
-                      Text(
-                        ' ${order.xp}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (order.gems > 0) ...[
-                        const Text(' '),
-                        const CurrencyIcon(CurrencyKind.gem, size: 13),
-                        Text(
-                          '${order.gems}',
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          // First name only: cards are narrow with 4 orders.
+                          character.name.split(' ').first,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Color(0x66000000),
+                                offset: Offset(0, 1),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                      if (order.energy > 0) ...[
-                        const Text(' '),
-                        const CurrencyIcon(CurrencyKind.energy, size: 13),
-                        Text(
-                          '${order.energy}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                      for (final item in order.items) ...[
-                        const Text(' '),
-                        ItemIcon(item, size: 16),
-                      ],
+                      ),
                     ],
                   ),
                 ),
-            ],
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (final line in order.lines)
+                        Flexible(
+                          child: _Requirement(
+                            line: line,
+                            have: game.countAvailable(line.item),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (ready)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFF6FD98A), Palette.greenDark],
+                      ),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(color: Colors.white, width: 1.2),
+                    ),
+                    child: const Text(
+                      'Deliver!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  )
+                else
+                  FittedBox(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CurrencyIcon(CurrencyKind.coin, size: 13),
+                        Text(
+                          ' ${order.coins} ',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const CurrencyIcon(CurrencyKind.xp, size: 13),
+                        Text(
+                          ' ${order.xp}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (order.gems > 0) ...[
+                          const Text(' '),
+                          const CurrencyIcon(CurrencyKind.gem, size: 13),
+                          Text(
+                            '${order.gems}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                        if (order.energy > 0) ...[
+                          const Text(' '),
+                          const CurrencyIcon(CurrencyKind.energy, size: 13),
+                          Text(
+                            '${order.energy}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                        for (final item in order.items) ...[
+                          const Text(' '),
+                          ItemIcon(item, size: 16),
+                        ],
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 4),
+              ],
+            ),
           ),
         ),
       ),

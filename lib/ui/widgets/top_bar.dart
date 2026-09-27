@@ -35,6 +35,7 @@ class TopBar extends StatelessWidget {
                   value: '${game.energy}/${game.energyMax}',
                   sub: next == null ? null : formatDuration(next),
                   onTap: () => showOutOfEnergy(context),
+                  plus: true,
                 ),
               ),
               const SizedBox(width: 6),
@@ -108,6 +109,7 @@ class _Chip extends StatelessWidget {
     required this.value,
     this.sub,
     this.onTap,
+    this.plus = false,
   });
 
   final Widget icon;
@@ -116,6 +118,9 @@ class _Chip extends StatelessWidget {
   final Object value;
   final String? sub;
   final VoidCallback? onTap;
+
+  /// Shows a small "+" to hint that tapping gets more.
+  final bool plus;
 
   @override
   Widget build(BuildContext context) {
@@ -130,39 +135,89 @@ class _Chip extends StatelessWidget {
         : _label('$v');
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        height: 34,
-        padding: const EdgeInsets.only(right: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xCC3B2A5A),
-          borderRadius: BorderRadius.circular(17),
-        ),
-        child: Row(
+      child: SizedBox(
+        height: 36,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.centerLeft,
           children: [
-            Transform.scale(scale: 1.35, child: icon),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: text,
+            // Glossy pill
+            Positioned.fill(
+              left: 10,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF5B4486), Color(0xFF34255A)],
                   ),
-                  if (sub != null)
-                    Text(
-                      sub!,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 9.5,
-                        height: 1,
-                      ),
+                  border: Border.all(color: const Color(0xCCFFFFFF), width: 2),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x40301E4F),
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
                     ),
-                ],
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(left: 22, right: plus ? 13 : 8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: text,
+                      ),
+                      if (sub != null)
+                        Text(
+                          sub!,
+                          style: const TextStyle(
+                            color: Color(0xFFD9CCF5),
+                            fontSize: 9.5,
+                            height: 1,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
+            // Icon badge overlapping the left edge
+            Positioned(
+              left: 0,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x55301E4F),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Transform.scale(scale: 1.45, child: icon),
+              ),
+            ),
+            if (plus)
+              Positioned(
+                right: -5,
+                bottom: -3,
+                child: Container(
+                  width: 17,
+                  height: 17,
+                  decoration: BoxDecoration(
+                    color: Palette.green,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: const Icon(Icons.add, size: 13, color: Colors.white),
+                ),
+              ),
           ],
         ),
       ),

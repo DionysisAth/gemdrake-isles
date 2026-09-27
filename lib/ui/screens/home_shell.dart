@@ -6,6 +6,7 @@ import '../../logic/game_events.dart';
 import '../dialogs/dialogs.dart';
 import '../fx_layer.dart';
 import '../game_scope.dart';
+import '../painters/sky_painter.dart';
 import '../theme.dart';
 import '../widgets/board_area.dart';
 import '../widgets/orders_bar.dart';
@@ -137,15 +138,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       body: Stack(
         children: [
           const Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Palette.sky1, Palette.sky2],
-                ),
-              ),
-            ),
+            child: RepaintBoundary(child: CustomPaint(painter: SkyPainter())),
           ),
           SafeArea(
             child: Center(
@@ -228,31 +221,42 @@ class _BottomNav extends StatelessWidget {
             .length;
         final islandBadge = affordable + (game.idleFull ? 1 : 0);
         return Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
-          child: Row(
-            children: [
-              Expanded(
-                child: _NavButton(
-                  key: targets.keyFor('tab:board'),
-                  icon: Icons.grid_view_rounded,
-                  label: 'Board',
-                  active: tab == 0,
-                  badge: readyOrders,
-                  onTap: () => onTab(0),
-                ),
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .45),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: .8),
+                width: 1.5,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _NavButton(
-                  key: targets.keyFor('tab:island'),
-                  icon: Icons.landscape_rounded,
-                  label: 'Island',
-                  active: tab == 1,
-                  badge: islandBadge,
-                  onTap: () => onTab(1),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _NavButton(
+                    key: targets.keyFor('tab:board'),
+                    icon: Icons.grid_view_rounded,
+                    label: 'Board',
+                    active: tab == 0,
+                    badge: readyOrders,
+                    onTap: () => onTab(0),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _NavButton(
+                    key: targets.keyFor('tab:island'),
+                    icon: Icons.landscape_rounded,
+                    label: 'Island',
+                    active: tab == 1,
+                    badge: islandBadge,
+                    onTap: () => onTab(1),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

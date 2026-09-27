@@ -266,11 +266,12 @@ class GameController extends ChangeNotifier {
 
   /// Call when the app goes to the background.
   void onPause() {
+    // Silence first, so nothing can keep playing in the background.
+    feedback.pauseMusic();
     final now = nowMs;
     _accrueIdle(now);
     state.lastSeen = now;
     save(immediate: true);
-    feedback.pauseMusic();
   }
 
   /// Call on launch and when returning to the app. Returns what was earned
