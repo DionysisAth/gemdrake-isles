@@ -722,7 +722,155 @@ Future<void> showChainInfo(BuildContext context, ItemRef ref) {
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
             ),
             const SizedBox(height: 4),
-            HatchOddsTable(config: game.config),
+            HatchOddsTable(
+              config: game.config,
+              table: game.hatchTableFor(chain),
+            ),
+          ],
+          if (chain.loot != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Chest contents (${chain.loot!.rolls} rewards)',
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
+            const SizedBox(height: 4),
+            LootOddsTable(loot: chain.loot!),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+/// Exact odds for a random reward table (chests, packs).
+class LootOddsTable extends StatelessWidget {
+  const LootOddsTable({super.key, required this.loot});
+
+  final LootDef loot;
+
+  @override
+  Widget build(BuildContext context) {
+    final config = context.game.config;
+    final total = loot.totalWeight;
+    return Column(
+      children: [
+        for (final e in loot.table)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 1),
+            child: Row(
+              children: [
+                SizedBox(width: 28, height: 28, child: lootIcon(e)),
+                const SizedBox(width: 6),
+                Expanded(child: Text(lootLabel(config, e))),
+                Text(
+                  '${(e.weight * 100 / total).toStringAsFixed(1)}%',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+Widget lootIcon(LootEntry e) {
+  final item = e.item;
+  if (item != null) return ItemIcon(item, size: 28);
+  if (e.gems > 0) return const CurrencyIcon(CurrencyKind.gem, size: 24);
+  if (e.energy > 0) return const CurrencyIcon(CurrencyKind.energy, size: 24);
+  return const CurrencyIcon(CurrencyKind.coin, size: 24);
+}
+
+String lootLabel(GameConfig config, LootEntry e) {
+  final item = e.item;
+  if (item != null) return config.item(item).name;
+  if (e.gems > 0) return '${e.gems} gems';
+  if (e.energy > 0) return '${e.energy} energy';
+  return '${e.coins} coins';
+}
+
+/// Shows what came out of a chest.
+Future<void> showChestRewards(
+  BuildContext context,
+  String title,
+  List<LootEntry> rewards,
+) {
+  final config = context.game.config;
+  return showDialog(
+    context: context,
+    builder: (ctx) => GameDialog(
+      title: title,
+      titleColor: const Color(0xFFE0A21A),
+      actions: [
+        GameButton(
+          onTap: () => Navigator.pop(ctx),
+          child: const Text('Awesome!'),
+        ),
+      ],
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          for (final e in rewards)
+            Container(
+              width: 86,
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Palette.gold, width: 2),
+              ),
+              child: Column(
+                children: [
+                  SizedBox(width: 44, height: 44, child: lootIcon(e)),
+                  Text(
+                    lootLabel(config, e),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Celebrates arriving on a new island.
+Future<void> showIslandArrival(
+  BuildContext context,
+  IslandDef island,
+  List<String> unlocks,
+) {
+  return showDialog(
+    context: context,
+    builder: (ctx) => GameDialog(
+      title: island.name,
+      titleColor: Palette.accent,
+      actions: [
+        GameButton(
+          onTap: () => Navigator.pop(ctx),
+          child: const Text("Let's go!"),
+        ),
+      ],
+      child: Column(
+        children: [
+          const Icon(Icons.sailing_rounded, size: 56, color: Palette.accent),
+          const SizedBox(height: 6),
+          const Text(
+            'A new island to restore!',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+          if (unlocks.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Text('New!', style: TextStyle(fontWeight: FontWeight.w700)),
+            for (final u in unlocks) Text(u, textAlign: TextAlign.center),
           ],
         ],
       ),
@@ -731,16 +879,17 @@ Future<void> showChainInfo(BuildContext context, ItemRef ref) {
 }
 
 class HatchOddsTable extends StatelessWidget {
-  const HatchOddsTable({super.key, required this.config});
+  const HatchOddsTable({super.key, required this.config, required this.table});
 
   final GameConfig config;
+  final List<WeightedType> table;
 
   @override
   Widget build(BuildContext context) {
-    final total = config.dragons.hatchTable.fold(0, (s, e) => s + e.weight);
+    final total = table.fold(0, (s, e) => s + e.weight);
     return Column(
       children: [
-        for (final e in config.dragons.hatchTable)
+        for (final e in table)
           Builder(
             builder: (context) {
               final type = config.dragonType(e.type);
@@ -900,10 +1049,7 @@ Future<void> showTaskComplete(
           ],
           if (islandComplete) ...[
             const SizedBox(height: 10),
-            Text(
-              game.config.currentIsland.completeText,
-              textAlign: TextAlign.center,
-            ),
+            Text(game.currentIsland.completeText, textAlign: TextAlign.center),
           ],
         ],
       ),
@@ -960,9 +1106,29 @@ Future<void> showSettings(BuildContext context) {
                     onClose: () => Navigator.pop(c),
                     child: Column(
                       children: [
-                        const Text('Dragon eggs hatch into:'),
+                        Text(
+                          'Dragon eggs on ${game.currentIsland.name} hatch into:',
+                        ),
                         const SizedBox(height: 6),
-                        HatchOddsTable(config: game.config),
+                        HatchOddsTable(
+                          config: game.config,
+                          table: game.hatchTableFor(game.config.chain('egg')),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('Legendary eggs hatch into:'),
+                        const SizedBox(height: 6),
+                        HatchOddsTable(
+                          config: game.config,
+                          table: game.hatchTableFor(
+                            game.config.chain('legend'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('Treasure chests contain:'),
+                        const SizedBox(height: 6),
+                        LootOddsTable(
+                          loot: game.config.chain('treasure').loot!,
+                        ),
                         const SizedBox(height: 8),
                         const Text(
                           'Tap any generator to see its exact drop odds.',

@@ -6,7 +6,10 @@
       "name": "Crystal Mine",
       "desc": "Tap to dig up gems. Sometimes a dragon egg turns up!",
       "unlockLevel": 1,
-      "spawnCell": [3, 5],
+      "spawnCell": [
+        3,
+        5
+      ],
       "style": "mine",
       "levels": [
         {
@@ -14,9 +17,24 @@
           "cooldownSeconds": 600,
           "upgradeCost": 0,
           "drops": [
-            { "item": "gem:1", "weight": 86 },
-            { "item": "gem:2", "weight": 10 },
-            { "item": "egg:1", "weight": 4, "minPlayerLevel": 3 }
+            {
+              "item": "gem:1",
+              "weight": 86
+            },
+            {
+              "item": "gem:2",
+              "weight": 10
+            },
+            {
+              "item": "egg:1",
+              "weight": 4,
+              "minPlayerLevel": 3
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3,
+              "minPlayerLevel": 2
+            }
           ]
         },
         {
@@ -24,9 +42,24 @@
           "cooldownSeconds": 540,
           "upgradeCost": 200,
           "drops": [
-            { "item": "gem:1", "weight": 76 },
-            { "item": "gem:2", "weight": 18 },
-            { "item": "egg:1", "weight": 6, "minPlayerLevel": 3 }
+            {
+              "item": "gem:1",
+              "weight": 76
+            },
+            {
+              "item": "gem:2",
+              "weight": 18
+            },
+            {
+              "item": "egg:1",
+              "weight": 6,
+              "minPlayerLevel": 3
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3,
+              "minPlayerLevel": 2
+            }
           ]
         },
         {
@@ -34,10 +67,28 @@
           "cooldownSeconds": 480,
           "upgradeCost": 600,
           "drops": [
-            { "item": "gem:1", "weight": 64 },
-            { "item": "gem:2", "weight": 26 },
-            { "item": "gem:3", "weight": 3 },
-            { "item": "egg:1", "weight": 7, "minPlayerLevel": 3 }
+            {
+              "item": "gem:1",
+              "weight": 64
+            },
+            {
+              "item": "gem:2",
+              "weight": 26
+            },
+            {
+              "item": "gem:3",
+              "weight": 3
+            },
+            {
+              "item": "egg:1",
+              "weight": 7,
+              "minPlayerLevel": 3
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3,
+              "minPlayerLevel": 2
+            }
           ]
         }
       ]
@@ -47,7 +98,10 @@
       "name": "Seed Basket",
       "desc": "Tap to scatter seeds. Plants grow into trees, and dragons love trees.",
       "unlockLevel": 2,
-      "spawnCell": [3, 7],
+      "spawnCell": [
+        3,
+        7
+      ],
       "style": "basket",
       "levels": [
         {
@@ -55,9 +109,24 @@
           "cooldownSeconds": 600,
           "upgradeCost": 0,
           "drops": [
-            { "item": "plant:1", "weight": 86 },
-            { "item": "plant:2", "weight": 10 },
-            { "item": "egg:1", "weight": 4, "minPlayerLevel": 3 }
+            {
+              "item": "plant:1",
+              "weight": 86
+            },
+            {
+              "item": "plant:2",
+              "weight": 10
+            },
+            {
+              "item": "egg:1",
+              "weight": 4,
+              "minPlayerLevel": 3
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3,
+              "minPlayerLevel": 2
+            }
           ]
         },
         {
@@ -65,9 +134,24 @@
           "cooldownSeconds": 540,
           "upgradeCost": 250,
           "drops": [
-            { "item": "plant:1", "weight": 76 },
-            { "item": "plant:2", "weight": 18 },
-            { "item": "egg:1", "weight": 6, "minPlayerLevel": 3 }
+            {
+              "item": "plant:1",
+              "weight": 76
+            },
+            {
+              "item": "plant:2",
+              "weight": 18
+            },
+            {
+              "item": "egg:1",
+              "weight": 6,
+              "minPlayerLevel": 3
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3,
+              "minPlayerLevel": 2
+            }
           ]
         },
         {
@@ -75,13 +159,439 @@
           "cooldownSeconds": 480,
           "upgradeCost": 700,
           "drops": [
-            { "item": "plant:1", "weight": 64 },
-            { "item": "plant:2", "weight": 26 },
-            { "item": "plant:3", "weight": 3 },
-            { "item": "egg:1", "weight": 7, "minPlayerLevel": 3 }
+            {
+              "item": "plant:1",
+              "weight": 64
+            },
+            {
+              "item": "plant:2",
+              "weight": 26
+            },
+            {
+              "item": "plant:3",
+              "weight": 3
+            },
+            {
+              "item": "egg:1",
+              "weight": 7,
+              "minPlayerLevel": 3
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3,
+              "minPlayerLevel": 2
+            }
           ]
         }
       ]
+    },
+    {
+      "id": "forge",
+      "name": "Ember Forge",
+      "desc": "Tap to forge tools from volcano fire.",
+      "unlockLevel": 1,
+      "unlockIsland": 2,
+      "spawnCell": [
+        1,
+        5
+      ],
+      "style": "forge",
+      "levels": [
+        {
+          "charges": 20,
+          "cooldownSeconds": 600,
+          "upgradeCost": 0,
+          "drops": [
+            {
+              "item": "tool:1",
+              "weight": 86
+            },
+            {
+              "item": "tool:2",
+              "weight": 10
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "charges": 24,
+          "cooldownSeconds": 540,
+          "upgradeCost": 800,
+          "drops": [
+            {
+              "item": "tool:1",
+              "weight": 76
+            },
+            {
+              "item": "tool:2",
+              "weight": 18
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "charges": 28,
+          "cooldownSeconds": 480,
+          "upgradeCost": 2400,
+          "drops": [
+            {
+              "item": "tool:1",
+              "weight": 64
+            },
+            {
+              "item": "tool:2",
+              "weight": 26
+            },
+            {
+              "item": "tool:3",
+              "weight": 3
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tide_pool",
+      "name": "Tide Pool",
+      "desc": "Tap to gather shells washed in by the tide.",
+      "unlockLevel": 1,
+      "unlockIsland": 3,
+      "spawnCell": [
+        5,
+        5
+      ],
+      "style": "tidepool",
+      "levels": [
+        {
+          "charges": 20,
+          "cooldownSeconds": 600,
+          "upgradeCost": 0,
+          "drops": [
+            {
+              "item": "shell:1",
+              "weight": 86
+            },
+            {
+              "item": "shell:2",
+              "weight": 10
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "charges": 24,
+          "cooldownSeconds": 540,
+          "upgradeCost": 1200,
+          "drops": [
+            {
+              "item": "shell:1",
+              "weight": 76
+            },
+            {
+              "item": "shell:2",
+              "weight": 18
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "charges": 28,
+          "cooldownSeconds": 480,
+          "upgradeCost": 3600,
+          "drops": [
+            {
+              "item": "shell:1",
+              "weight": 64
+            },
+            {
+              "item": "shell:2",
+              "weight": 26
+            },
+            {
+              "item": "shell:3",
+              "weight": 3
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "geode_cavern",
+      "name": "Geode Cavern",
+      "desc": "Tap to crack open geodes from the peaks.",
+      "unlockLevel": 1,
+      "unlockIsland": 4,
+      "spawnCell": [
+        1,
+        7
+      ],
+      "style": "cavern",
+      "levels": [
+        {
+          "charges": 20,
+          "cooldownSeconds": 600,
+          "upgradeCost": 0,
+          "drops": [
+            {
+              "item": "geode:1",
+              "weight": 86
+            },
+            {
+              "item": "geode:2",
+              "weight": 10
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "charges": 24,
+          "cooldownSeconds": 540,
+          "upgradeCost": 1600,
+          "drops": [
+            {
+              "item": "geode:1",
+              "weight": 76
+            },
+            {
+              "item": "geode:2",
+              "weight": 18
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "charges": 28,
+          "cooldownSeconds": 480,
+          "upgradeCost": 4800,
+          "drops": [
+            {
+              "item": "geode:1",
+              "weight": 64
+            },
+            {
+              "item": "geode:2",
+              "weight": 26
+            },
+            {
+              "item": "geode:3",
+              "weight": 3
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "treasure:1",
+              "weight": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "star_well",
+      "name": "Star Well",
+      "desc": "Tap to draw starlight from the deep sky. Legendary eggs sometimes rise with it!",
+      "unlockLevel": 1,
+      "unlockIsland": 5,
+      "spawnCell": [
+        5,
+        7
+      ],
+      "style": "starwell",
+      "levels": [
+        {
+          "charges": 20,
+          "cooldownSeconds": 600,
+          "upgradeCost": 0,
+          "drops": [
+            {
+              "item": "star:1",
+              "weight": 86
+            },
+            {
+              "item": "star:2",
+              "weight": 10
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "legend:1",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "charges": 24,
+          "cooldownSeconds": 540,
+          "upgradeCost": 2000,
+          "drops": [
+            {
+              "item": "star:1",
+              "weight": 76
+            },
+            {
+              "item": "star:2",
+              "weight": 18
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "legend:1",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "charges": 28,
+          "cooldownSeconds": 480,
+          "upgradeCost": 6000,
+          "drops": [
+            {
+              "item": "star:1",
+              "weight": 64
+            },
+            {
+              "item": "star:2",
+              "weight": 26
+            },
+            {
+              "item": "star:3",
+              "weight": 3
+            },
+            {
+              "item": "egg:1",
+              "weight": 5
+            },
+            {
+              "item": "legend:1",
+              "weight": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blossom_tree",
+      "name": "Festival Blossom Tree",
+      "desc": "Tap to shake loose festival petals.",
+      "unlockLevel": 1,
+      "unlockIsland": 1,
+      "spawnCell": [
+        3,
+        4
+      ],
+      "style": "blossomtree",
+      "levels": [
+        {
+          "charges": 30,
+          "cooldownSeconds": 300,
+          "upgradeCost": 0,
+          "drops": [
+            {
+              "item": "blossom:1",
+              "weight": 86
+            },
+            {
+              "item": "blossom:2",
+              "weight": 10
+            }
+          ]
+        }
+      ],
+      "eventOnly": true
+    },
+    {
+      "id": "lantern_stall",
+      "name": "Lantern Stall",
+      "desc": "Tap to fold festival paper.",
+      "unlockLevel": 1,
+      "unlockIsland": 1,
+      "spawnCell": [
+        3,
+        4
+      ],
+      "style": "lanternstall",
+      "levels": [
+        {
+          "charges": 30,
+          "cooldownSeconds": 300,
+          "upgradeCost": 0,
+          "drops": [
+            {
+              "item": "lantern:1",
+              "weight": 86
+            },
+            {
+              "item": "lantern:2",
+              "weight": 10
+            }
+          ]
+        }
+      ],
+      "eventOnly": true
     }
   ]
 }

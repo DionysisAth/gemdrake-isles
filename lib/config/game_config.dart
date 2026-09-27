@@ -84,7 +84,37 @@ class GameConfig {
   DragonTypeDef dragonType(String id) =>
       dragons.types.firstWhere((t) => t.id == id);
   RarityDef rarity(String id) => dragons.rarities.firstWhere((r) => r.id == id);
-  IslandDef get currentIsland => islands.first;
+  IslandDef island(int index) => islands[index.clamp(0, islands.length - 1)];
+
+  IslandTaskDef? task(String id) {
+    for (final i in islands) {
+      for (final t in i.tasks) {
+        if (t.id == id) return t;
+      }
+    }
+    return null;
+  }
+
+  /// Whether a chain shows up in drops/orders for a player at [level] who
+  /// has reached island index [islandIndex] (0-based).
+  bool chainAvailable(ChainDef c, int level, int islandIndex) =>
+      !c.event && c.unlockLevel <= level && c.unlockIsland <= islandIndex + 1;
+
+  bool generatorAvailable(GeneratorDef g, int level, int islandIndex) =>
+      !g.eventOnly &&
+      g.unlockLevel <= level &&
+      g.unlockIsland <= islandIndex + 1;
+
+  /// Hatch table for eggs of [chain] while on island [islandIndex].
+  List<WeightedType> hatchTableFor(ChainDef chain, int islandIndex) {
+    final special = chain.hatchTable;
+    if (special != null) {
+      final t = dragons.specialHatchTables[special];
+      if (t != null && t.isNotEmpty) return t;
+    }
+    final t = island(islandIndex).hatchTable;
+    return t.isNotEmpty ? t : dragons.hatchTable;
+  }
 
   bool isValidItem(ItemRef ref) {
     final c = chains.where((c) => c.id == ref.chain).firstOrNull;
@@ -139,6 +169,10 @@ class ChainDef {
     required this.orderable,
     required this.hatchOnMaxMerge,
     required this.items,
+    this.unlockIsland = 1,
+    this.event = false,
+    this.hatchTable,
+    this.loot,
   });
 
   factory ChainDef.fromJson(Map<String, dynamic> j) => ChainDef(
@@ -148,6 +182,10 @@ class ChainDef {
     orderable: j['orderable'] as bool? ?? true,
     hatchOnMaxMerge: j['hatchOnMaxMerge'] as bool? ?? false,
     items: [for (final i in j['items'] as List) ItemDef.fromJson(i)],
+    unlockIsland: j['unlockIsland'] as int? ?? 1,
+    event: j['event'] as bool? ?? false,
+    hatchTable: j['hatchTable'] as String?,
+    loot: j['loot'] == null ? null : LootDef.fromJson(j['loot']),
   );
 
   final String id;
@@ -159,7 +197,60 @@ class ChainDef {
   final bool hatchOnMaxMerge;
   final List<ItemDef> items;
 
+  /// Island number (1-based) that must be reached before this chain shows
+  /// up in drops and orders.
+  final int unlockIsland;
+
+  /// Event-only chain (lives on the event board).
+  final bool event;
+
+  /// Named special hatch table (e.g. `legendary`); null = island's table.
+  final String? hatchTable;
+
+  /// The max-level item can be opened for these rewards (treasure chest).
+  final LootDef? loot;
+
   int get maxLevel => items.length;
+}
+
+/// One possible reward: an item, coins, gems or energy.
+class LootEntry {
+  LootEntry({
+    required this.weight,
+    this.item,
+    this.coins = 0,
+    this.gems = 0,
+    this.energy = 0,
+  });
+
+  factory LootEntry.fromJson(Map<String, dynamic> j) => LootEntry(
+    weight: j['weight'] as int,
+    item: j['item'] == null ? null : ItemRef.parse(j['item'] as String),
+    coins: j['coins'] as int? ?? 0,
+    gems: j['gems'] as int? ?? 0,
+    energy: j['energy'] as int? ?? 0,
+  );
+
+  final int weight;
+  final ItemRef? item;
+  final int coins;
+  final int gems;
+  final int energy;
+}
+
+/// A random reward table rolled [rolls] times (chests, shop packs).
+class LootDef {
+  LootDef({required this.rolls, required this.table});
+
+  factory LootDef.fromJson(Map<String, dynamic> j) => LootDef(
+    rolls: j['rolls'] as int? ?? 1,
+    table: [for (final e in j['table'] as List) LootEntry.fromJson(e)],
+  );
+
+  final int rolls;
+  final List<LootEntry> table;
+
+  int get totalWeight => table.fold(0, (s, e) => s + e.weight);
 }
 
 class DropDef {
@@ -212,6 +303,8 @@ class GeneratorDef {
     required this.spawnCell,
     required this.style,
     required this.levels,
+    this.unlockIsland = 1,
+    this.eventOnly = false,
   });
 
   factory GeneratorDef.fromJson(Map<String, dynamic> j) {
@@ -226,6 +319,8 @@ class GeneratorDef {
       levels: [
         for (final l in j['levels'] as List) GeneratorLevelDef.fromJson(l),
       ],
+      unlockIsland: j['unlockIsland'] as int? ?? 1,
+      eventOnly: j['eventOnly'] as bool? ?? false,
     );
   }
 
@@ -236,6 +331,10 @@ class GeneratorDef {
   final Point<int> spawnCell;
   final String style;
   final List<GeneratorLevelDef> levels;
+  final int unlockIsland;
+
+  /// Only appears on the event board.
+  final bool eventOnly;
 
   int get maxLevel => levels.length;
   GeneratorLevelDef level(int l) => levels[l.clamp(1, levels.length) - 1];
@@ -290,6 +389,7 @@ class DragonTypeDef {
     required this.belly,
     required this.wing,
     required this.accent,
+    this.event = false,
   });
 
   factory DragonTypeDef.fromJson(Map<String, dynamic> j) => DragonTypeDef(
@@ -301,6 +401,7 @@ class DragonTypeDef {
     belly: parseColor(j['belly'] as String),
     wing: parseColor(j['wing'] as String),
     accent: parseColor(j['accent'] as String),
+    event: j['event'] as bool? ?? false,
   );
 
   final String id;
@@ -311,6 +412,9 @@ class DragonTypeDef {
   final Color belly;
   final Color wing;
   final Color accent;
+
+  /// Exclusive to a timed event.
+  final bool event;
 }
 
 class WeightedType {
@@ -325,22 +429,45 @@ class DragonsConfig {
     required this.levels,
     required this.types,
     required this.hatchTable,
+    this.specialHatchTables = const {},
+    this.typeCompleteGems = const {},
+    this.allBabiesGems = 0,
+    this.allBabiesTypes = const [],
   });
 
   factory DragonsConfig.fromJson(Map<String, dynamic> j) => DragonsConfig(
     rarities: [for (final r in j['rarities'] as List) RarityDef.fromJson(r)],
     levels: [for (final l in j['levels'] as List) DragonLevelDef.fromJson(l)],
     types: [for (final t in j['types'] as List) DragonTypeDef.fromJson(t)],
-    hatchTable: [
-      for (final h in j['hatchTable'] as List)
-        WeightedType(h['type'] as String, h['weight'] as int),
-    ],
+    hatchTable: weightedTypes(j['hatchTable'] as List),
+    specialHatchTables: {
+      for (final e in (j['specialHatchTables'] as Map? ?? const {}).entries)
+        e.key as String: weightedTypes(e.value as List),
+    },
+    typeCompleteGems:
+        ((j['collection']?['typeCompleteGems'] as Map?) ?? const {})
+            .cast<String, int>(),
+    allBabiesGems: j['collection']?['allBabiesGems'] as int? ?? 0,
+    allBabiesTypes: ((j['collection']?['allBabiesTypes'] as List?) ?? const [])
+        .cast<String>(),
   );
+
+  static List<WeightedType> weightedTypes(List list) => [
+    for (final h in list) WeightedType(h['type'] as String, h['weight'] as int),
+  ];
 
   final List<RarityDef> rarities;
   final List<DragonLevelDef> levels;
   final List<DragonTypeDef> types;
   final List<WeightedType> hatchTable;
+  final Map<String, List<WeightedType>> specialHatchTables;
+
+  /// Dragon Book: gems for discovering every level of a type, by rarity.
+  final Map<String, int> typeCompleteGems;
+
+  /// Dragon Book: gems for hatching at least one of each of these types.
+  final int allBabiesGems;
+  final List<String> allBabiesTypes;
 
   int get maxLevel => levels.length;
   DragonLevelDef level(int l) => levels[l - 1];
@@ -421,6 +548,7 @@ class CharacterDef {
     required this.hat,
     required this.hatColor,
     required this.lines,
+    this.unlockIsland = 1,
   });
 
   factory CharacterDef.fromJson(Map<String, dynamic> j) => CharacterDef(
@@ -432,6 +560,7 @@ class CharacterDef {
     hat: j['hat'] as String,
     hatColor: parseColor(j['hatColor'] as String),
     lines: (j['lines'] as List).cast<String>(),
+    unlockIsland: j['unlockIsland'] as int? ?? 1,
   );
 
   final String id;
@@ -442,6 +571,7 @@ class CharacterDef {
   final String hat;
   final Color hatColor;
   final List<String> lines;
+  final int unlockIsland;
 }
 
 class OrderLineDef {
@@ -608,6 +738,7 @@ class IslandDef {
     required this.theme,
     required this.completeText,
     required this.tasks,
+    this.hatchTable = const [],
   });
 
   factory IslandDef.fromJson(Map<String, dynamic> j) => IslandDef(
@@ -616,6 +747,9 @@ class IslandDef {
     theme: j['theme'] as String,
     completeText: j['completeText'] as String? ?? '',
     tasks: [for (final t in j['tasks'] as List) IslandTaskDef.fromJson(t)],
+    hatchTable: DragonsConfig.weightedTypes(
+      j['hatchTable'] as List? ?? const [],
+    ),
   );
 
   final String id;
@@ -623,6 +757,9 @@ class IslandDef {
   final String theme;
   final String completeText;
   final List<IslandTaskDef> tasks;
+
+  /// What regular eggs hatch into while on this island.
+  final List<WeightedType> hatchTable;
 }
 
 class LockTypeDef {

@@ -27,11 +27,23 @@ class IslandScreen extends StatefulWidget {
 class _IslandScreenState extends State<IslandScreen> {
   int _tab = 0;
 
+  /// Island being looked at; null = the one being restored.
+  int? _viewing;
+
   @override
   Widget build(BuildContext context) {
+    final game = context.game;
+    final viewing = (_viewing ?? game.state.island).clamp(0, game.state.island);
     return Column(
       children: [
-        const Expanded(flex: 11, child: IslandView()),
+        Expanded(
+          flex: 11,
+          child: IslandView(
+            islandIndex: viewing,
+            onBrowse: (i) =>
+                setState(() => _viewing = i == game.state.island ? null : i),
+          ),
+        ),
         Expanded(
           flex: 10,
           child: Container(
@@ -49,7 +61,9 @@ class _IslandScreenState extends State<IslandScreen> {
                   onChanged: (i) => setState(() => _tab = i),
                 ),
                 Expanded(
-                  child: _tab == 0 ? const _TaskList() : const _DragonList(),
+                  child: _tab == 0
+                      ? _TaskList(islandIndex: viewing)
+                      : const _DragonList(),
                 ),
               ],
             ),
@@ -115,7 +129,12 @@ class _Tabs extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class IslandView extends StatefulWidget {
-  const IslandView({super.key});
+  const IslandView({super.key, required this.islandIndex, this.onBrowse});
+
+  final int islandIndex;
+
+  /// Called with another reached island's index when the arrows are used.
+  final ValueChanged<int>? onBrowse;
 
   @override
   State<IslandView> createState() => _IslandViewState();
@@ -190,7 +209,9 @@ class _IslandViewState extends State<IslandView> with TickerProviderStateMixin {
     return ListenableBuilder(
       listenable: game,
       builder: (context, _) {
-        final island = game.config.currentIsland;
+        final index = widget.islandIndex;
+        final island = game.config.island(index);
+        final reached = game.state.island;
         return Stack(
           children: [
             Positioned.fill(
@@ -222,6 +243,7 @@ class _IslandViewState extends State<IslandView> with TickerProviderStateMixin {
                               painter: IslandPainter(
                                 progress: progress,
                                 time: time,
+                                theme: island.theme,
                               ),
                             ),
                           ),
@@ -259,6 +281,32 @@ class _IslandViewState extends State<IslandView> with TickerProviderStateMixin {
               bottom: 6,
               child: _HoardButton(key: context.targets.keyFor('hoard')),
             ),
+            if (widget.onBrowse != null && index > 0)
+              Positioned(
+                left: 4,
+                top: 0,
+                bottom: 40,
+                child: Center(
+                  child: _BrowseArrow(
+                    icon: Icons.chevron_left_rounded,
+                    label: game.config.island(index - 1).name,
+                    onTap: () => widget.onBrowse!(index - 1),
+                  ),
+                ),
+              ),
+            if (widget.onBrowse != null && index < reached)
+              Positioned(
+                right: 4,
+                top: 0,
+                bottom: 40,
+                child: Center(
+                  child: _BrowseArrow(
+                    icon: Icons.chevron_right_rounded,
+                    label: game.config.island(index + 1).name,
+                    onTap: () => widget.onBrowse!(index + 1),
+                  ),
+                ),
+              ),
           ],
         );
       },
@@ -531,7 +579,9 @@ const _elementIcons = {
 };
 
 class _TaskList extends StatelessWidget {
-  const _TaskList();
+  const _TaskList({required this.islandIndex});
+
+  final int islandIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -539,22 +589,121 @@ class _TaskList extends StatelessWidget {
     return ListenableBuilder(
       listenable: game,
       builder: (context, _) {
-        final tasks = [...game.config.currentIsland.tasks];
+        final island = game.config.island(islandIndex);
+        final isCurrent = islandIndex == game.state.island;
+        final tasks = [...island.tasks];
         // Available first, then locked, then done.
         int rank(IslandTaskDef t) =>
             game.taskDone(t.id) ? 2 : (game.taskAvailable(t) ? 0 : 1);
         tasks.sort((a, b) => rank(a).compareTo(rank(b)));
-        return ListView.builder(
+        final showTravel =
+            isCurrent && game.islandComplete && game.hasNextIsland;
+        return ListView(
           padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-          itemCount: tasks.length,
-          itemBuilder: (context, i) => _TaskTile(
-            key: context.targets.keyFor('task:${tasks[i].id}'),
-            task: tasks[i],
-          ),
+          children: [
+            if (showTravel) const _TravelCard(),
+            if (isCurrent && game.islandComplete && !game.hasNextIsland)
+              const _AllDoneCard(),
+            for (final t in tasks)
+              _TaskTile(key: context.targets.keyFor('task:${t.id}'), task: t),
+          ],
         );
       },
     );
   }
+}
+
+class _TravelCard extends StatelessWidget {
+  const _TravelCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final game = context.game;
+    final next = game.config.island(game.state.island + 1);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF1B8), Color(0xFFFFD6A5)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Palette.gold, width: 2.5),
+      ),
+      child: Column(
+        children: [
+          Text(
+            game.currentIsland.completeText,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          GameButton(
+            color: Palette.accent,
+            onTap: game.travelToNextIsland,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.sailing_rounded),
+                const SizedBox(width: 6),
+                Text('Travel to ${next.name}'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AllDoneCard extends StatelessWidget {
+  const _AllDoneCard();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFE3F7E6),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Palette.green, width: 2),
+    ),
+    child: Text(
+      context.game.currentIsland.completeText,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontWeight: FontWeight.w600),
+    ),
+  );
+}
+
+class _BrowseArrow extends StatelessWidget {
+  const _BrowseArrow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: label,
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: .85),
+          shape: BoxShape.circle,
+          boxShadow: const [BoxShadow(color: Color(0x33301E4F), blurRadius: 4)],
+        ),
+        child: Icon(icon, color: Palette.ink, size: 28),
+      ),
+    ),
+  );
 }
 
 class _TaskTile extends StatelessWidget {
@@ -575,11 +724,7 @@ class _TaskTile extends StatelessWidget {
       } else {
         final missing = task.requires
             .where((r) => !game.taskDone(r))
-            .map(
-              (r) => game.config.currentIsland.tasks
-                  .firstWhere((t) => t.id == r)
-                  .name,
-            );
+            .map((r) => game.config.task(r)?.name ?? r);
         lockText = 'First: ${missing.join(', ')}';
       }
     }

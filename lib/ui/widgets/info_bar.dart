@@ -151,6 +151,8 @@ class InfoBar extends StatelessWidget {
     final String next;
     if (chain.hatchOnMaxMerge && ref.level == chain.maxLevel) {
       next = 'Merge 2 to hatch a dragon!';
+    } else if (chain.loot != null && ref.level == chain.maxLevel) {
+      next = 'Open it to see what treasure is inside!';
     } else if (!isMergeable(chain, ref)) {
       next = 'Max level! Great for orders.';
     } else {
@@ -165,18 +167,31 @@ class InfoBar extends StatelessWidget {
       subtitle: next,
       actions: [
         _iconButton(Icons.info_outline, () => showChainInfo(context, ref)),
-        _smallButton(
-          color: const Color(0xFFE0A21A),
-          onTap: () => game.sell(slot!),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Sell '),
-              const CurrencyIcon(CurrencyKind.coin, size: 14),
-              Text('${def.sell}'),
-            ],
+        if (game.canOpen(slot!))
+          _smallButton(
+            color: Palette.accent,
+            onTap: () => game.openChest(slot),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.lock_open_rounded, size: 16),
+                Text(' Open!'),
+              ],
+            ),
+          )
+        else
+          _smallButton(
+            color: const Color(0xFFE0A21A),
+            onTap: () => game.sell(slot),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Sell '),
+                const CurrencyIcon(CurrencyKind.coin, size: 14),
+                Text('${def.sell}'),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

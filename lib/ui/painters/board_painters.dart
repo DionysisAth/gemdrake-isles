@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'extra_generator_painters.dart';
 import 'item_painter.dart';
 
 /// Generators: the Crystal Mine and the Seed Basket. Higher generator
@@ -31,10 +32,23 @@ class GeneratorPainter extends CustomPainter {
       ),
       Paint()..color = Colors.black.withValues(alpha: .18),
     );
-    if (style == 'basket') {
-      _basket(canvas, s, stroke);
-    } else {
-      _mine(canvas, s, stroke);
+    switch (style) {
+      case 'basket':
+        _basket(canvas, s, stroke);
+      case 'forge':
+        paintForge(canvas, s, stroke);
+      case 'tidepool':
+        paintTidePool(canvas, s, stroke);
+      case 'cavern':
+        paintCavern(canvas, s, stroke);
+      case 'starwell':
+        paintStarWell(canvas, s, stroke);
+      case 'blossomtree':
+        paintBlossomTree(canvas, s, stroke);
+      case 'lanternstall':
+        paintLanternStall(canvas, s, stroke);
+      default:
+        _mine(canvas, s, stroke);
     }
     if (level > 1) {
       for (var i = 0; i < level - 1; i++) {

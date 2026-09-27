@@ -43,11 +43,27 @@ void main() {
       for (final h in config.dragons.hatchTable) {
         config.dragonType(h.type);
       }
-      final ids = config.currentIsland.tasks.map((t) => t.id).toSet();
-      for (final t in config.currentIsland.tasks) {
-        expect(ids.containsAll(t.requires), isTrue, reason: t.id);
+      expect(config.islands, hasLength(5));
+      final allIds = <String>{};
+      for (final island in config.islands) {
+        final ids = island.tasks.map((t) => t.id).toSet();
+        expect(allIds.intersection(ids), isEmpty, reason: 'unique task ids');
+        allIds.addAll(ids);
+        for (final t in island.tasks) {
+          expect(ids.containsAll(t.requires), isTrue, reason: t.id);
+        }
+        expect(island.tasks.length, 10);
+        for (final e in island.hatchTable) {
+          config.dragonType(e.type);
+        }
       }
-      expect(config.currentIsland.tasks.length, 10);
+      for (final c in config.chains) {
+        final loot = c.loot;
+        if (loot == null) continue;
+        for (final e in loot.table) {
+          if (e.item != null) expect(config.isValidItem(e.item!), isTrue);
+        }
+      }
     });
 
     test('board is 7x9 with locked cells', () {
@@ -466,7 +482,7 @@ void main() {
       g.state.coins = 100000;
       g.state.level = 20;
       for (var pass = 0; pass < 10; pass++) {
-        for (final t in config.currentIsland.tasks) {
+        for (final t in g.currentIsland.tasks) {
           if (g.taskAvailable(t)) g.completeTask(t.id);
         }
       }
@@ -536,6 +552,163 @@ void main() {
       final g = await GameController.load(config: config, saveStore: store);
       expect(g.state.level, 1);
       expect(g.board.indicesWhere((p) => p.isGenerator), isNotEmpty);
+    });
+  });
+
+  group('islands 2-5', () {
+    GameController finishIsland(GameController g) {
+      g.state.coins = 1 << 30;
+      g.state.level = 40;
+      for (var pass = 0; pass < 10; pass++) {
+        for (final t in g.currentIsland.tasks) {
+          if (g.taskAvailable(t)) g.completeTask(t.id);
+        }
+      }
+      return g;
+    }
+
+    test('cannot travel before the island is restored', () {
+      final g = newController();
+      expect(g.travelToNextIsland(), isFalse);
+      expect(g.state.island, 0);
+    });
+
+    test('travel unlocks the next island, its chain and generator', () {
+      final g = finishIsland(newController());
+      expect(g.chainUnlocked('tool'), isFalse);
+      final events = <IslandTravelEvent>[];
+      g.events.listen((e) {
+        if (e is IslandTravelEvent) events.add(e);
+      });
+      expect(g.travelToNextIsland(), isTrue);
+      expect(g.state.island, 1);
+      expect(g.currentIsland.id, 'volcano');
+      expect(g.chainUnlocked('tool'), isTrue);
+      final forge = g.board.indicesWhere((p) => p.generatorId == 'forge');
+      final pending = g.state.pending.contains('gen:forge');
+      expect(forge.isNotEmpty || pending, isTrue);
+      expect(events.single.unlocks, contains('Ember Forge'));
+      expect(g.state.orders, isNotEmpty);
+    });
+
+    test('perks from earlier islands keep applying', () {
+      final g = finishIsland(newController());
+      final max0 = g.energyMax;
+      g.travelToNextIsland();
+      expect(g.energyMax, max0);
+      finishIsland(g);
+      expect(g.energyMax, max0 + 10);
+    });
+
+    test('all five islands can be restored in order', () {
+      final g = newController();
+      for (var i = 0; i < 5; i++) {
+        finishIsland(g);
+        expect(g.islandComplete, isTrue, reason: g.currentIsland.id);
+        if (i < 4) expect(g.travelToNextIsland(), isTrue);
+      }
+      expect(g.hasNextIsland, isFalse);
+      expect(g.travelToNextIsland(), isFalse);
+      for (final gen in ['forge', 'tide_pool', 'geode_cavern', 'star_well']) {
+        final owned =
+            g.board.indicesWhere((p) => p.generatorId == gen).isNotEmpty ||
+            g.state.pending.contains('gen:$gen');
+        expect(owned, isTrue, reason: gen);
+      }
+    });
+
+    test('eggs hatch using the current island odds', () {
+      final g = newController();
+      g.state.island = 4;
+      final table = g.hatchTableFor(config.chain('egg'));
+      expect(table.map((e) => e.type), contains('shadow'));
+      final legend = g.hatchTableFor(config.chain('legend'));
+      expect(legend.first.type, 'shadow');
+    });
+
+    test('merging two eclipse eggs hatches a legendary-table dragon', () {
+      final g = newController(seed: 3);
+      g.state.island = 4;
+      clearBoard(g);
+      final a = put(g, 0, 0, 'legend:3');
+      final b = put(g, 1, 1, 'legend:3');
+      g.drop(Slot.board(a), Slot.board(b));
+      expect(g.state.dragons, hasLength(1));
+      final types = config.dragons.specialHatchTables['legendary']!.map(
+        (e) => e.type,
+      );
+      expect(types, contains(g.state.dragons.single.type));
+    });
+
+    test('orders only ask for chains unlocked on reached islands', () {
+      final g = newController();
+      g.state.level = 30;
+      g.state.scriptedOrderIndex = 99;
+      for (var i = 0; i < 200; i++) {
+        final o = OrderGenerator(config, Random(i)).next(g.state);
+        for (final l in o.lines) {
+          expect(['gem', 'plant'], contains(l.item.chain));
+        }
+      }
+      g.state.island = 2;
+      final seen = <String>{};
+      for (var i = 0; i < 300; i++) {
+        final o = OrderGenerator(config, Random(i)).next(g.state);
+        seen.addAll(o.lines.map((l) => l.item.chain));
+        for (final l in o.lines) {
+          expect([
+            'geode',
+            'star',
+            'legend',
+            'blossom',
+            'lantern',
+          ], isNot(contains(l.item.chain)));
+        }
+      }
+      expect(seen, containsAll(['tool', 'shell']));
+    });
+
+    test('opening a treasure chest grants its loot', () {
+      final g = newController(seed: 5);
+      clearBoard(g);
+      final chest = put(g, 3, 3, 'treasure:4');
+      expect(g.canOpen(Slot.board(chest)), isTrue);
+      final before = (g.state.coins, g.state.gems, g.energy);
+      final rewards = g.openChest(Slot.board(chest));
+      expect(rewards, hasLength(config.chain('treasure').loot!.rolls));
+      expect(g.board.cells[chest]?.item, isNot(const ItemRef('treasure', 4)));
+      final coins = rewards.fold(0, (s, e) => s + e.coins);
+      final gems = rewards.fold(0, (s, e) => s + e.gems);
+      expect(g.state.coins, before.$1 + coins);
+      expect(g.state.gems, before.$2 + gems);
+      final items = rewards.where((e) => e.item != null).length;
+      expect(g.board.indicesWhere((p) => p.isItem).length, items);
+    });
+
+    test('lower treasure is not openable but sells for coins', () {
+      final g = newController();
+      clearBoard(g);
+      final bag = put(g, 3, 3, 'treasure:3');
+      expect(g.canOpen(Slot.board(bag)), isFalse);
+      final coins = g.state.coins;
+      g.sell(Slot.board(bag));
+      expect(
+        g.state.coins,
+        coins + config.item(const ItemRef('treasure', 3)).sell,
+      );
+    });
+
+    test('island progress survives saving', () async {
+      final store = MemorySaveStore();
+      final g = finishIsland(newController(store: store));
+      g.travelToNextIsland();
+      await g.save(immediate: true);
+      final loaded = await GameController.load(
+        config: config,
+        saveStore: store,
+      );
+      expect(loaded.state.island, 1);
+      expect(loaded.currentIsland.id, 'volcano');
     });
   });
 }

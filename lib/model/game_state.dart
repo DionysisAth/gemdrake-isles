@@ -281,6 +281,7 @@ class GameState {
     this.adDay = '',
     Map<String, int>? adCounts,
     Set<String>? discovered,
+    this.island = 0,
   }) : pending = pending ?? [],
        orders = orders ?? [],
        dragons = dragons ?? [],
@@ -325,6 +326,7 @@ class GameState {
     adDay: j['adDay'] as String? ?? '',
     adCounts: (j['adCounts'] as Map? ?? const {}).cast<String, int>(),
     discovered: (j['disc'] as List? ?? const []).cast<String>().toSet(),
+    island: j['island'] as int? ?? 0,
   );
 
   int version;
@@ -365,6 +367,9 @@ class GameState {
   /// Item keys and dragon keys the player has seen.
   Set<String> discovered;
 
+  /// Index of the island the player is currently restoring (0-based).
+  int island;
+
   int newId() => nextId++;
 
   int stat(String key) => stats[key] ?? 0;
@@ -398,6 +403,7 @@ class GameState {
     'adDay': adDay,
     'adCounts': adCounts,
     'disc': discovered.toList(),
+    'island': island,
   };
 }
 

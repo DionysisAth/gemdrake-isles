@@ -32,10 +32,14 @@ class OrderGenerator {
     final level = state.level;
     final band = oc.band(level);
     final chains = config.chains
-        .where((c) => c.orderable && c.unlockLevel <= level)
+        .where(
+          (c) => c.orderable && config.chainAvailable(c, level, state.island),
+        )
         .toList();
     final characters = oc.characters
-        .where((c) => c.unlockLevel <= level)
+        .where(
+          (c) => c.unlockLevel <= level && c.unlockIsland <= state.island + 1,
+        )
         .toList();
 
     // Avoid asking for exactly what another active order asks for.

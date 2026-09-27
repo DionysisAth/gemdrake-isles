@@ -2,13 +2,21 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'island_theme.dart';
 import 'item_painter.dart';
 
-/// The floating Meadow island. Every restoration task has an element with a
-/// ruined and a restored look; [progress] (0 = ruined, 1 = restored) lets
-/// the view animate the transformation.
+/// A floating island. Every restoration task has an element with a ruined
+/// and a restored look; [progress] (0 = ruined, 1 = restored) lets the view
+/// animate the transformation. [theme] picks the island's palette/style.
 class IslandPainter extends CustomPainter {
-  IslandPainter({required this.progress, required this.time});
+  IslandPainter({
+    required this.progress,
+    required this.time,
+    this.theme = 'meadow',
+  }) : th = IslandTheme.of(theme);
+
+  final String theme;
+  final IslandTheme th;
 
   final Map<String, double> progress;
 
@@ -58,6 +66,7 @@ class IslandPainter extends CustomPainter {
     _lanterns(canvas);
     _vines(canvas);
     _ambient(canvas);
+    _themeAmbient(canvas);
     _floatingRocks(canvas, back: false);
     canvas.restore();
   }
@@ -68,6 +77,18 @@ class IslandPainter extends CustomPainter {
   // Backdrop, island body, water and scenery
 
   void _backdrop(Canvas c) {
+    if (th.sky.first.a > 0) {
+      final r = Rect.fromLTWH(-w, -h, w * 3, h * 3);
+      c.drawRect(
+        r,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: th.sky,
+          ).createShader(Rect.fromLTWH(0, 0, w, h)),
+      );
+    }
     final center = at(.5, .5);
     // Slowly turning sun rays behind the island.
     c.save();
@@ -87,7 +108,7 @@ class IslandPainter extends CustomPainter {
       );
     }
     c.restore();
-    paintGlow(c, at(.5, .52), w * .62, const Color(0xFFFFF6D6), .55);
+    paintGlow(c, at(.5, .52), w * .62, th.glow, .55);
   }
 
   bool _insideTop(Offset p) {
@@ -109,11 +130,11 @@ class IslandPainter extends CustomPainter {
     c.drawPath(
       under,
       Paint()
-        ..shader = const LinearGradient(
+        ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFB88E68), Color(0xFF7D5C45), Color(0xFF4B3830)],
-          stops: [0, .45, 1],
+          colors: th.rock,
+          stops: const [0, .45, 1],
         ).createShader(underBox),
     );
     c.save();
@@ -183,17 +204,18 @@ class IslandPainter extends CustomPainter {
       }
     }
 
-    cluster(at(.47, .93), 1.0, const Color(0xFF8FE3FF), 0);
-    cluster(at(.66, .86), .7, const Color(0xFFD7A6FF), -.2);
-    cluster(at(.25, .8), .55, const Color(0xFF9DF5C4), .25);
+    cluster(at(.47, .93), 1.0, th.crystals[0], 0);
+    cluster(at(.66, .86), .7, th.crystals[1], -.2);
+    cluster(at(.25, .8), .55, th.crystals[2], .25);
 
     // Hanging vines with leaves
     final vine = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = u * .05
       ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFF5E8F45);
-    final leaf = Paint()..color = const Color(0xFF7CC46B);
+      ..color = Color.lerp(th.leafRuined[1], th.leafHealthy[1], healthy)!;
+    final leaf = Paint()
+      ..color = Color.lerp(th.leafRuined[0], th.leafHealthy[0], healthy)!;
     for (final (x, y, len) in [
       (.16, .7, .14),
       (.3, .8, .1),
@@ -234,10 +256,10 @@ class IslandPainter extends CustomPainter {
     c.drawOval(
       lip,
       Paint()
-        ..shader = const LinearGradient(
+        ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFA57B55), Color(0xFF7E5B40)],
+          colors: th.lip,
         ).createShader(lip),
     );
 
@@ -251,16 +273,8 @@ class IslandPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color.lerp(
-              const Color(0xFFCFD08F),
-              const Color(0xFFB4EA86),
-              healthy,
-            )!,
-            Color.lerp(
-              const Color(0xFF9FA162),
-              const Color(0xFF6EC15A),
-              healthy,
-            )!,
+            Color.lerp(th.groundRuined[0], th.groundHealthy[0], healthy)!,
+            Color.lerp(th.groundRuined[1], th.groundHealthy[1], healthy)!,
           ],
         ).createShader(top),
     );
@@ -288,22 +302,13 @@ class IslandPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = u * .14
-        ..color = Color.lerp(
-          const Color(0xFF8C8A55),
-          const Color(0xFF55A845),
-          healthy,
-        )!,
+        ..color = Color.lerp(th.rimRuined, th.rimHealthy, healthy)!,
     );
     c.restore();
     c.drawPath(grass, _stroke);
 
     // Flowers bloom as the island is restored
-    final flowerColors = [
-      const Color(0xFFFF7EB6),
-      const Color(0xFFFFE066),
-      Colors.white,
-      const Color(0xFFB39DFF),
-    ];
+    final flowerColors = th.flowers;
     final frnd = Random(5);
     final flowers = (36 * healthy).round();
     for (var i = 0, placed = 0; i < 200 && placed < flowers; i++) {
@@ -324,10 +329,10 @@ class IslandPainter extends CustomPainter {
       ..strokeWidth = u * .05
       ..strokeCap = StrokeCap.round
       ..color = Color.lerp(
-        const Color(0xFF8E8C58),
-        const Color(0xFF4F9E43),
+        th.rimRuined,
+        th.rimHealthy,
         healthy,
-      )!;
+      )!.withValues(alpha: .8);
     for (final (x, y) in [
       (.12, .48),
       (.3, .42),
@@ -358,7 +363,7 @@ class IslandPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = u * .72
         ..strokeCap = StrokeCap.round
-        ..color = const Color(0xFFD9C49A),
+        ..color = th.bank,
     );
     c.drawPath(
       river,
@@ -366,10 +371,16 @@ class IslandPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = u * .55
         ..strokeCap = StrokeCap.round
-        ..shader = const LinearGradient(
-          colors: [Color(0xFF5BB8EE), Color(0xFF86D8FA)],
-        ).createShader(Rect.fromLTWH(w * .28, 0, w * .14, h)),
+        ..shader = LinearGradient(colors: th.river)
+            .createShader(Rect.fromLTWH(w * .28, 0, w * .14, h)),
     );
+    if (th.lavaRiver) {
+      // Molten glow along the lava river.
+      for (var k = 0; k < 5; k++) {
+        final o = at(.33 + (k.isEven ? .02 : -.01), .4 + k * .07);
+        paintGlow(c, o, u * .9, th.river[0], .35 + .15 * sin(time * 2 + k));
+      }
+    }
     // Moving glints on the water
     final metrics = river.computeMetrics().first;
     final glint = Paint()
@@ -399,10 +410,7 @@ class IslandPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFF7FD0F5),
-            const Color(0xFF7FD0F5).withValues(alpha: 0),
-          ],
+          colors: [th.river[1], th.river[1].withValues(alpha: 0)],
         ).createShader(fallRect),
     );
     final streak = Paint()
@@ -429,7 +437,7 @@ class IslandPainter extends CustomPainter {
 
   void _path(Canvas c) {
     final p0 = at(.13, .6), p1 = at(.5, .72), p2 = at(.88, .57);
-    final stone = Paint()..color = const Color(0xFFE8DCC6);
+    final stone = Paint()..color = th.path;
     final shadow = Paint()..color = const Color(0x33000000);
     for (var i = 0; i <= 16; i++) {
       final t = i / 16;
@@ -454,16 +462,8 @@ class IslandPainter extends CustomPainter {
             (.93, .49, 1.0, false),
           ]
         : [(.1, .66, .75, false), (.9, .63, .8, false), (.7, .7, .6, false)];
-    final leafLight = Color.lerp(
-      const Color(0xFFB5A77A),
-      const Color(0xFF8EDB6A),
-      healthy,
-    )!;
-    final leafDark = Color.lerp(
-      const Color(0xFF7F7450),
-      const Color(0xFF3F9A4B),
-      healthy,
-    )!;
+    final leafLight = Color.lerp(th.leafRuined[0], th.leafHealthy[0], healthy)!;
+    final leafDark = Color.lerp(th.leafRuined[1], th.leafHealthy[1], healthy)!;
     for (final (x, y, scale, pine) in spots) {
       final b = at(x, y);
       final s = u * scale;
@@ -507,14 +507,22 @@ class IslandPainter extends CustomPainter {
       final trunk = Paint()
         ..strokeWidth = s * .14
         ..strokeCap = StrokeCap.round
-        ..color = const Color(0xFF7A5234);
+        ..color = th.trunk;
+      if (th.treeStyle == 'crystal') {
+        _crystalSpire(c, b, s, x);
+        continue;
+      }
+      if (th.treeStyle == 'palm') {
+        _palm(c, b, s, x, trunk);
+        continue;
+      }
       c.drawLine(b, b - Offset(0, s * .75), trunk);
       if (healthy < .12) {
         // Bare, ruined tree
         final branch = Paint()
           ..strokeWidth = s * .06
           ..strokeCap = StrokeCap.round
-          ..color = const Color(0xFF7A5234);
+          ..color = th.trunk;
         c.drawLine(
           b - Offset(0, s * .55),
           b + Offset(-s * .3, -s * .9),
@@ -580,6 +588,152 @@ class IslandPainter extends CustomPainter {
     }
   }
 
+  void _palm(Canvas c, Offset b, double s, double x, Paint trunk) {
+    final lean = (x < .5 ? -1 : 1) * s * .25;
+    final top = b + Offset(lean, -s * 1.15);
+    c.drawPath(
+      Path()
+        ..moveTo(b.dx, b.dy)
+        ..quadraticBezierTo(b.dx + lean * .1, b.dy - s * .6, top.dx, top.dy),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = s * .13
+        ..strokeCap = StrokeCap.round
+        ..color = trunk.color,
+    );
+    final grow = .4 + .6 * healthy;
+    final sway = sin(time * 1.3 + x * 7) * .08;
+    final leaf = Paint()
+      ..color = Color.lerp(th.leafRuined[1], th.leafHealthy[1], healthy)!;
+    for (var k = 0; k < 6; k++) {
+      final a = -pi / 2 + (k - 2.5) * .55 + sway;
+      c.save();
+      c.translate(top.dx, top.dy);
+      c.rotate(a);
+      final len = s * .75 * grow;
+      final frond = Path()
+        ..moveTo(0, 0)
+        ..quadraticBezierTo(len * .5, -s * .18, len, s * .12)
+        ..quadraticBezierTo(len * .5, s * .02, 0, 0)
+        ..close();
+      c.drawPath(frond, leaf);
+      c.drawPath(frond, _stroke);
+      c.restore();
+    }
+    if (healthy > .4) {
+      for (final dx in [-.06, .06]) {
+        c.drawCircle(
+          top + Offset(dx * s, s * .08),
+          s * .07,
+          Paint()..color = const Color(0xFF8D6E63),
+        );
+      }
+    }
+  }
+
+  void _crystalSpire(Canvas c, Offset b, double s, double x) {
+    final grow = .5 + .5 * healthy;
+    final col = Color.lerp(th.leafRuined[0], th.leafHealthy[0], healthy)!;
+    final col2 = Color.lerp(th.leafRuined[1], th.leafHealthy[1], healthy)!;
+    if (healthy > .1) {
+      paintGlow(c, b - Offset(0, s * .6), s * .8, col2, .35 * healthy);
+    }
+    for (final (dx, hgt, wd) in [
+      (-.22, .8, .18),
+      (.2, .7, .16),
+      (0.0, 1.3, .24),
+    ]) {
+      final base = b + Offset(dx * s, 0);
+      final hh = s * hgt * grow;
+      final spire = Path()
+        ..moveTo(base.dx - s * wd, base.dy)
+        ..lineTo(base.dx - s * wd * .6, base.dy - hh * .8)
+        ..lineTo(base.dx, base.dy - hh)
+        ..lineTo(base.dx + s * wd * .6, base.dy - hh * .8)
+        ..lineTo(base.dx + s * wd, base.dy)
+        ..close();
+      c.drawPath(
+        spire,
+        Paint()
+          ..shader = LinearGradient(
+            colors: [col, col2],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ).createShader(Rect.fromLTWH(base.dx - s, base.dy - hh, s * 2, hh)),
+      );
+      c.drawPath(
+        Path()
+          ..moveTo(base.dx - s * wd, base.dy)
+          ..lineTo(base.dx - s * wd * .6, base.dy - hh * .8)
+          ..lineTo(base.dx, base.dy - hh)
+          ..close(),
+        Paint()..color = Colors.white.withValues(alpha: .35),
+      );
+      c.drawPath(spire, _stroke);
+    }
+  }
+
+  /// Theme-specific drifting particles.
+  void _themeAmbient(Canvas c) {
+    switch (th.ambient) {
+      case 'embers':
+        for (var i = 0; i < 14; i++) {
+          final t = (time * (.08 + (i % 5) * .02) + i * .137) % 1;
+          final o =
+              at(.1 + ((i * 37) % 80) / 100, .95 - t * .9) +
+              Offset(sin(time * 2 + i) * u * .2, 0);
+          final a = (1 - t) * .9;
+          paintGlow(c, o, u * .18, const Color(0xFFFF8A3D), a * .6);
+          c.drawCircle(
+            o,
+            u * .035,
+            Paint()..color = const Color(0xFFFFD166).withValues(alpha: a),
+          );
+        }
+      case 'bubbles':
+        final ring = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = u * .03;
+        for (var i = 0; i < 12; i++) {
+          final t = (time * (.06 + (i % 4) * .02) + i * .21) % 1;
+          final o =
+              at(.08 + ((i * 29) % 84) / 100, 1.0 - t) +
+              Offset(sin(time * 1.5 + i) * u * .15, 0);
+          ring.color = Colors.white.withValues(alpha: .6 * (1 - t));
+          c.drawCircle(o, u * (.06 + (i % 3) * .03), ring);
+        }
+      case 'snow':
+        for (var i = 0; i < 22; i++) {
+          final t = (time * (.04 + (i % 5) * .012) + i * .093) % 1;
+          final o =
+              at(((i * 41) % 100) / 100, t * 1.05 - .05) +
+              Offset(sin(time + i) * u * .25, 0);
+          c.drawCircle(
+            o,
+            u * (.03 + (i % 3) * .015),
+            Paint()..color = Colors.white.withValues(alpha: .85),
+          );
+        }
+      case 'stars':
+        for (var i = 0; i < 24; i++) {
+          final o = at(((i * 53) % 100) / 100, ((i * 31) % 45) / 100);
+          final tw = (sin(time * 2 + i * 1.7) + 1) / 2;
+          paintSparkle(
+            c,
+            o,
+            u * (.05 + .07 * tw),
+            Colors.white.withValues(alpha: .4 + .6 * tw),
+          );
+        }
+        // Wisps once restored
+        for (var i = 0; i < 4; i++) {
+          final a = time * .3 + i * 1.6;
+          final o = at(.5 + cos(a) * .38, .5 + sin(a * 1.2) * .08);
+          paintGlow(c, o, u * .45, const Color(0xFF80F5E0), .5 * healthy);
+        }
+    }
+  }
+
   void _floatingRocks(Canvas c, {required bool back}) {
     final rocks = back
         ? [(.05, .7, .5, 0.0), (.9, .3, .35, 2.0)]
@@ -592,14 +746,14 @@ class IslandPainter extends CustomPainter {
         ..quadraticBezierTo(o.dx - r * .6, o.dy + r * 1.1, o.dx, o.dy + r * 1.2)
         ..quadraticBezierTo(o.dx + r * .7, o.dy + r * .9, o.dx + r, o.dy)
         ..close();
-      c.drawPath(rock, Paint()..color = const Color(0xFF8A6A52));
+      c.drawPath(rock, Paint()..color = th.rock[1]);
       c.drawPath(rock, _stroke);
       c.drawOval(
         Rect.fromCenter(center: o, width: r * 2.1, height: r * .6),
         Paint()
           ..color = Color.lerp(
-            const Color(0xFFB9B77F),
-            const Color(0xFF86D56B),
+            th.groundRuined[0],
+            th.groundHealthy[0],
             healthy,
           )!,
       );
@@ -738,7 +892,7 @@ class IslandPainter extends CustomPainter {
         ..lineTo(b.dx, body.top - u * .7)
         ..lineTo(body.right + u * .15, body.top)
         ..close();
-      c.drawPath(roof, _fade(const Color(0xFF5C7CFA), t));
+      c.drawPath(roof, _fade(th.roofs[0], t));
       c.drawPath(
         roof,
         _fade(const Color(0x66301E4F), t)
@@ -916,7 +1070,7 @@ class IslandPainter extends CustomPainter {
       ..lineTo(b.dx, base.top - u * .95)
       ..lineTo(base.right + u * .1, base.top - u * .55)
       ..close();
-    c.drawPath(roof, _fade(const Color(0xFFE57373), t));
+    c.drawPath(roof, _fade(th.roofs[1], t));
   }
 
   void _shed(Canvas c, Offset b) {
@@ -954,7 +1108,7 @@ class IslandPainter extends CustomPainter {
       ..lineTo(b.dx, body.top - u * .45 * t)
       ..lineTo(body.right + u * .12, body.top)
       ..close();
-    c.drawPath(roof, _fade(const Color(0xFFD9534F), t));
+    c.drawPath(roof, _fade(th.roofs[2], t));
     c.drawRect(body, _stroke);
   }
 
@@ -1154,26 +1308,103 @@ class IslandPainter extends CustomPainter {
   void _vines(Canvas c) {
     final t = 1 - p('vines');
     if (t <= 0) return;
-    final vine = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = u * .12
-      ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFF4E5F2E).withValues(alpha: t);
-    final thorn = Paint()..color = const Color(0xFF3B4A22).withValues(alpha: t);
-    for (final pts in [
+    const lines = [
       [(.08, .5), (.2, .42), (.3, .56), (.42, .46), (.5, .6)],
       [(.5, .4), (.62, .56), (.74, .46), (.86, .6), (.94, .5)],
       [(.2, .66), (.36, .6), (.5, .7), (.66, .62), (.8, .68)],
-    ]) {
+    ];
+    Path wiggle(List<(double, double)> pts, double lift) {
       final path = Path()..moveTo(w * pts[0].$1, h * pts[0].$2);
       for (var i = 1; i < pts.length; i++) {
         final prev = at(pts[i - 1].$1, pts[i - 1].$2);
         final cur = at(pts[i].$1, pts[i].$2);
-        final mid = (prev + cur) / 2 + Offset(0, -u * .4);
+        final mid = (prev + cur) / 2 + Offset(0, -u * lift);
         path.quadraticBezierTo(mid.dx, mid.dy, cur.dx, cur.dy);
-        c.drawCircle(mid + Offset(0, u * .2), u * .08, thorn);
       }
-      c.drawPath(path, vine);
+      return path;
+    }
+
+    switch (th.overlayStyle) {
+      case 'lava':
+        // Glowing cracks across the ground.
+        final glow = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = u * .22
+          ..strokeCap = StrokeCap.round
+          ..color = th.overlay.withValues(alpha: .35 * t)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, u * .12);
+        final core = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = u * .07
+          ..strokeCap = StrokeCap.round
+          ..color = const Color(0xFFFFD166).withValues(alpha: t);
+        for (final pts in lines) {
+          final path = wiggle(pts, .15);
+          c.drawPath(path, glow);
+          c.drawPath(path, core);
+        }
+      case 'ice':
+        final ice = Paint()..color = th.overlay.withValues(alpha: .75 * t);
+        final edge = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = u * .04
+          ..color = const Color(0xFF9CC8F0).withValues(alpha: t);
+        for (final (x, y, rw, rh) in [
+          (.22, .48, .22, .1),
+          (.62, .44, .26, .1),
+          (.42, .62, .3, .1),
+          (.8, .58, .16, .08),
+        ]) {
+          final r = Rect.fromCenter(
+            center: at(x, y),
+            width: w * rw,
+            height: h * rh,
+          );
+          c.drawOval(r, ice);
+          c.drawOval(r, edge);
+          paintSparkle(
+            c,
+            r.topCenter + Offset(0, r.height * .3),
+            u * .1 * t,
+            Colors.white,
+          );
+        }
+      default:
+        // vines (meadow), kelp (lagoon), brambles (shadow)
+        final kelp = th.overlayStyle == 'kelp';
+        final brambles = th.overlayStyle == 'brambles';
+        final vine = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = u * (kelp ? .16 : .12)
+          ..strokeCap = StrokeCap.round
+          ..color = th.overlay.withValues(alpha: t);
+        final thorn = Paint()
+          ..color =
+              (brambles ? const Color(0xFFB388FF) : const Color(0xFF3B4A22))
+                  .withValues(alpha: t);
+        for (final pts in lines) {
+          final path = wiggle(pts, kelp ? .25 : .4);
+          if (brambles) {
+            c.drawPath(
+              path,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = u * .3
+                ..strokeCap = StrokeCap.round
+                ..color = const Color(0xFFB388FF).withValues(alpha: .18 * t)
+                ..maskFilter = MaskFilter.blur(BlurStyle.normal, u * .15),
+            );
+          }
+          c.drawPath(path, vine);
+          if (!kelp) {
+            for (var i = 1; i < pts.length; i++) {
+              final prev = at(pts[i - 1].$1, pts[i - 1].$2);
+              final cur = at(pts[i].$1, pts[i].$2);
+              final mid = (prev + cur) / 2 + Offset(0, -u * .2);
+              c.drawCircle(mid, u * .08, thorn);
+            }
+          }
+        }
     }
   }
 

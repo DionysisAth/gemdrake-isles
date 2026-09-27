@@ -414,6 +414,74 @@ class CharacterPainter extends CustomPainter {
     );
 
     final hatPaint = Paint()..color = character.hatColor;
+    if (character.hat == 'helmet') {
+      final helmet = Path()
+        ..addArc(
+          Rect.fromCircle(center: c + Offset(0, -s * .05), radius: s * .34),
+          pi + .1,
+          pi - .2,
+        )
+        ..close();
+      canvas.drawPath(helmet, hatPaint);
+      canvas.drawPath(helmet, stroke);
+      canvas.drawRect(
+        Rect.fromCenter(
+          center: c + Offset(0, -s * .13),
+          width: s * .7,
+          height: s * .06,
+        ),
+        Paint()..color = const Color(0xFFFFD166),
+      );
+      return;
+    }
+    if (character.hat == 'crown') {
+      final crown = Path()
+        ..moveTo(c.dx - s * .26, c.dy - s * .22)
+        ..lineTo(c.dx - s * .3, c.dy - s * .46)
+        ..lineTo(c.dx - s * .12, c.dy - s * .34)
+        ..lineTo(c.dx, c.dy - s * .52)
+        ..lineTo(c.dx + s * .12, c.dy - s * .34)
+        ..lineTo(c.dx + s * .3, c.dy - s * .46)
+        ..lineTo(c.dx + s * .26, c.dy - s * .22)
+        ..close();
+      canvas.drawPath(crown, hatPaint);
+      canvas.drawPath(crown, stroke);
+      canvas.drawCircle(
+        c + Offset(0, -s * .4),
+        s * .04,
+        Paint()..color = Colors.white,
+      );
+      return;
+    }
+    if (character.hat == 'hood') {
+      final hood = Path()
+        ..moveTo(c.dx - s * .4, c.dy + s * .2)
+        ..quadraticBezierTo(c.dx - s * .46, c.dy - s * .5, c.dx, c.dy - s * .5)
+        ..quadraticBezierTo(
+          c.dx + s * .46,
+          c.dy - s * .5,
+          c.dx + s * .4,
+          c.dy + s * .2,
+        )
+        ..lineTo(c.dx + s * .3, c.dy + s * .1)
+        ..quadraticBezierTo(c.dx + s * .3, c.dy - s * .3, c.dx, c.dy - s * .32)
+        ..quadraticBezierTo(
+          c.dx - s * .3,
+          c.dy - s * .3,
+          c.dx - s * .3,
+          c.dy + s * .1,
+        )
+        ..close();
+      canvas.drawPath(hood, hatPaint);
+      canvas.drawPath(hood, stroke);
+      paintSparkle(
+        canvas,
+        c + Offset(s * .22, -s * .36),
+        s * .05,
+        const Color(0xFFFFE082),
+      );
+      return;
+    }
     if (character.hat == 'wizard') {
       // Glasses
       final glass = Paint()

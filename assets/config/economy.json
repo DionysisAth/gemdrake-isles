@@ -1,6 +1,14 @@
 {
-  "start": { "coins": 10, "gems": 5, "energy": 100 },
-  "energy": { "max": 100, "refillSeconds": 120, "overflowCap": 999 },
+  "start": {
+    "coins": 10,
+    "gems": 5,
+    "energy": 100
+  },
+  "energy": {
+    "max": 100,
+    "refillSeconds": 120,
+    "overflowCap": 999
+  },
   "merge": {
     "standardConsume": 2,
     "standardYield": 1,
@@ -8,11 +16,32 @@
     "bonusConsume": 5,
     "bonusYield": 3
   },
-  "storage": { "freeSlots": 3, "slotCostsGems": [10, 20, 35] },
-  "offline": { "capHours": 8, "welcomeBackMinSeconds": 60 },
+  "storage": {
+    "freeSlots": 3,
+    "slotCostsGems": [
+      10,
+      20,
+      35
+    ]
+  },
+  "offline": {
+    "capHours": 8,
+    "welcomeBackMinSeconds": 60
+  },
   "levels": {
-    "xpToNext": [12, 30, 50, 75, 105, 140, 180, 225, 275, 330],
-    "xpGrowthAfter": 60,
+    "xpToNext": [
+      12,
+      30,
+      50,
+      75,
+      105,
+      140,
+      180,
+      225,
+      275,
+      330
+    ],
+    "xpGrowthAfter": 45,
     "rewardGems": 3,
     "refillEnergy": true
   },

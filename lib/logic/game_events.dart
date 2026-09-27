@@ -78,3 +78,17 @@ class IdleCollectedEvent extends GameEvent {
   final int coins;
   final int gems;
 }
+
+class IslandTravelEvent extends GameEvent {
+  IslandTravelEvent(this.island, this.unlocks);
+  final IslandDef island;
+  final List<String> unlocks;
+}
+
+/// A treasure chest (or shop chest) was opened.
+class ChestOpenedEvent extends GameEvent {
+  ChestOpenedEvent(this.title, this.rewards, {this.cell});
+  final String title;
+  final List<LootEntry> rewards;
+  final int? cell;
+}

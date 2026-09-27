@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../model/item_ref.dart';
+import 'extra_item_painters.dart';
 
 /// Procedural 2D art for board items. Each level of a chain is visibly
 /// "bigger/better" than the last: size, glow and detail all grow.
@@ -30,6 +31,22 @@ class ItemPainter extends CustomPainter {
         _paintPlant(canvas, s, ref.level);
       case 'egg':
         _paintEgg(canvas, s, ref.level);
+      case 'treasure':
+        paintTreasure(canvas, s, ref.level);
+      case 'tool':
+        paintTool(canvas, s, ref.level);
+      case 'shell':
+        paintShell(canvas, s, ref.level);
+      case 'geode':
+        paintGeode(canvas, s, ref.level);
+      case 'star':
+        paintStarlight(canvas, s, ref.level);
+      case 'legend':
+        paintLegendEgg(canvas, s, ref.level);
+      case 'blossom':
+        paintBlossom(canvas, s, ref.level);
+      case 'lantern':
+        paintLantern(canvas, s, ref.level);
       default:
         _paintUnknown(canvas, s);
     }

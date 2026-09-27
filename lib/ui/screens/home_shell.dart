@@ -118,6 +118,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         }
       case OutOfEnergyEvent():
         if (!_showingPopup) _queue(() => showOutOfEnergy(context));
+      case ChestOpenedEvent(:final title, :final rewards):
+        _queue(() => showChestRewards(context, title, rewards));
+      case IslandTravelEvent(:final island, :final unlocks):
+        _queue(() => showIslandArrival(context, island, unlocks));
       case ToastEvent(:final message):
         showToast(context, message);
       default:
@@ -216,7 +220,7 @@ class _BottomNav extends StatelessWidget {
         final readyOrders = game.state.orders
             .where((o) => game.findOrderItems(o) != null)
             .length;
-        final affordable = game.config.currentIsland.tasks
+        final affordable = game.currentIsland.tasks
             .where((t) => game.taskAvailable(t) && game.state.coins >= t.cost)
             .length;
         final islandBadge = affordable + (game.idleFull ? 1 : 0);

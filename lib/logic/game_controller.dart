@@ -14,6 +14,8 @@ import 'merge_logic.dart';
 import 'new_game.dart';
 import 'order_generator.dart';
 
+part 'controller_islands.dart';
+
 typedef Clock = DateTime Function();
 
 enum ProduceResult { ok, noEnergy, boardFull, recharging }
@@ -120,15 +122,21 @@ class GameController extends ChangeNotifier {
   // Derived values
   // ---------------------------------------------------------------------
 
+  /// Sum of a perk from restoration tasks completed on every island.
   double perk(String type) {
     var total = 0.0;
-    for (final t in config.currentIsland.tasks) {
-      if (t.perk?.type == type && state.completedTasks.contains(t.id)) {
-        total += t.perk!.value;
+    for (final island in config.islands) {
+      for (final t in island.tasks) {
+        if (t.perk?.type == type && state.completedTasks.contains(t.id)) {
+          total += t.perk!.value;
+        }
       }
     }
     return total;
   }
+
+  IslandDef get currentIsland => config.island(state.island);
+  bool get hasNextIsland => state.island < config.islands.length - 1;
 
   int get energyMax => eco.energyMax + perk('energyMax').round();
   int get storageSlotCount =>
@@ -162,7 +170,10 @@ class GameController extends ChangeNotifier {
   int get xpToNext => config.xpToNext(state.level);
 
   bool chainUnlocked(String chainId) =>
-      config.chain(chainId).unlockLevel <= state.level;
+      config.chainAvailable(config.chain(chainId), state.level, state.island);
+
+  bool generatorUnlocked(GeneratorDef g) =>
+      config.generatorAvailable(g, state.level, state.island);
 
   // ---------------------------------------------------------------------
   // Energy
@@ -396,7 +407,12 @@ class GameController extends ChangeNotifier {
     }
 
     final lvl = def.level(gen.genLevel);
-    final drops = lvl.dropsFor(state.level);
+    final all = lvl.dropsFor(state.level);
+    final allowed = all.where((d) {
+      final c = config.chain(d.item.chain);
+      return c.event || chainUnlocked(c.id);
+    }).toList();
+    final drops = allowed.isEmpty ? all : allowed;
     // The tutorial needs predictable drops.
     final ref = tutorialActive ? drops.first.item : _weighted(drops).item;
     final piece = Piece.item(state.newId(), ref);
@@ -520,8 +536,9 @@ class GameController extends ChangeNotifier {
     final affected = <int>[];
     if (plan.hatch) {
       _accrueIdle(nowMs);
+      final chain = config.chain(plan.input.chain);
       final dragons = [
-        for (var i = 0; i < plan.yieldCount; i++) _hatchDragon(),
+        for (var i = 0; i < plan.yieldCount; i++) _hatchDragon(chain),
       ];
       affected.add(to);
       _selected = null;
@@ -587,8 +604,12 @@ class GameController extends ChangeNotifier {
     }
   }
 
-  Dragon _hatchDragon() {
-    final table = config.dragons.hatchTable;
+  /// Hatch odds for eggs of [chain] right now (shown to the player).
+  List<WeightedType> hatchTableFor(ChainDef chain) =>
+      config.hatchTableFor(chain, state.island);
+
+  Dragon _hatchDragon(ChainDef chain) {
+    final table = hatchTableFor(chain);
     final total = table.fold(0, (s, e) => s + e.weight);
     var r = random.nextInt(total);
     var type = table.last.type;
@@ -784,20 +805,18 @@ class GameController extends ChangeNotifier {
         state.energy = max(state.energy, energyMax);
         state.energyUpdatedAt = max(nowMs, state.energyUpdatedAt);
       }
-      final unlocks = <String>[];
-      for (final g in config.generators) {
-        if (g.unlockLevel == state.level) {
-          unlocks.add(g.name);
-          _giveGenerator(g);
-        }
-      }
+      final unlocks = _giveMissingGenerators();
       for (final c in config.chains) {
-        if (c.unlockLevel == state.level && c.unlockLevel > 1) {
+        if (c.unlockLevel == state.level &&
+            c.unlockLevel > 1 &&
+            chainUnlocked(c.id)) {
           unlocks.add('${c.name} in orders');
         }
       }
       for (final c in config.orders.characters) {
-        if (c.unlockLevel == state.level && c.unlockLevel > 1) {
+        if (c.unlockLevel == state.level &&
+            c.unlockLevel > 1 &&
+            c.unlockIsland <= state.island + 1) {
           unlocks.add('${c.name}, ${c.title}');
         }
       }
@@ -808,16 +827,39 @@ class GameController extends ChangeNotifier {
     _refillOrders();
   }
 
+  /// Generator ids the player owns (main board, storage, pending).
+  Set<String> get _ownedGenerators => {
+    for (final p in [...state.board.cells, ...state.storage])
+      if (p?.generatorId != null) p!.generatorId!,
+    for (final k in state.pending)
+      if (k.startsWith('gen:')) k.substring(4),
+  };
+
+  /// Hands out every generator that is unlocked but not owned yet.
+  /// Returns their names.
+  List<String> _giveMissingGenerators() {
+    final owned = _ownedGenerators;
+    final given = <String>[];
+    for (final g in config.generators) {
+      if (generatorUnlocked(g) && !owned.contains(g.id)) {
+        _giveGenerator(g);
+        given.add(g.name);
+      }
+    }
+    return given;
+  }
+
   void _giveGenerator(GeneratorDef g) {
-    final spawn = board.index(g.spawnCell.x, g.spawnCell.y);
-    final cell = board.isFree(spawn) ? spawn : board.nearestFree(spawn);
+    final b = state.board;
+    final spawn = b.index(g.spawnCell.x, g.spawnCell.y);
+    final cell = b.isFree(spawn) ? spawn : b.nearestFree(spawn);
     if (cell == null) {
       state.pending.add('gen:${g.id}');
       return;
     }
     final piece = _pieceForKey('gen:${g.id}');
-    board.cells[cell] = piece;
-    _emit(SpawnEvent(piece.id, null, cell));
+    b.cells[cell] = piece;
+    if (identical(b, board)) _emit(SpawnEvent(piece.id, null, cell));
   }
 
   // ---------------------------------------------------------------------
@@ -950,11 +992,11 @@ class GameController extends ChangeNotifier {
       state.level >= t.requiresLevel &&
       t.requires.every(taskDone);
 
-  bool get islandComplete =>
-      config.currentIsland.tasks.every((t) => taskDone(t.id));
+  bool get islandComplete => currentIsland.tasks.every((t) => taskDone(t.id));
 
   bool completeTask(String id) {
-    final t = config.currentIsland.tasks.firstWhere((t) => t.id == id);
+    final t = currentIsland.tasks.where((t) => t.id == id).firstOrNull;
+    if (t == null) return false;
     if (!taskAvailable(t) || state.coins < t.cost) return false;
     _accrueIdle(nowMs); // bank production before a boost changes rates
     state.coins -= t.cost;
@@ -1081,7 +1123,9 @@ class GameController extends ChangeNotifier {
     bool valid(Piece? p) {
       if (p == null) return true;
       if (p.isItem) return config.isValidItem(p.item!);
-      return config.generators.any((g) => g.id == p.generatorId);
+      return config.generators.any(
+        (g) => g.id == p.generatorId && !g.eventOnly,
+      );
     }
 
     for (var i = 0; i < board.size; i++) {
@@ -1096,17 +1140,8 @@ class GameController extends ChangeNotifier {
           d.level > config.dragons.maxLevel,
     );
 
-    final owned = {
-      for (final p in [...board.cells, ...state.storage])
-        if (p?.generatorId != null) p!.generatorId!,
-      for (final k in state.pending)
-        if (k.startsWith('gen:')) k.substring(4),
-    };
-    for (final g in config.generators) {
-      if (g.unlockLevel <= state.level && !owned.contains(g.id)) {
-        _giveGenerator(g);
-      }
-    }
+    state.island = state.island.clamp(0, config.islands.length - 1);
+    _giveMissingGenerators();
     for (var i = 0; i < board.size; i++) {
       final p = board.cells[i];
       if (p?.item != null && !hidesContent(i)) {
