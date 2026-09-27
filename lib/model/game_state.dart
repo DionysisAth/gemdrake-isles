@@ -250,6 +250,109 @@ class Settings {
   };
 }
 
+/// One of today's daily tasks. Progress is the stat's growth since [base].
+class DailyTask {
+  DailyTask(this.id, this.target, this.base, {this.claimed = false});
+
+  factory DailyTask.fromJson(Map<String, dynamic> j) => DailyTask(
+    j['id'] as String,
+    j['t'] as int,
+    j['b'] as int,
+    claimed: j['c'] as bool? ?? false,
+  );
+
+  final String id;
+  final int target;
+  final int base;
+  bool claimed;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    't': target,
+    'b': base,
+    'c': claimed,
+  };
+}
+
+/// Progress in the current weekly festival event.
+class EventState {
+  EventState({
+    required this.id,
+    required this.week,
+    required this.board,
+    this.points = 0,
+    this.premium = false,
+    Set<int>? claimedFree,
+    Set<int>? claimedPremium,
+  }) : claimedFree = claimedFree ?? {},
+       claimedPremium = claimedPremium ?? {};
+
+  factory EventState.fromJson(Map<String, dynamic> j) => EventState(
+    id: j['id'] as String,
+    week: j['week'] as int,
+    board: Board.fromJson(j['board'] as Map<String, dynamic>),
+    points: j['pts'] as int? ?? 0,
+    premium: j['prem'] as bool? ?? false,
+    claimedFree: (j['cf'] as List? ?? const []).cast<int>().toSet(),
+    claimedPremium: (j['cp'] as List? ?? const []).cast<int>().toSet(),
+  );
+
+  final String id;
+
+  /// Week number the event belongs to (see `GameController.weekNumber`).
+  final int week;
+  final Board board;
+  int points;
+  bool premium;
+
+  /// Milestone indices already claimed on each track.
+  final Set<int> claimedFree;
+  final Set<int> claimedPremium;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'week': week,
+    'board': board.toJson(),
+    'pts': points,
+    'prem': premium,
+    'cf': claimedFree.toList(),
+    'cp': claimedPremium.toList(),
+  };
+}
+
+/// Final standing of a finished practice-league week, waiting to be seen.
+class LeagueResult {
+  LeagueResult({
+    required this.week,
+    required this.rank,
+    required this.gems,
+    required this.tierBefore,
+    required this.tierAfter,
+  });
+
+  factory LeagueResult.fromJson(Map<String, dynamic> j) => LeagueResult(
+    week: j['week'] as int,
+    rank: j['rank'] as int,
+    gems: j['gems'] as int,
+    tierBefore: j['from'] as int,
+    tierAfter: j['to'] as int,
+  );
+
+  final int week;
+  final int rank;
+  final int gems;
+  final int tierBefore;
+  final int tierAfter;
+
+  Map<String, dynamic> toJson() => {
+    'week': week,
+    'rank': rank,
+    'gems': gems,
+    'from': tierBefore,
+    'to': tierAfter,
+  };
+}
+
 /// Everything that is saved. Plain mutable data; all rules live in
 /// `GameController`.
 class GameState {
@@ -282,7 +385,21 @@ class GameState {
     Map<String, int>? adCounts,
     Set<String>? discovered,
     this.island = 0,
-  }) : pending = pending ?? [],
+    this.dailyDay = -1,
+    List<DailyTask>? dailyTasks,
+    this.dailyBonusClaimed = false,
+    this.loginStreak = 0,
+    this.loginDay = -1,
+    this.loginClaimedDay = -1,
+    Set<String>? bookClaimed,
+    this.hoardLevel = 0,
+    this.event,
+    this.leagueTier = 0,
+    this.leagueResult,
+    this.notifications = true,
+  }) : dailyTasks = dailyTasks ?? [],
+       bookClaimed = bookClaimed ?? {},
+       pending = pending ?? [],
        orders = orders ?? [],
        dragons = dragons ?? [],
        completedTasks = completedTasks ?? {},
@@ -327,6 +444,25 @@ class GameState {
     adCounts: (j['adCounts'] as Map? ?? const {}).cast<String, int>(),
     discovered: (j['disc'] as List? ?? const []).cast<String>().toSet(),
     island: j['island'] as int? ?? 0,
+    dailyDay: j['dDay'] as int? ?? -1,
+    dailyTasks: [
+      for (final t in j['dTasks'] as List? ?? const [])
+        DailyTask.fromJson(t as Map<String, dynamic>),
+    ],
+    dailyBonusClaimed: j['dBonus'] as bool? ?? false,
+    loginStreak: j['lStreak'] as int? ?? 0,
+    loginDay: j['lDay'] as int? ?? -1,
+    loginClaimedDay: j['lClaimed'] as int? ?? -1,
+    bookClaimed: (j['book'] as List? ?? const []).cast<String>().toSet(),
+    hoardLevel: j['hoard'] as int? ?? 0,
+    event: j['event'] == null
+        ? null
+        : EventState.fromJson(j['event'] as Map<String, dynamic>),
+    leagueTier: j['lgTier'] as int? ?? 0,
+    leagueResult: j['lgResult'] == null
+        ? null
+        : LeagueResult.fromJson(j['lgResult'] as Map<String, dynamic>),
+    notifications: j['notif'] as bool? ?? true,
   );
 
   int version;
@@ -370,6 +506,32 @@ class GameState {
   /// Index of the island the player is currently restoring (0-based).
   int island;
 
+  /// Day number (see `GameController.dayNumber`) the daily tasks are for.
+  int dailyDay;
+  List<DailyTask> dailyTasks;
+  bool dailyBonusClaimed;
+
+  /// Consecutive days played, and the last day counted.
+  int loginStreak;
+  int loginDay;
+
+  /// Day whose login reward was collected.
+  int loginClaimedDay;
+
+  /// Dragon Book rewards collected (`type:<id>`, `babies`).
+  Set<String> bookClaimed;
+
+  /// Dragon hoard upgrades bought in the shop.
+  int hoardLevel;
+
+  /// This week's festival, once the player has joined it.
+  EventState? event;
+  int leagueTier;
+  LeagueResult? leagueResult;
+
+  /// Local reminder notifications enabled.
+  bool notifications;
+
   int newId() => nextId++;
 
   int stat(String key) => stats[key] ?? 0;
@@ -404,6 +566,18 @@ class GameState {
     'adCounts': adCounts,
     'disc': discovered.toList(),
     'island': island,
+    'dDay': dailyDay,
+    'dTasks': [for (final t in dailyTasks) t.toJson()],
+    'dBonus': dailyBonusClaimed,
+    'lStreak': loginStreak,
+    'lDay': loginDay,
+    'lClaimed': loginClaimedDay,
+    'book': bookClaimed.toList(),
+    'hoard': hoardLevel,
+    'event': event?.toJson(),
+    'lgTier': leagueTier,
+    'lgResult': leagueResult?.toJson(),
+    'notif': notifications,
   };
 }
 

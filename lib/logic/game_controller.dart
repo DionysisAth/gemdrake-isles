@@ -15,6 +15,8 @@ import 'new_game.dart';
 import 'order_generator.dart';
 
 part 'controller_islands.dart';
+part 'controller_meta.dart';
+part 'controller_events.dart';
 
 typedef Clock = DateTime Function();
 
@@ -53,6 +55,7 @@ class GameController extends ChangeNotifier {
     orderGen = OrderGenerator(config, this.random);
     _repair();
     _refillOrders();
+    refreshDay();
     applyFeedbackSettings();
   }
 
@@ -116,7 +119,12 @@ class GameController extends ChangeNotifier {
 
   EconomyConfig get eco => config.economy;
   int get nowMs => clock().millisecondsSinceEpoch;
-  Board get board => state.board;
+  bool _eventMode = false;
+
+  /// The board being played: the island board, or the event board while
+  /// [FestivalEvents.eventMode] is on.
+  Board get board =>
+      _eventMode && state.event != null ? state.event!.board : state.board;
 
   // ---------------------------------------------------------------------
   // Derived values
@@ -147,7 +155,18 @@ class GameController extends ChangeNotifier {
       state.purchasedSlots < eco.storageSlotCostsGems.length
       ? eco.storageSlotCostsGems[state.purchasedSlots]
       : null;
-  double get offlineCapHours => eco.offlineCapHours + perk('offlineHours');
+  double get offlineCapHours =>
+      (state.hoardLevel > 0
+          ? config
+                .meta
+                .hoardUpgrades[min(
+                      state.hoardLevel,
+                      config.meta.hoardUpgrades.length,
+                    ) -
+                    1]
+                .hours
+          : eco.offlineCapHours) +
+      perk('offlineHours');
   double get dragonBoost => 1 + perk('dragonBoost');
 
   double dragonCoinsPerMinute(Dragon d) {
@@ -244,8 +263,12 @@ class GameController extends ChangeNotifier {
     final now = nowMs;
     _accrueIdle(now);
     _settleEnergy(now);
-    var changed = false;
-    for (final p in [...board.cells, ...state.storage]) {
+    var changed = refreshDay();
+    for (final p in [
+      ...state.board.cells,
+      ...?state.event?.board.cells,
+      ...state.storage,
+    ]) {
       if (p != null && p.isGenerator && _refreshGenerator(p, now)) {
         changed = true;
       }
@@ -314,6 +337,7 @@ class GameController extends ChangeNotifier {
     state.coins += coins * multiplier;
     state.gems += gems * multiplier;
     state.addStat('idleCollected', coins * multiplier);
+    state.addStat('idleCollects');
     feedback.play(Sfx.collect);
     _emit(IdleCollectedEvent(coins * multiplier, gems * multiplier));
     analytics.log('idle_collect', {'coins': coins, 'x': multiplier});
@@ -469,6 +493,11 @@ class GameController extends ChangeNotifier {
     if (src == null) return false;
     if (!from.storage && board.isLocked(from.index)) return false;
 
+    if ((to.storage || from.storage) && eventMode) {
+      _emit(ToastEvent('Storage is for the island board'));
+      feedback.play(Sfx.error);
+      return false;
+    }
     if (to.storage) {
       if (to.index >= state.storage.length) return false;
       if (src.isGenerator) {
@@ -562,6 +591,7 @@ class GameController extends ChangeNotifier {
       }
       affected.addAll(cells);
       state.discovered.add(out.key);
+      _eventMergePoints(out, plan.yieldCount, to);
       _selected = Slot.board(to);
       feedback.play(plan.bonus ? Sfx.bonus : Sfx.merge, level: out.level);
       feedback.haptic(heavy: plan.bonus);
@@ -649,16 +679,21 @@ class GameController extends ChangeNotifier {
   // Rewards waiting for space
   // ---------------------------------------------------------------------
 
+  /// Puts a reward on the island board (or in the waiting list when full).
   void _giveReward(String key, {int? near}) {
-    final origin = near ?? board.index(board.cols ~/ 2, board.rows ~/ 2);
-    final cell = board.nearestFree(origin);
+    final b = state.board;
+    final onScreen = identical(b, board);
+    final origin = near != null && onScreen
+        ? near
+        : b.index(b.cols ~/ 2, b.rows ~/ 2);
+    final cell = b.nearestFree(origin);
     if (cell == null) {
       state.pending.add(key);
       return;
     }
     final piece = _pieceForKey(key);
-    board.cells[cell] = piece;
-    _emit(SpawnEvent(piece.id, null, cell));
+    b.cells[cell] = piece;
+    if (onScreen) _emit(SpawnEvent(piece.id, null, cell));
   }
 
   Piece _pieceForKey(String key) {
@@ -677,7 +712,8 @@ class GameController extends ChangeNotifier {
 
   /// Places the next waiting reward on the board, if there's room.
   bool placePending() {
-    if (state.pending.isEmpty) return false;
+    if (state.pending.isEmpty || eventMode) return false;
+    final board = state.board;
     final cell = board.nearestFree(
       board.index(board.cols ~/ 2, board.rows - 1),
     );
@@ -709,6 +745,7 @@ class GameController extends ChangeNotifier {
   /// player doesn't have everything yet. Board items are used before
   /// stored ones.
   List<Slot>? findOrderItems(Order order) {
+    if (eventMode) return null;
     final used = <Slot>{};
     for (final line in order.lines) {
       var need = line.count;
@@ -735,6 +772,7 @@ class GameController extends ChangeNotifier {
 
   /// How many of [ref] the player has available (board + storage).
   int countAvailable(ItemRef ref) {
+    final board = state.board;
     var n = 0;
     for (var i = 0; i < board.size; i++) {
       if (!board.isLocked(i) && board.cells[i]?.item == ref) n++;
@@ -1100,6 +1138,7 @@ class GameController extends ChangeNotifier {
 
   Future<void> resetProgress() async {
     final settings = state.settings;
+    _eventMode = false;
     state = createNewGame(config, nowMs)..settings = settings;
     _selected = null;
     _repair();
@@ -1128,8 +1167,25 @@ class GameController extends ChangeNotifier {
       );
     }
 
-    for (var i = 0; i < board.size; i++) {
-      if (!valid(board.cells[i])) board.cells[i] = null;
+    final main = state.board;
+    for (var i = 0; i < main.size; i++) {
+      if (!valid(main.cells[i])) main.cells[i] = null;
+    }
+    final e = state.event;
+    if (e != null) {
+      final def = config.events.events.where((d) => d.id == e.id).firstOrNull;
+      if (def == null || e.board.size != main.size) {
+        state.event = null;
+      } else {
+        for (var i = 0; i < e.board.size; i++) {
+          final p = e.board.cells[i];
+          if (p == null) continue;
+          final ok = p.isItem
+              ? p.item!.chain == def.chain && config.isValidItem(p.item!)
+              : p.generatorId == def.generator;
+          if (!ok) e.board.cells[i] = null;
+        }
+      }
     }
     for (var i = 0; i < state.storage.length; i++) {
       if (!valid(state.storage[i])) state.storage[i] = null;
@@ -1151,6 +1207,8 @@ class GameController extends ChangeNotifier {
   }
 
   void _emit(GameEvent e) => _events.add(e);
+
+  void _notify() => notifyListeners();
 
   void _commit() {
     notifyListeners();

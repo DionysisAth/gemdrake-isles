@@ -25,7 +25,9 @@ class MergeEvent extends GameEvent {
 class HatchEvent extends GameEvent {
   HatchEvent(this.dragons, this.cell);
   final List<Dragon> dragons;
-  final int cell;
+
+  /// Board cell of the egg; null for dragons won elsewhere.
+  final int? cell;
 }
 
 class LockHitEvent extends GameEvent {
@@ -91,4 +93,14 @@ class ChestOpenedEvent extends GameEvent {
   final String title;
   final List<LootEntry> rewards;
   final int? cell;
+}
+
+/// Festival points earned on the event board.
+class EventPointsEvent extends GameEvent {
+  EventPointsEvent(this.points, this.cell, {this.milestone = false});
+  final int points;
+  final int? cell;
+
+  /// A reward-track milestone was reached.
+  final bool milestone;
 }

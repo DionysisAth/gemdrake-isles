@@ -170,7 +170,7 @@ class _BoardAreaState extends State<BoardArea> {
           count: cleared ? 16 : 6,
           spread: cleared ? 55 : 30,
         );
-      case HatchEvent(:final cell):
+      case HatchEvent(:final cell?):
         fx.burst(
           _global(l.cellRect(cols, cell)).center,
           color: Palette.gold,

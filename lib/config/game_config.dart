@@ -22,6 +22,8 @@ class GameConfig {
     required this.islands,
     required this.board,
     required this.tutorial,
+    required this.meta,
+    required this.events,
   });
 
   static const files = [
@@ -33,6 +35,8 @@ class GameConfig {
     'island',
     'board',
     'tutorial',
+    'meta',
+    'events',
   ];
 
   static Future<GameConfig> load(AssetBundle bundle) async {
@@ -65,6 +69,8 @@ class GameConfig {
         for (final s in j['tutorial']!['steps'] as List)
           TutorialStepDef.fromJson(s),
       ],
+      meta: MetaConfig.fromJson(j['meta']!),
+      events: EventsConfig.fromJson(j['events']!),
     );
   }
 
@@ -77,6 +83,8 @@ class GameConfig {
   final List<IslandDef> islands;
   final BoardConfig board;
   final List<TutorialStepDef> tutorial;
+  final MetaConfig meta;
+  final EventsConfig events;
 
   ChainDef chain(String id) => chains.firstWhere((c) => c.id == id);
   ItemDef item(ItemRef ref) => chain(ref.chain).items[ref.level - 1];
@@ -221,6 +229,7 @@ class LootEntry {
     this.coins = 0,
     this.gems = 0,
     this.energy = 0,
+    this.dragon,
   });
 
   factory LootEntry.fromJson(Map<String, dynamic> j) => LootEntry(
@@ -229,6 +238,7 @@ class LootEntry {
     coins: j['coins'] as int? ?? 0,
     gems: j['gems'] as int? ?? 0,
     energy: j['energy'] as int? ?? 0,
+    dragon: j['dragon'] as String?,
   );
 
   final int weight;
@@ -236,6 +246,18 @@ class LootEntry {
   final int coins;
   final int gems;
   final int energy;
+
+  /// A baby dragon of this type goes straight to the nest.
+  final String? dragon;
+
+  LootEntry withDragon(String type) => LootEntry(
+    weight: weight,
+    item: item,
+    coins: coins,
+    gems: gems,
+    energy: energy,
+    dragon: type,
+  );
 }
 
 /// A random reward table rolled [rolls] times (chests, shop packs).
@@ -870,4 +892,234 @@ class TutorialStepDef {
   bool get advancesOnTap => advance == 'tap';
   String? get eventName =>
       advance.startsWith('event:') ? advance.substring(6) : null;
+}
+
+LootEntry rewardFromJson(Map<String, dynamic> j) =>
+    LootEntry.fromJson({'weight': 1, ...j});
+
+class DailyTaskDef {
+  DailyTaskDef({
+    required this.id,
+    required this.text,
+    required this.stat,
+    required this.targets,
+    required this.reward,
+    this.minLevel = 1,
+  });
+
+  factory DailyTaskDef.fromJson(Map<String, dynamic> j) => DailyTaskDef(
+    minLevel: j['minLevel'] as int? ?? 1,
+    id: j['id'] as String,
+    text: j['text'] as String,
+    stat: j['stat'] as String,
+    targets: (j['targets'] as List).cast<int>(),
+    reward: rewardFromJson(j['reward'] as Map<String, dynamic>),
+  );
+
+  final String id;
+
+  /// Description with `{n}` replaced by the target.
+  final String text;
+
+  /// Stats counter (see GameState.stats) that measures progress.
+  final String stat;
+  final List<int> targets;
+  final LootEntry reward;
+  final int minLevel;
+
+  String describe(int target) => text.replaceAll('{n}', '$target');
+}
+
+class ShopItemDef {
+  ShopItemDef({
+    required this.id,
+    required this.name,
+    required this.desc,
+    required this.costGems,
+    required this.icon,
+    required this.loot,
+    this.unlockIsland = 1,
+  });
+
+  factory ShopItemDef.fromJson(Map<String, dynamic> j) => ShopItemDef(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    desc: j['desc'] as String? ?? '',
+    costGems: j['costGems'] as int,
+    icon: j['icon'] as String,
+    loot: LootDef.fromJson(j['loot'] as Map<String, dynamic>),
+    unlockIsland: j['unlockIsland'] as int? ?? 1,
+  );
+
+  final String id;
+  final String name;
+  final String desc;
+  final int costGems;
+
+  /// Item key to draw, or `energy`.
+  final String icon;
+  final LootDef loot;
+  final int unlockIsland;
+}
+
+class HoardUpgradeDef {
+  HoardUpgradeDef(this.hours, this.costGems);
+  final double hours;
+  final int costGems;
+}
+
+/// Daily tasks, login calendar and the gem shop (`meta.json`).
+class MetaConfig {
+  MetaConfig(Map<String, dynamic> j)
+    : dailyCount = j['daily']['count'] as int,
+      dailyUnlockLevel = j['daily']['unlockLevel'] as int? ?? 1,
+      dailyPool = [
+        for (final d in j['daily']['pool'] as List) DailyTaskDef.fromJson(d),
+      ],
+      dailyAllDone = rewardFromJson(j['daily']['allDoneReward']),
+      streakBonusGems = (j['daily']['streakBonusGems'] as List).cast<int>(),
+      login = [for (final l in j['login'] as List) rewardFromJson(l)],
+      shopItems = [
+        for (final s in j['shop']['items'] as List) ShopItemDef.fromJson(s),
+      ],
+      hoardUpgrades = [
+        for (final h in j['shop']['hoardUpgrades'] as List)
+          HoardUpgradeDef((h['hours'] as num).toDouble(), h['costGems'] as int),
+      ];
+
+  factory MetaConfig.fromJson(Map<String, dynamic> j) => MetaConfig(j);
+
+  final int dailyCount;
+  final int dailyUnlockLevel;
+  final List<DailyTaskDef> dailyPool;
+  final LootEntry dailyAllDone;
+
+  /// Extra gems for finishing all daily tasks, by login streak day (1-7+).
+  final List<int> streakBonusGems;
+
+  /// 7-day login calendar.
+  final List<LootEntry> login;
+  final List<ShopItemDef> shopItems;
+  final List<HoardUpgradeDef> hoardUpgrades;
+
+  DailyTaskDef daily(String id) => dailyPool.firstWhere((d) => d.id == id);
+}
+
+class EventDef {
+  EventDef({
+    required this.id,
+    required this.name,
+    required this.desc,
+    required this.chain,
+    required this.generator,
+    required this.dragon,
+    required this.colors,
+  });
+
+  factory EventDef.fromJson(Map<String, dynamic> j) => EventDef(
+    id: j['id'] as String,
+    name: j['name'] as String,
+    desc: j['desc'] as String? ?? '',
+    chain: j['chain'] as String,
+    generator: j['generator'] as String,
+    dragon: j['dragon'] as String,
+    colors: [for (final c in j['colors'] as List) parseColor(c as String)],
+  );
+
+  final String id;
+  final String name;
+  final String desc;
+  final String chain;
+  final String generator;
+
+  /// Exclusive dragon won at the end of the free track.
+  final String dragon;
+  final List<Color> colors;
+}
+
+class MilestoneDef {
+  MilestoneDef(this.points, this.free, this.premium);
+  final int points;
+  final LootEntry free;
+  final LootEntry premium;
+}
+
+class LeagueTierDef {
+  LeagueTierDef(this.name, this.rivalScore);
+  final String name;
+
+  /// Typical end-of-week score of a rival in this tier.
+  final int rivalScore;
+}
+
+class LeagueConfig {
+  LeagueConfig(Map<String, dynamic> j)
+    : note = j['note'] as String,
+      tiers = [
+        for (final t in j['tiers'] as List)
+          LeagueTierDef(t['name'] as String, t['rivalScore'] as int),
+      ],
+      rivals = j['rivals'] as int,
+      promote = j['promote'] as int,
+      demote = j['demote'] as int,
+      rewardGems = (j['rewardGems'] as List).cast<int>(),
+      names = (j['names'] as List).cast<String>();
+
+  final String note;
+  final List<LeagueTierDef> tiers;
+  final int rivals;
+  final int promote;
+  final int demote;
+
+  /// Gems by final rank (1st first).
+  final List<int> rewardGems;
+  final List<String> names;
+
+  int get size => rivals + 1;
+  int gemsForRank(int rank) =>
+      rank - 1 < rewardGems.length ? rewardGems[rank - 1] : 0;
+}
+
+/// Weekly festival events and the practice league (`events.json`).
+class EventsConfig {
+  EventsConfig(Map<String, dynamic> j)
+    : unlockLevel = j['unlockLevel'] as int,
+      premiumCostGems = j['premiumCostGems'] as int,
+      mergePoints = (j['mergePoints'] as List).cast<int>(),
+      offerPoints = j['offerPoints'] as int,
+      boardLocks = (j['board']['locks'] as List).cast<String>(),
+      generatorCell = Point(
+        (j['board']['generatorCell'] as List)[0] as int,
+        (j['board']['generatorCell'] as List)[1] as int,
+      ),
+      milestones = [
+        for (final m in j['milestones'] as List)
+          MilestoneDef(
+            m['points'] as int,
+            rewardFromJson(m['free'] as Map<String, dynamic>),
+            rewardFromJson(m['premium'] as Map<String, dynamic>),
+          ),
+      ],
+      events = [for (final e in j['events'] as List) EventDef.fromJson(e)],
+      league = LeagueConfig(j['league'] as Map<String, dynamic>);
+
+  factory EventsConfig.fromJson(Map<String, dynamic> j) => EventsConfig(j);
+
+  final int unlockLevel;
+  final int premiumCostGems;
+
+  /// Points for a merge, by the level of the item made.
+  final List<int> mergePoints;
+
+  /// Points for offering a max-level festival item.
+  final int offerPoints;
+  final List<String> boardLocks;
+  final Point<int> generatorCell;
+  final List<MilestoneDef> milestones;
+  final List<EventDef> events;
+  final LeagueConfig league;
+
+  EventDef event(String id) => events.firstWhere((e) => e.id == id);
+  int pointsForMerge(int outputLevel) =>
+      outputLevel < mergePoints.length ? mergePoints[outputLevel] : 0;
 }

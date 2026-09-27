@@ -83,6 +83,13 @@ extension IslandTravel on GameController {
       if (e.energy > 0) _addEnergy(e.energy);
       final item = e.item;
       if (item != null) _giveReward(item.key, near: near);
+      final type = e.dragon;
+      if (type != null) {
+        _accrueIdle(nowMs);
+        final d = Dragon(id: state.newId(), type: type, level: 1);
+        state.dragons.add(d);
+        state.discovered.add(d.key);
+      }
     }
   }
 }
