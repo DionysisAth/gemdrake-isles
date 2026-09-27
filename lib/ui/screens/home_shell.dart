@@ -92,6 +92,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       _queue(() => showLeagueResult(context));
     }
     if (game.loginRewardReady) _queue(() => showDaily(context));
+    if (game.shouldAskReminders) _queue(game.askReminders);
   }
 
   void _queue(Future<void> Function() popup) {

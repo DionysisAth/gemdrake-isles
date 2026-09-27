@@ -11,6 +11,7 @@ import '../painters/board_painters.dart';
 import '../painters/item_painter.dart';
 import '../theme.dart';
 import '../widgets/piece_view.dart';
+import 'meta_dialogs.dart';
 
 /// Shared cozy dialog frame with a ribbon title.
 class GameDialog extends StatelessWidget {
@@ -1111,6 +1112,20 @@ Future<void> showSettings(BuildContext context) {
                 title: const Text('Vibration'),
                 value: s.haptics,
                 onChanged: (v) => game.updateSettings((s) => s.haptics = v),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Reminders'),
+                subtitle: const Text(
+                  'Energy full, hoard full, daily gift',
+                  style: TextStyle(fontSize: 12),
+                ),
+                value: game.state.notifications,
+                onChanged: (v) => game.setReminders(v),
+              ),
+              TextButton(
+                onPressed: () => showBackup(ctx),
+                child: const Text('Backup & restore'),
               ),
               if (context.ads.privacyOptionsRequired)
                 TextButton(

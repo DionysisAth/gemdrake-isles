@@ -1,4 +1,9 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../config/game_config.dart';
 import '../../logic/game_controller.dart';
@@ -657,4 +662,257 @@ Future<void> showLeagueResult(BuildContext context) {
       ),
     ),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Sharing
+// ---------------------------------------------------------------------------
+
+Rect? _originOf(BuildContext context) {
+  final box = context.findRenderObject() as RenderBox?;
+  if (box == null || !box.hasSize) return null;
+  return box.localToGlobal(Offset.zero) & box.size;
+}
+
+/// Shares a picture of the island (the scene inside [sceneKey]) on a sky
+/// background with a caption.
+Future<void> shareIslandPicture(
+  BuildContext context,
+  GlobalKey sceneKey,
+  String islandName,
+) async {
+  final game = context.game;
+  final origin = _originOf(context);
+  try {
+    final boundary =
+        sceneKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    if (boundary == null) return;
+    const scale = 2.0;
+    final scene = await boundary.toImage(pixelRatio: scale);
+    final w = scene.width.toDouble();
+    final h = scene.height.toDouble();
+    const banner = 70.0 * scale;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final full = Rect.fromLTWH(0, 0, w, h + banner);
+    canvas.drawRect(
+      full,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Palette.sky1, Palette.sky2],
+        ).createShader(full),
+    );
+    canvas.drawImage(scene, Offset.zero, Paint());
+    final dragons = game.state.dragons.length;
+    final text = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      text: TextSpan(
+        style: const TextStyle(
+          fontFamily: 'Fredoka',
+          color: Palette.ink,
+          fontSize: 17 * scale,
+          fontWeight: FontWeight.w700,
+        ),
+        text: '$islandName - Level ${game.state.level}\n',
+        children: [
+          TextSpan(
+            text: '$dragons dragon${dragons == 1 ? '' : 's'} - Gemdrake Isles',
+            style: const TextStyle(
+              fontSize: 13 * scale,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    )..layout(maxWidth: w);
+    text.paint(
+      canvas,
+      Offset((w - text.width) / 2, h + (banner - text.height) / 2),
+    );
+    final image = await recorder.endRecording().toImage(
+      w.round(),
+      (h + banner).round(),
+    );
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) return;
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [
+          XFile.fromData(
+            bytes.buffer.asUint8List(),
+            mimeType: 'image/png',
+            name: 'gemdrake-isles.png',
+          ),
+        ],
+        text: 'Look at my $islandName in Gemdrake Isles!',
+        sharePositionOrigin: origin,
+      ),
+    );
+    game.analytics.log('share', {'what': 'island'});
+  } catch (e) {
+    if (context.mounted) showToast(context, "Couldn't share right now");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Backup codes
+// ---------------------------------------------------------------------------
+
+Future<void> showBackup(BuildContext context) {
+  final game = context.game;
+  return showDialog(
+    context: context,
+    builder: (ctx) => GameDialog(
+      title: 'Backup',
+      onClose: () => Navigator.pop(ctx),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Your progress is saved on this device only. Keep a backup code '
+            'somewhere safe (notes, email to yourself) to move your game to '
+            'a new phone or recover it.',
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          GameButton(
+            onTap: () async {
+              await Clipboard.setData(ClipboardData(text: game.exportBackup()));
+              if (ctx.mounted) showToast(ctx, 'Backup code copied');
+            },
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.copy_rounded, size: 20),
+                Text(' Copy backup code'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Builder(
+            builder: (bctx) => GameButton(
+              color: Palette.accent,
+              onTap: () async {
+                try {
+                  await SharePlus.instance.share(
+                    ShareParams(
+                      text: game.exportBackup(),
+                      subject: 'Gemdrake Isles backup code',
+                      sharePositionOrigin: _originOf(bctx),
+                    ),
+                  );
+                } catch (_) {
+                  if (bctx.mounted) showToast(bctx, "Couldn't share right now");
+                }
+              },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.ios_share_rounded, size: 20),
+                  Text(' Save code elsewhere'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          GameButton(
+            color: const Color(0xFFE0A21A),
+            onTap: () => _restoreBackup(ctx),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.restore_rounded, size: 20),
+                Text(' Restore from a code'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _restoreBackup(BuildContext context) async {
+  final game = context.game;
+  final controller = TextEditingController();
+  final clip = await Clipboard.getData(Clipboard.kTextPlain);
+  if (clip?.text != null && game.parseBackup(clip!.text!) != null) {
+    controller.text = clip.text!;
+  }
+  if (!context.mounted) return;
+  final code = await showDialog<String>(
+    context: context,
+    builder: (ctx) => GameDialog(
+      title: 'Restore',
+      actions: [
+        GameButton(
+          color: Colors.grey,
+          onTap: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
+        GameButton(
+          color: const Color(0xFFE0A21A),
+          onTap: () => Navigator.pop(ctx, controller.text),
+          child: const Text('Restore'),
+        ),
+      ],
+      child: Column(
+        children: [
+          const Text('Paste your backup code:'),
+          const SizedBox(height: 8),
+          TextField(
+            controller: controller,
+            maxLines: 4,
+            style: const TextStyle(fontSize: 11),
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
+              hintText: 'GDI1...',
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+  controller.dispose();
+  if (code == null || !context.mounted) return;
+  final backup = game.parseBackup(code);
+  if (backup == null) {
+    showToast(context, "That code doesn't look right");
+    return;
+  }
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => GameDialog(
+      title: 'Replace this game?',
+      actions: [
+        GameButton(
+          color: Colors.grey,
+          onTap: () => Navigator.pop(ctx, false),
+          child: const Text('Cancel'),
+        ),
+        GameButton(
+          color: Palette.danger,
+          onTap: () => Navigator.pop(ctx, true),
+          child: const Text('Replace'),
+        ),
+      ],
+      child: Text(
+        'The backup is level ${backup.level} on island ${backup.island + 1} '
+        'with ${backup.dragons.length} dragons. Your current game on this '
+        'device (level ${game.state.level}) will be replaced.',
+        textAlign: TextAlign.center,
+      ),
+    ),
+  );
+  if (ok != true || !context.mounted) return;
+  await game.importBackup(code);
+  if (context.mounted) {
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    showToast(context, 'Game restored!');
+  }
 }

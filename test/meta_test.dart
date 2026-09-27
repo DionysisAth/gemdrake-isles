@@ -3,6 +3,7 @@ import 'package:gemdrake_isles/logic/game_controller.dart';
 import 'package:gemdrake_isles/logic/game_events.dart';
 import 'package:gemdrake_isles/model/game_state.dart';
 import 'package:gemdrake_isles/model/item_ref.dart';
+import 'package:gemdrake_isles/services/notification_service.dart';
 
 import 'helpers.dart';
 
@@ -313,6 +314,58 @@ void main() {
       expect(copy.event!.points, 42);
       expect(copy.event!.claimedFree, {0});
       expect(copy.event!.board.size, g.state.event!.board.size);
+    });
+  });
+
+  group('reminders', () {
+    test('energy, hoard and daily reminders are scheduled on pause', () {
+      final notes = NoopNotificationService();
+      final g = newController(notifications: notes);
+      g.state.level = 3;
+      g.state.energy = 10;
+      g.state.dragons.add(Dragon(id: 900, type: 'earth', level: 1));
+      g.onPause();
+      final ids = notes.scheduled.map((r) => r.id).toSet();
+      expect(ids, containsAll([1, 2, 3]));
+      for (final r in notes.scheduled) {
+        expect(r.at.isAfter(g.clock()), isTrue);
+      }
+      g.checkWelcomeBack();
+      expect(notes.scheduled, isEmpty);
+    });
+
+    test('turning reminders off schedules nothing', () async {
+      final notes = NoopNotificationService();
+      final g = newController(notifications: notes);
+      await g.setReminders(false);
+      g.onPause();
+      expect(notes.scheduled, isEmpty);
+    });
+  });
+
+  group('backup codes', () {
+    test('a code restores the exact game', () async {
+      final g = newController();
+      g.state.level = 7;
+      g.state.gems = 123;
+      g.state.dragons.add(Dragon(id: 900, type: 'fire', level: 2));
+      final code = g.exportBackup();
+      expect(code, startsWith('GDI1.'));
+
+      final other = newController(seed: 5);
+      expect(await other.importBackup(code), isTrue);
+      expect(other.state.level, 7);
+      expect(other.state.gems, 123);
+      expect(other.state.dragons.any((d) => d.id == 900), isTrue);
+    });
+
+    test('damaged codes are rejected', () async {
+      final g = newController();
+      final code = g.exportBackup();
+      final broken = code.replaceRange(20, 21, code[20] == 'A' ? 'B' : 'A');
+      expect(g.parseBackup(broken), isNull);
+      expect(g.parseBackup('hello'), isNull);
+      expect(await g.importBackup('GDI1.x.y'), isFalse);
     });
   });
 }

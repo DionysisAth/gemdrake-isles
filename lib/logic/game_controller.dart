@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,7 @@ import '../model/game_state.dart';
 import '../model/item_ref.dart';
 import '../services/analytics.dart';
 import '../services/feedback.dart';
+import '../services/notification_service.dart';
 import '../services/save_store.dart';
 import 'game_events.dart';
 import 'merge_logic.dart';
@@ -17,6 +19,7 @@ import 'order_generator.dart';
 part 'controller_islands.dart';
 part 'controller_meta.dart';
 part 'controller_events.dart';
+part 'controller_extras.dart';
 
 typedef Clock = DateTime Function();
 
@@ -46,9 +49,11 @@ class GameController extends ChangeNotifier {
     this.saveStore,
     GameFeedback? feedback,
     Analytics? analytics,
+    NotificationService? notifications,
     Clock? clock,
     Random? random,
   }) : feedback = feedback ?? SilentFeedback(),
+       notifications = notifications ?? NoopNotificationService(),
        analytics = analytics ?? LocalAnalytics(),
        clock = clock ?? DateTime.now,
        random = random ?? Random() {
@@ -65,6 +70,7 @@ class GameController extends ChangeNotifier {
     required SaveStore saveStore,
     GameFeedback? feedback,
     Analytics? analytics,
+    NotificationService? notifications,
     Clock? clock,
     Random? random,
   }) async {
@@ -84,6 +90,7 @@ class GameController extends ChangeNotifier {
       saveStore: saveStore,
       feedback: feedback,
       analytics: analytics,
+      notifications: notifications,
       clock: clock,
       random: random,
     );
@@ -101,6 +108,7 @@ class GameController extends ChangeNotifier {
   final SaveStore? saveStore;
   final GameFeedback feedback;
   final Analytics analytics;
+  final NotificationService notifications;
   final Clock clock;
   final Random random;
   late final OrderGenerator orderGen;
@@ -303,11 +311,13 @@ class GameController extends ChangeNotifier {
     _accrueIdle(now);
     state.lastSeen = now;
     save(immediate: true);
+    notifications.schedule(reminders);
   }
 
   /// Call on launch and when returning to the app. Returns what was earned
   /// while away, if it's worth a "Welcome back" popup.
   WelcomeBack? checkWelcomeBack() {
+    notifications.cancelAll();
     final now = nowMs;
     final away = now - state.lastSeen;
     _accrueIdle(now);

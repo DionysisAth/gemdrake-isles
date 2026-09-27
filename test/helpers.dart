@@ -7,6 +7,7 @@ import 'package:gemdrake_isles/logic/game_controller.dart';
 import 'package:gemdrake_isles/logic/new_game.dart';
 import 'package:gemdrake_isles/model/game_state.dart';
 import 'package:gemdrake_isles/model/item_ref.dart';
+import 'package:gemdrake_isles/services/notification_service.dart';
 import 'package:gemdrake_isles/services/save_store.dart';
 
 GameConfig loadConfig() => GameConfig.fromJson({
@@ -30,6 +31,7 @@ GameController newController({
   int seed = 1,
   bool skipTutorial = true,
   SaveStore? store,
+  NotificationService? notifications,
 }) {
   final c = config ?? loadConfig();
   final fc = clock ?? FakeClock();
@@ -41,6 +43,7 @@ GameController newController({
     clock: fc.call,
     random: Random(seed),
     saveStore: store,
+    notifications: notifications,
   );
 }
 

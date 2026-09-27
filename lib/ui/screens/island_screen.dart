@@ -8,6 +8,7 @@ import '../../logic/game_controller.dart';
 import '../../logic/game_events.dart';
 import '../../model/game_state.dart';
 import '../dialogs/dialogs.dart';
+import '../dialogs/meta_dialogs.dart';
 import '../game_scope.dart';
 import '../targets.dart';
 import '../painters/board_painters.dart';
@@ -152,6 +153,7 @@ class _IslandViewState extends State<IslandView> with TickerProviderStateMixin {
   String? _restoring;
   StreamSubscription<GameEvent>? _sub;
   final _islandKey = GlobalKey();
+  final _sceneKey = GlobalKey();
 
   @override
   void didChangeDependencies() {
@@ -216,6 +218,7 @@ class _IslandViewState extends State<IslandView> with TickerProviderStateMixin {
           children: [
             Positioned.fill(
               child: RepaintBoundary(
+                key: _sceneKey,
                 child: AnimatedBuilder(
                   animation: Listenable.merge([_ambient, _restore]),
                   builder: (context, _) {
@@ -281,6 +284,16 @@ class _IslandViewState extends State<IslandView> with TickerProviderStateMixin {
               bottom: 6,
               child: _HoardButton(key: context.targets.keyFor('hoard')),
             ),
+            Positioned(
+              right: 8,
+              top: 6,
+              child: Builder(
+                builder: (context) => _ShareButton(
+                  onTap: () =>
+                      shareIslandPicture(context, _sceneKey, island.name),
+                ),
+              ),
+            ),
             if (widget.onBrowse != null && index > 0)
               Positioned(
                 left: 4,
@@ -310,6 +323,39 @@ class _IslandViewState extends State<IslandView> with TickerProviderStateMixin {
           ],
         );
       },
+    );
+  }
+}
+
+class _ShareButton extends StatelessWidget {
+  const _ShareButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Share',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .85),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x40301E4F),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.ios_share_rounded, color: Palette.accent),
+        ),
+      ),
     );
   }
 }
