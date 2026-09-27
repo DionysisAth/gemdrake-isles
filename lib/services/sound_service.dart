@@ -21,7 +21,7 @@ class SoundService implements GameFeedback {
   /// Ignore repeats of the same sound closer together than this.
   static const _minGapMs = 45;
 
-  final _channels = <String, _SoundChannel>{};
+  final _channels = <String, SoundChannel>{};
   final _music = AudioPlayer(playerId: 'music');
   double _musicVolume = .6;
   double _sfxVolume = .9;
@@ -69,7 +69,7 @@ class SoundService implements GameFeedback {
     // Preload every sound once (in the background, so startup isn't
     // delayed) so nothing is created mid-game.
     for (final f in _files) {
-      _channels[f] = _SoundChannel(f, _voices);
+      _channels[f] = SoundChannel(f, _voices);
     }
     unawaited(Future.wait(_channels.values.map((c) => c.load())));
   }
@@ -77,7 +77,7 @@ class SoundService implements GameFeedback {
   @override
   void play(Sfx sfx, {int level = 1}) {
     if (_muted || _sfxVolume <= 0 || !_foreground) return;
-    _channels[_fileFor(sfx, level)]?.play(_sfxVolume, _minGapMs);
+    unawaited(_channels[_fileFor(sfx, level)]?.play(_sfxVolume, _minGapMs));
   }
 
   @override
@@ -113,7 +113,7 @@ class SoundService implements GameFeedback {
     _foreground = false;
     _syncMusic();
     for (final c in _channels.values) {
-      c.stopAll();
+      unawaited(c.stopAll());
     }
   }
 
@@ -148,14 +148,25 @@ class SoundService implements GameFeedback {
 }
 
 /// A few reusable players for one sound file.
-class _SoundChannel {
-  _SoundChannel(this.file, int voices)
+///
+/// Commands to a player must run strictly one after another: audioplayers
+/// tracks a "desired state", so firing stop() and resume() without awaiting
+/// lets the resume cancel the stop, the native player never stops, and every
+/// later play() is ignored. Each player therefore has its own serial queue.
+@visibleForTesting
+class SoundChannel {
+  SoundChannel(this.file, int voices, {AudioPlayer Function(String id)? create})
     : _players = [
-        for (var i = 0; i < voices; i++) AudioPlayer(playerId: 'sfx:$file:$i'),
-      ];
+        for (var i = 0; i < voices; i++)
+          (create ?? (id) => AudioPlayer(playerId: id))('sfx:$file:$i'),
+      ],
+      _busy = List.filled(voices, false),
+      _tails = List.filled(voices, Future<void>.value());
 
   final String file;
   final List<AudioPlayer> _players;
+  final List<bool> _busy;
+  final List<Future<void>> _tails;
   var _next = 0;
   var _lastPlayed = 0;
   var _ready = false;
@@ -173,22 +184,44 @@ class _SoundChannel {
     }
   }
 
-  void play(double volume, int minGapMs) {
+  @visibleForTesting
+  void debugMarkReady() => _ready = true;
+
+  /// Runs [op] on player [i] after everything already queued for it.
+  Future<void> _enqueue(int i, Future<void> Function(AudioPlayer p) op) {
+    _busy[i] = true;
+    final done = _tails[i].then((_) => op(_players[i])).catchError((Object e) {
+      debugPrint('Sound $file: $e');
+    });
+    _tails[i] = done;
+    done.whenComplete(() {
+      if (identical(_tails[i], done)) _busy[i] = false;
+    });
+    return done;
+  }
+
+  /// Restarts the sound on a free player. If every player is still busy
+  /// (a slow device), the sound is skipped rather than queued, so sounds
+  /// never lag behind taps.
+  Future<void> play(double volume, int minGapMs) async {
     if (!_ready) return;
     final now = DateTime.now().millisecondsSinceEpoch;
     if (now - _lastPlayed < minGapMs) return;
-    _lastPlayed = now;
-    final p = _players[_next];
-    _next = (_next + 1) % _players.length;
-    // Calls on one player run in order, so stop -> resume restarts it.
-    p.setVolume(volume).catchError((_) {});
-    p.stop().catchError((_) {});
-    p.resume().catchError((_) {});
-  }
-
-  void stopAll() {
-    for (final p in _players) {
-      p.stop().catchError((_) {});
+    for (var k = 0; k < _players.length; k++) {
+      final i = (_next + k) % _players.length;
+      if (_busy[i]) continue;
+      _lastPlayed = now;
+      _next = (i + 1) % _players.length;
+      await _enqueue(i, (p) async {
+        await p.setVolume(volume);
+        await p.stop();
+        await p.resume();
+      });
+      return;
     }
   }
+
+  Future<void> stopAll() => Future.wait([
+    for (var i = 0; i < _players.length; i++) _enqueue(i, (p) => p.stop()),
+  ]);
 }
