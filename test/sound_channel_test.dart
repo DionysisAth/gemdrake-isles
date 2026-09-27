@@ -19,7 +19,7 @@ class FakeNativeAudio extends AudioplayersPlatformInterface {
 
   @override
   Future<void> resume(String playerId) async {
-    calls.add('resume');
+    calls.add(playerId == 'music' ? 'resume:music' : 'resume');
     if (playing[playerId] != true) {
       playing[playerId] = true;
       starts[playerId] = (starts[playerId] ?? 0) + 1;
@@ -33,7 +33,10 @@ class FakeNativeAudio extends AudioplayersPlatformInterface {
   }
 
   @override
-  Future<void> pause(String playerId) async => playing[playerId] = false;
+  Future<void> pause(String playerId) async {
+    calls.add('pause:$playerId');
+    playing[playerId] = false;
+  }
 
   @override
   Future<void> setVolume(String playerId, double volume) async {}
@@ -97,5 +100,25 @@ void main() {
     await channel.play(1, 10000);
     await channel.play(1, 10000);
     expect(native.totalStarts, 1);
+  });
+
+  test('music pauses while an ad is showing and comes back after', () async {
+    final sound = SoundService();
+    sound.startMusic(); // first start loads + plays the track
+    await pumpEventQueue();
+    native.calls.clear();
+
+    sound.setSuppressed(true);
+    await pumpEventQueue();
+    expect(native.calls, contains('pause:music'));
+
+    // Coming back to the app mid-ad must not restart the music.
+    sound.startMusic();
+    await pumpEventQueue();
+    expect(native.calls, isNot(contains('resume:music')));
+
+    sound.setSuppressed(false);
+    await pumpEventQueue();
+    expect(native.calls, contains('resume:music'));
   });
 }

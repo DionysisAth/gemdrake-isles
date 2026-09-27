@@ -26,15 +26,26 @@ class IslandPainter extends CustomPainter {
 
   Offset at(double x, double y) => Offset(w * x, h * y);
 
+  /// Overall restoration, 0..1: drives greenery, flowers and trees.
+  late double healthy;
+
   @override
   void paint(Canvas canvas, Size size) {
     w = size.width;
     h = size.height;
     u = min(w, h * 1.3) * .1;
     _stroke.strokeWidth = max(1.0, u * .05);
+    healthy = (progress.values.fold(0.0, (a, b) => a + b) / 10).clamp(0.0, 1.0);
 
+    _backdrop(canvas);
+    canvas.save();
+    // The whole island gently floats up and down.
+    canvas.translate(0, sin(time * .9) * h * .01);
+    _floatingRocks(canvas, back: true);
     _island(canvas);
     _river(canvas);
+    _path(canvas);
+    _trees(canvas, back: true);
     _tower(canvas, at(.6, .42));
     _windmill(canvas, at(.82, .44));
     _shrine(canvas, at(.44, .47));
@@ -43,87 +54,196 @@ class IslandPainter extends CustomPainter {
     _bridge(canvas, at(.33, .6));
     _garden(canvas, at(.2, .64));
     _nest(canvas, at(.56, .66));
+    _trees(canvas, back: false);
     _lanterns(canvas);
     _vines(canvas);
+    _ambient(canvas);
+    _floatingRocks(canvas, back: false);
+    canvas.restore();
   }
 
   // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // Backdrop, island body, water and scenery
+
+  void _backdrop(Canvas c) {
+    final center = at(.5, .5);
+    // Slowly turning sun rays behind the island.
+    c.save();
+    c.translate(center.dx, center.dy);
+    c.rotate(time * .02);
+    final ray = Paint()..color = Colors.white.withValues(alpha: .09);
+    final r = max(w, h) * .9;
+    for (var i = 0; i < 14; i++) {
+      final a = i * pi * 2 / 14;
+      c.drawPath(
+        Path()
+          ..moveTo(0, 0)
+          ..lineTo(cos(a - .09) * r, sin(a - .09) * r)
+          ..lineTo(cos(a + .09) * r, sin(a + .09) * r)
+          ..close(),
+        ray,
+      );
+    }
+    c.restore();
+    paintGlow(c, at(.5, .52), w * .62, const Color(0xFFFFF6D6), .55);
+  }
+
+  bool _insideTop(Offset p) {
+    final cx = w * .5, cy = h * .52, rx = w * .47, ry = h * .19;
+    final dx = (p.dx - cx) / rx, dy = (p.dy - cy) / ry;
+    return dx * dx + dy * dy < .82;
+  }
 
   void _island(Canvas c) {
     // Rocky underside
     final under = Path()
       ..moveTo(w * .04, h * .54)
-      ..quadraticBezierTo(w * .12, h * .78, w * .34, h * .86)
-      ..quadraticBezierTo(w * .46, h * .99, w * .54, h * .93)
-      ..quadraticBezierTo(w * .74, h * .86, w * .86, h * .74)
-      ..quadraticBezierTo(w * .96, h * .64, w * .96, h * .54)
+      ..quadraticBezierTo(w * .1, h * .8, w * .32, h * .87)
+      ..quadraticBezierTo(w * .44, h * 1.0, w * .52, h * .95)
+      ..quadraticBezierTo(w * .74, h * .88, w * .87, h * .74)
+      ..quadraticBezierTo(w * .97, h * .64, w * .96, h * .54)
       ..close();
+    final underBox = Rect.fromLTWH(0, h * .5, w, h * .5);
     c.drawPath(
       under,
       Paint()
         ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF9C7A5B), Color(0xFF5E4638)],
-        ).createShader(Rect.fromLTWH(0, h * .5, w, h * .5)),
+          colors: [Color(0xFFB88E68), Color(0xFF7D5C45), Color(0xFF4B3830)],
+          stops: [0, .45, 1],
+        ).createShader(underBox),
     );
-    // Strata lines
-    final strata = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = u * .06
-      ..color = const Color(0x33000000);
-    c.drawPath(
-      Path()
-        ..moveTo(w * .12, h * .66)
-        ..quadraticBezierTo(w * .5, h * .78, w * .88, h * .66),
-      strata,
-    );
-    c.drawPath(
-      Path()
-        ..moveTo(w * .3, h * .8)
-        ..quadraticBezierTo(w * .5, h * .87, w * .72, h * .8),
-      strata,
-    );
-    // Hanging roots & crystals
-    final root = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = u * .07
-      ..strokeCap = StrokeCap.round
-      ..color = const Color(0xFF6B8E4E);
-    c.drawPath(
-      Path()
-        ..moveTo(w * .22, h * .76)
-        ..quadraticBezierTo(w * .2, h * .84, w * .24, h * .9),
-      root,
-    );
-    c.drawPath(
-      Path()
-        ..moveTo(w * .78, h * .76)
-        ..quadraticBezierTo(w * .82, h * .82, w * .79, h * .88),
-      root,
-    );
-    for (final (x, y, col) in [
-      (.42, .9, const Color(0xFF8FE3FF)),
-      (.62, .86, const Color(0xFFD7A6FF)),
+    c.save();
+    c.clipPath(under);
+    // Layered strata
+    for (final (y, dark, amp) in [
+      (.6, false, .02),
+      (.68, true, .03),
+      (.76, false, .025),
+      (.84, true, .02),
     ]) {
-      final o = at(x, y);
-      final gem = Path()
-        ..moveTo(o.dx - u * .15, o.dy)
-        ..lineTo(o.dx + u * .15, o.dy)
-        ..lineTo(o.dx, o.dy + u * .45)
+      final band = Path()
+        ..moveTo(0, h * y)
+        ..quadraticBezierTo(w * .25, h * (y + amp), w * .5, h * y)
+        ..quadraticBezierTo(w * .75, h * (y - amp), w, h * y)
+        ..lineTo(w, h * (y + .03))
+        ..quadraticBezierTo(w * .75, h * (y + .03 - amp), w * .5, h * (y + .03))
+        ..quadraticBezierTo(w * .25, h * (y + .03 + amp), 0, h * (y + .03))
         ..close();
-      c.drawPath(gem, Paint()..color = col);
-      c.drawPath(gem, _stroke);
+      c.drawPath(
+        band,
+        Paint()
+          ..color = dark ? const Color(0x22000000) : const Color(0x33FFE2BD),
+      );
+    }
+    // Lit left faces
+    c.drawPath(
+      Path()
+        ..moveTo(w * .06, h * .56)
+        ..lineTo(w * .2, h * .6)
+        ..lineTo(w * .26, h * .8)
+        ..lineTo(w * .14, h * .74)
+        ..close(),
+      Paint()..color = const Color(0x22FFFFFF),
+    );
+    c.restore();
+
+    // Glowing crystal clusters in the rock
+    void cluster(Offset o, double s, Color col, double tilt) {
+      paintGlow(c, o, u * s * 1.4, col, .55 + .15 * sin(time * 2 + o.dx));
+      for (final (dx, hgt, t) in [
+        (-.18, .7, -.35),
+        (0.0, 1.0, 0.0),
+        (.18, .6, .35),
+      ]) {
+        c.save();
+        c.translate(o.dx + dx * u * s, o.dy);
+        c.rotate(tilt + t);
+        final hh = u * s * hgt;
+        final crystal = Path()
+          ..moveTo(0, hh)
+          ..lineTo(u * s * .12, hh * .3)
+          ..lineTo(0, -u * s * .05)
+          ..lineTo(-u * s * .12, hh * .3)
+          ..close();
+        c.drawPath(crystal, Paint()..color = col);
+        c.drawPath(
+          Path()
+            ..moveTo(0, hh)
+            ..lineTo(-u * s * .12, hh * .3)
+            ..lineTo(0, -u * s * .05)
+            ..close(),
+          Paint()..color = Colors.white.withValues(alpha: .35),
+        );
+        c.drawPath(crystal, _stroke);
+        c.restore();
+      }
+    }
+
+    cluster(at(.47, .93), 1.0, const Color(0xFF8FE3FF), 0);
+    cluster(at(.66, .86), .7, const Color(0xFFD7A6FF), -.2);
+    cluster(at(.25, .8), .55, const Color(0xFF9DF5C4), .25);
+
+    // Hanging vines with leaves
+    final vine = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = u * .05
+      ..strokeCap = StrokeCap.round
+      ..color = const Color(0xFF5E8F45);
+    final leaf = Paint()..color = const Color(0xFF7CC46B);
+    for (final (x, y, len) in [
+      (.16, .7, .14),
+      (.3, .8, .1),
+      (.72, .8, .12),
+      (.84, .72, .15),
+    ]) {
+      final sway = sin(time * 1.4 + x * 9) * u * .12;
+      final start = at(x, y);
+      final end = start + Offset(sway, h * len);
+      c.drawPath(
+        Path()
+          ..moveTo(start.dx, start.dy)
+          ..quadraticBezierTo(
+            start.dx - u * .1,
+            (start.dy + end.dy) / 2,
+            end.dx,
+            end.dy,
+          ),
+        vine,
+      );
+      for (var k = 1; k <= 3; k++) {
+        final t = k / 4;
+        final p = Offset.lerp(start, end, t)! + Offset(-u * .05 * (1 - t), 0);
+        c.drawOval(
+          Rect.fromCenter(
+            center: p + Offset((k.isEven ? 1 : -1) * u * .07, 0),
+            width: u * .16,
+            height: u * .09,
+          ),
+          leaf,
+        );
+      }
     }
     c.drawPath(under, _stroke);
 
-    // Grassy top
-    final top = Rect.fromLTRB(w * .03, h * .34, w * .97, h * .72);
-    final grass = Path()..addOval(top);
-    final healthy = (progress.values.fold(0.0, (a, b) => a + b) / 10).clamp(
-      0.0,
-      1.0,
+    // Earth lip visible below the grass at the front edge
+    final lip = Rect.fromLTRB(w * .03, h * .365, w * .97, h * .745);
+    c.drawOval(
+      lip,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFA57B55), Color(0xFF7E5B40)],
+        ).createShader(lip),
     );
+
+    // Grassy top
+    final top = Rect.fromLTRB(w * .03, h * .34, w * .97, h * .71);
+    final grass = Path()..addOval(top);
     c.drawPath(
       grass,
       Paint()
@@ -132,38 +252,77 @@ class IslandPainter extends CustomPainter {
           end: Alignment.bottomCenter,
           colors: [
             Color.lerp(
-              const Color(0xFFC7C98A),
-              const Color(0xFFA6E07A),
+              const Color(0xFFCFD08F),
+              const Color(0xFFB4EA86),
               healthy,
             )!,
             Color.lerp(
-              const Color(0xFF9B9D5E),
-              const Color(0xFF6FBF57),
+              const Color(0xFF9FA162),
+              const Color(0xFF6EC15A),
               healthy,
             )!,
           ],
         ).createShader(top),
     );
-    // Grass rim (kept inside the top surface)
     c.save();
     c.clipPath(grass);
+    // Sunlit patch and texture
+    paintGlow(c, at(.36, .42), w * .3, Colors.white, .22);
+    final rnd = Random(11);
+    for (var i = 0; i < 26; i++) {
+      final o = at(.08 + rnd.nextDouble() * .84, .38 + rnd.nextDouble() * .3);
+      final light = rnd.nextBool();
+      c.drawOval(
+        Rect.fromCenter(
+          center: o,
+          width: u * (.4 + rnd.nextDouble() * .6),
+          height: u * (.14 + rnd.nextDouble() * .16),
+        ),
+        Paint()
+          ..color = light ? const Color(0x22FFFFFF) : const Color(0x14003300),
+      );
+    }
+    // Front rim shading
     c.drawOval(
-      Rect.fromLTRB(w * .03, h * .5, w * .97, h * .74),
+      Rect.fromLTRB(w * .03, h * .5, w * .97, h * .73),
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = u * .12
+        ..strokeWidth = u * .14
         ..color = Color.lerp(
           const Color(0xFF8C8A55),
-          const Color(0xFF5AAE4A),
+          const Color(0xFF55A845),
           healthy,
         )!,
     );
     c.restore();
     c.drawPath(grass, _stroke);
+
+    // Flowers bloom as the island is restored
+    final flowerColors = [
+      const Color(0xFFFF7EB6),
+      const Color(0xFFFFE066),
+      Colors.white,
+      const Color(0xFFB39DFF),
+    ];
+    final frnd = Random(5);
+    final flowers = (36 * healthy).round();
+    for (var i = 0, placed = 0; i < 200 && placed < flowers; i++) {
+      final o = at(
+        .06 + frnd.nextDouble() * .88,
+        .37 + frnd.nextDouble() * .32,
+      );
+      final col = flowerColors[frnd.nextInt(flowerColors.length)];
+      if (!_insideTop(o)) continue;
+      placed++;
+      c.drawCircle(o, u * .055, Paint()..color = col);
+      c.drawCircle(o, u * .022, Paint()..color = const Color(0xFFFFB300));
+    }
+
     // Tufts
     final tuft = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = u * .05
+      ..strokeCap = StrokeCap.round
       ..color = Color.lerp(
         const Color(0xFF8E8C58),
         const Color(0xFF4F9E43),
@@ -177,6 +336,8 @@ class IslandPainter extends CustomPainter {
       (.88, .5),
       (.4, .66),
       (.8, .62),
+      (.62, .64),
+      (.16, .58),
     ]) {
       final o = at(x, y);
       c.drawLine(o, o + Offset(-u * .08, -u * .16), tuft);
@@ -187,39 +348,313 @@ class IslandPainter extends CustomPainter {
 
   void _river(Canvas c) {
     final river = Path()
-      ..moveTo(w * .36, h * .36)
+      ..moveTo(w * .36, h * .37)
       ..quadraticBezierTo(w * .3, h * .5, w * .36, h * .58)
-      ..quadraticBezierTo(w * .4, h * .66, w * .34, h * .72);
+      ..quadraticBezierTo(w * .4, h * .66, w * .34, h * .71);
+    // Banks
+    c.drawPath(
+      river,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = u * .72
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0xFFD9C49A),
+    );
     c.drawPath(
       river,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = u * .55
         ..strokeCap = StrokeCap.round
-        ..color = const Color(0xFF6CC7F0),
+        ..shader = const LinearGradient(
+          colors: [Color(0xFF5BB8EE), Color(0xFF86D8FA)],
+        ).createShader(Rect.fromLTWH(w * .28, 0, w * .14, h)),
     );
-    c.drawPath(
-      river,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = u * .18
-        ..strokeCap = StrokeCap.round
-        ..color = Colors.white.withValues(alpha: .35),
-    );
-    // Waterfall off the edge
-    final fall = at(.34, .72);
-    c.drawRect(
-      Rect.fromLTWH(fall.dx - u * .2, fall.dy, u * .4, h * .1),
+    // Moving glints on the water
+    final metrics = river.computeMetrics().first;
+    final glint = Paint()
+      ..strokeWidth = u * .07
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.white.withValues(alpha: .7);
+    for (var k = 0; k < 4; k++) {
+      final d = ((time * u * .8 + k * metrics.length / 4) % metrics.length);
+      final tan = metrics.getTangentForOffset(d);
+      if (tan == null) continue;
+      final side =
+          Offset(-tan.vector.dy, tan.vector.dx) * u * (k.isEven ? .1 : -.1);
+      c.drawLine(
+        tan.position + side,
+        tan.position + side + tan.vector * u * .18,
+        glint,
+      );
+    }
+
+    // Waterfall off the edge, with flowing streaks and mist
+    final fall = at(.34, .71);
+    final fallH = h * .16;
+    final fallRect = Rect.fromLTWH(fall.dx - u * .22, fall.dy, u * .44, fallH);
+    c.drawRRect(
+      RRect.fromRectAndRadius(fallRect, Radius.circular(u * .1)),
       Paint()
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF6CC7F0),
-            const Color(0xFF6CC7F0).withValues(alpha: 0),
+            const Color(0xFF7FD0F5),
+            const Color(0xFF7FD0F5).withValues(alpha: 0),
           ],
-        ).createShader(Rect.fromLTWH(fall.dx, fall.dy, u, h * .1)),
+        ).createShader(fallRect),
     );
+    final streak = Paint()
+      ..strokeWidth = u * .05
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.white.withValues(alpha: .6);
+    for (var k = 0; k < 3; k++) {
+      final x = fall.dx + (k - 1) * u * .12;
+      final y = fall.dy + ((time * u * 2.2 + k * fallH / 3) % fallH);
+      c.drawLine(Offset(x, y), Offset(x, y + u * .25), streak);
+    }
+    for (var k = 0; k < 4; k++) {
+      final t = (time * .5 + k / 4) % 1;
+      c.drawCircle(
+        Offset(
+          fall.dx + (k - 1.5) * u * .18,
+          fall.dy + fallH * .8 - t * u * .4,
+        ),
+        u * (.1 + t * .12),
+        Paint()..color = Colors.white.withValues(alpha: .35 * (1 - t)),
+      );
+    }
+  }
+
+  void _path(Canvas c) {
+    final p0 = at(.13, .6), p1 = at(.5, .72), p2 = at(.88, .57);
+    final stone = Paint()..color = const Color(0xFFE8DCC6);
+    final shadow = Paint()..color = const Color(0x33000000);
+    for (var i = 0; i <= 16; i++) {
+      final t = i / 16;
+      final o = Offset(
+        (1 - t) * (1 - t) * p0.dx + 2 * (1 - t) * t * p1.dx + t * t * p2.dx,
+        (1 - t) * (1 - t) * p0.dy + 2 * (1 - t) * t * p1.dy + t * t * p2.dy,
+      );
+      if ((o.dx - w * .35).abs() < u * .5) continue; // the bridge crosses here
+      final r = Rect.fromCenter(center: o, width: u * .3, height: u * .16);
+      c.drawOval(r.shift(Offset(0, u * .03)), shadow);
+      c.drawOval(r, stone);
+    }
+  }
+
+  void _trees(Canvas c, {required bool back}) {
+    final spots = back
+        ? [
+            (.08, .5, 1.0, false),
+            (.2, .4, .9, true),
+            (.49, .37, .8, false),
+            (.73, .36, .85, true),
+            (.93, .49, 1.0, false),
+          ]
+        : [(.1, .66, .75, false), (.9, .63, .8, false), (.7, .7, .6, false)];
+    final leafLight = Color.lerp(
+      const Color(0xFFB5A77A),
+      const Color(0xFF8EDB6A),
+      healthy,
+    )!;
+    final leafDark = Color.lerp(
+      const Color(0xFF7F7450),
+      const Color(0xFF3F9A4B),
+      healthy,
+    )!;
+    for (final (x, y, scale, pine) in spots) {
+      final b = at(x, y);
+      final s = u * scale;
+      if (!back) {
+        // Bushes along the rim
+        for (final (dx, dy, r) in [
+          (-.3, 0.0, .3),
+          (.3, 0.0, .28),
+          (0.0, -.15, .34),
+        ]) {
+          c.drawCircle(
+            b + Offset(dx * s, dy * s),
+            r * s,
+            Paint()..color = leafDark,
+          );
+        }
+        c.drawCircle(
+          b + Offset(-.08 * s, -.22 * s),
+          .2 * s,
+          Paint()..color = leafLight,
+        );
+        if (healthy > .3) {
+          for (final (dx, dy) in [(-.25, -.05), (.2, -.2), (.05, .05)]) {
+            c.drawCircle(
+              b + Offset(dx * s, dy * s),
+              .06 * s,
+              Paint()..color = const Color(0xFFFF6B8B),
+            );
+          }
+        }
+        continue;
+      }
+      c.drawOval(
+        Rect.fromCenter(
+          center: b + Offset(0, s * .05),
+          width: s * .8,
+          height: s * .18,
+        ),
+        Paint()..color = const Color(0x33000000),
+      );
+      final trunk = Paint()
+        ..strokeWidth = s * .14
+        ..strokeCap = StrokeCap.round
+        ..color = const Color(0xFF7A5234);
+      c.drawLine(b, b - Offset(0, s * .75), trunk);
+      if (healthy < .12) {
+        // Bare, ruined tree
+        final branch = Paint()
+          ..strokeWidth = s * .06
+          ..strokeCap = StrokeCap.round
+          ..color = const Color(0xFF7A5234);
+        c.drawLine(
+          b - Offset(0, s * .55),
+          b + Offset(-s * .3, -s * .9),
+          branch,
+        );
+        c.drawLine(
+          b - Offset(0, s * .45),
+          b + Offset(s * .28, -s * .8),
+          branch,
+        );
+        continue;
+      }
+      final grow = .55 + .45 * healthy;
+      final sway = sin(time * 1.2 + x * 10) * s * .03;
+      if (pine) {
+        for (var k = 0; k < 3; k++) {
+          final ty = b.dy - s * (.5 + k * .32) * grow;
+          final half = s * (.5 - k * .12) * grow;
+          final tri = Path()
+            ..moveTo(b.dx + sway, ty - s * .45 * grow)
+            ..lineTo(b.dx + half, ty)
+            ..lineTo(b.dx - half, ty)
+            ..close();
+          c.drawPath(tri, Paint()..color = k.isEven ? leafDark : leafLight);
+          c.drawPath(tri, _stroke);
+        }
+      } else {
+        final center = b - Offset(-sway, s * 1.0 * grow);
+        final canopy = Path();
+        for (final (dx, dy, r) in [
+          (-.3, .12, .34),
+          (.3, .12, .34),
+          (0.0, -.15, .4),
+          (0.0, .1, .36),
+        ]) {
+          canopy.addOval(
+            Rect.fromCircle(
+              center: center + Offset(dx * s * grow, dy * s * grow),
+              radius: r * s * grow,
+            ),
+          );
+        }
+        c.drawPath(
+          canopy,
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [leafLight, leafDark],
+            ).createShader(Rect.fromCircle(center: center, radius: s * .7)),
+        );
+        c.drawPath(canopy, _stroke);
+        if (healthy > .5) {
+          for (final (dx, dy) in [(-.2, 0.0), (.18, -.12), (.05, .15)]) {
+            c.drawCircle(
+              center + Offset(dx * s, dy * s),
+              s * .06,
+              Paint()..color = const Color(0xFFFFB347),
+            );
+          }
+        }
+      }
+    }
+  }
+
+  void _floatingRocks(Canvas c, {required bool back}) {
+    final rocks = back
+        ? [(.05, .7, .5, 0.0), (.9, .3, .35, 2.0)]
+        : [(.94, .8, .55, 1.0), (.14, .95, .4, 3.0)];
+    for (final (x, y, s, phase) in rocks) {
+      final o = at(x, y) + Offset(0, sin(time * 1.1 + phase) * u * .15);
+      final r = u * s;
+      final rock = Path()
+        ..moveTo(o.dx - r, o.dy)
+        ..quadraticBezierTo(o.dx - r * .6, o.dy + r * 1.1, o.dx, o.dy + r * 1.2)
+        ..quadraticBezierTo(o.dx + r * .7, o.dy + r * .9, o.dx + r, o.dy)
+        ..close();
+      c.drawPath(rock, Paint()..color = const Color(0xFF8A6A52));
+      c.drawPath(rock, _stroke);
+      c.drawOval(
+        Rect.fromCenter(center: o, width: r * 2.1, height: r * .6),
+        Paint()
+          ..color = Color.lerp(
+            const Color(0xFFB9B77F),
+            const Color(0xFF86D56B),
+            healthy,
+          )!,
+      );
+      c.drawOval(
+        Rect.fromCenter(center: o, width: r * 2.1, height: r * .6),
+        _stroke,
+      );
+    }
+  }
+
+  /// Fireflies once the lanterns are lit, butterflies once the garden grows.
+  void _ambient(Canvas c) {
+    final lit = p('lanterns');
+    if (lit > 0) {
+      for (var i = 0; i < 12; i++) {
+        final a = time * (.3 + i * .03) + i * 1.7;
+        final o = at(
+          .5 + cos(a) * (.3 + (i % 3) * .05),
+          .45 + sin(a * 1.3) * .12,
+        );
+        final twinkle = (sin(time * 3 + i) + 1) / 2;
+        paintGlow(c, o, u * .25, const Color(0xFFFFF59D), .8 * lit * twinkle);
+        c.drawCircle(
+          o,
+          u * .03,
+          Paint()..color = const Color(0xFFFFFDE7).withValues(alpha: lit),
+        );
+      }
+    }
+    final garden = p('garden');
+    if (garden > 0) {
+      for (var i = 0; i < 2; i++) {
+        final a = time * .6 + i * 3;
+        final o = at(.22 + cos(a) * .08, .56 + sin(a * 2) * .05);
+        final flap = (sin(time * 14 + i) + 1) / 2;
+        final col = i == 0 ? const Color(0xFFFFB3D9) : const Color(0xFFB3E5FF);
+        for (final dir in [-1.0, 1.0]) {
+          c.drawOval(
+            Rect.fromCenter(
+              center: o + Offset(dir * u * .08 * (.4 + .6 * flap), 0),
+              width: u * .16 * (.4 + .6 * flap),
+              height: u * .2,
+            ),
+            Paint()..color = col.withValues(alpha: garden),
+          );
+        }
+        c.drawLine(
+          o - Offset(0, u * .08),
+          o + Offset(0, u * .08),
+          Paint()
+            ..strokeWidth = u * .03
+            ..color = const Color(0xFF5D4037),
+        );
+      }
+    }
   }
 
   void _ruinStones(Canvas c, Offset base, double spread, double fade) {

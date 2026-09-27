@@ -26,6 +26,9 @@ abstract class GameFeedback {
   });
   void startMusic();
   void pauseMusic();
+
+  /// Silences all game audio while something else is playing (an ad).
+  void setSuppressed(bool suppressed);
 }
 
 class SilentFeedback implements GameFeedback {
@@ -44,4 +47,6 @@ class SilentFeedback implements GameFeedback {
   void startMusic() {}
   @override
   void pauseMusic() {}
+  @override
+  void setSuppressed(bool suppressed) {}
 }

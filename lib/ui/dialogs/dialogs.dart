@@ -128,6 +128,18 @@ Widget rewardChip(CurrencyKind kind, String text) => Container(
   ),
 );
 
+/// Shows a rewarded ad with the game's music and sounds paused.
+Future<bool> showRewardedAd(BuildContext context, String placement) async {
+  final feedback = context.game.feedback;
+  final ads = context.ads;
+  feedback.setSuppressed(true);
+  try {
+    return await ads.showRewarded(context, placement);
+  } finally {
+    feedback.setSuppressed(false);
+  }
+}
+
 /// Watches a rewarded ad and grants [reward] if it was completed.
 Future<bool> watchAdFor(
   BuildContext context,
@@ -139,7 +151,7 @@ Future<bool> watchAdFor(
     showToast(context, 'No more of those today. Come back tomorrow!');
     return false;
   }
-  final ok = await context.ads.showRewarded(context, reward.name);
+  final ok = await showRewardedAd(context, reward.name);
   if (ok) game.grantAdReward(reward, generator: generator);
   return ok;
 }
@@ -289,10 +301,7 @@ Future<void> showWelcomeBack(BuildContext context, WelcomeBack wb) {
         GameButton(
           color: Palette.accent,
           onTap: () async {
-            final ok = await context.ads.showRewarded(
-              ctx,
-              AdReward.doubleIdle.name,
-            );
+            final ok = await showRewardedAd(ctx, AdReward.doubleIdle.name);
             if (!ctx.mounted) return;
             Navigator.pop(ctx);
             if (ok) {

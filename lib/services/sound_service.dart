@@ -31,6 +31,9 @@ class SoundService implements GameFeedback {
 
   /// Whether the app is in the foreground (no sound at all otherwise).
   bool _foreground = false;
+
+  /// True while an ad (or anything else with its own audio) is on screen.
+  bool _suppressed = false;
   bool _musicPlaying = false;
 
   static List<String> get _files => [
@@ -76,7 +79,7 @@ class SoundService implements GameFeedback {
 
   @override
   void play(Sfx sfx, {int level = 1}) {
-    if (_muted || _sfxVolume <= 0 || !_foreground) return;
+    if (_muted || _sfxVolume <= 0 || !_foreground || _suppressed) return;
     unawaited(_channels[_fileFor(sfx, level)]?.play(_sfxVolume, _minGapMs));
   }
 
@@ -117,8 +120,20 @@ class SoundService implements GameFeedback {
     }
   }
 
+  @override
+  void setSuppressed(bool suppressed) {
+    if (_suppressed == suppressed) return;
+    _suppressed = suppressed;
+    _syncMusic();
+    if (suppressed) {
+      for (final c in _channels.values) {
+        unawaited(c.stopAll());
+      }
+    }
+  }
+
   void _syncMusic() {
-    final audible = _foreground && !_muted && _musicVolume > 0;
+    final audible = _foreground && !_suppressed && !_muted && _musicVolume > 0;
     _music.setVolume(_musicVolume * .5).catchError((_) {});
     if (!audible) {
       if (_musicPlaying) {
