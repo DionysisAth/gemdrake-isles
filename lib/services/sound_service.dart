@@ -48,10 +48,19 @@ class SoundService implements GameFeedback {
   Future<void> init() async {
     try {
       await AudioPlayer.global.setAudioContext(
-        AudioContextConfig(
-          focus: AudioContextConfigFocus.mixWithOthers,
-          respectSilence: true,
-        ).build(),
+        AudioContext(
+          // Android: "game" audio plays on the media stream, so the phone's
+          // volume buttons control it (not the notification volume), and we
+          // don't take audio focus, so the player's own music keeps playing.
+          android: const AudioContextAndroid(
+            usageType: AndroidUsageType.game,
+            contentType: AndroidContentType.music,
+            audioFocus: AndroidAudioFocus.none,
+          ),
+          // iOS: "ambient" mixes with other audio and respects the silent
+          // switch, as players expect from a casual game.
+          iOS: AudioContextIOS(category: AVAudioSessionCategory.ambient),
+        ),
       );
       await _music.setReleaseMode(ReleaseMode.loop);
     } catch (e) {
