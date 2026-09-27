@@ -1,0 +1,63 @@
+{
+  "rarities": [
+    { "id": "common", "name": "Common", "color": "#7CB342", "coinsPerMinute": 2.0 },
+    { "id": "rare", "name": "Rare", "color": "#29B6F6", "coinsPerMinute": 4.0 },
+    { "id": "epic", "name": "Epic", "color": "#AB47BC", "coinsPerMinute": 8.0 },
+    { "id": "legendary", "name": "Legendary", "color": "#FFB300", "coinsPerMinute": 16.0 }
+  ],
+  "levels": [
+    { "name": "Baby", "multiplier": 1.0, "gemsPerHour": 0.0 },
+    { "name": "Young", "multiplier": 2.5, "gemsPerHour": 0.0 },
+    { "name": "Adult", "multiplier": 6.0, "gemsPerHour": 0.25 },
+    { "name": "Elder", "multiplier": 14.0, "gemsPerHour": 0.5 },
+    { "name": "Gemdrake", "multiplier": 32.0, "gemsPerHour": 1.5 }
+  ],
+  "types": [
+    {
+      "id": "earth",
+      "name": "Earth",
+      "rarity": "common",
+      "desc": "Sleepy and loyal. Loves napping in warm moss.",
+      "body": "#7CC46B",
+      "belly": "#F3E6B3",
+      "wing": "#4E9A52",
+      "accent": "#A1887F"
+    },
+    {
+      "id": "water",
+      "name": "Water",
+      "rarity": "common",
+      "desc": "Playful splasher. Always a little bit damp.",
+      "body": "#5CB8E8",
+      "belly": "#D9F2FF",
+      "wing": "#2F86C4",
+      "accent": "#E1F5FE"
+    },
+    {
+      "id": "fire",
+      "name": "Fire",
+      "rarity": "rare",
+      "desc": "Brave, warm and very proud of its tiny flames.",
+      "body": "#F2784B",
+      "belly": "#FFE0A3",
+      "wing": "#D84315",
+      "accent": "#FFCA28"
+    },
+    {
+      "id": "crystal",
+      "name": "Crystal",
+      "rarity": "epic",
+      "desc": "Shimmers in every color. Hums softly near gems.",
+      "body": "#C39BF0",
+      "belly": "#F3E5FF",
+      "wing": "#8E6CD8",
+      "accent": "#80DEEA"
+    }
+  ],
+  "hatchTable": [
+    { "type": "earth", "weight": 45 },
+    { "type": "water", "weight": 35 },
+    { "type": "fire", "weight": 15 },
+    { "type": "crystal", "weight": 5 }
+  ]
+}

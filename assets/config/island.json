@@ -1,0 +1,119 @@
+{
+  "islands": [
+    {
+      "id": "meadow",
+      "name": "Meadow Ruins",
+      "theme": "meadow",
+      "completeText": "The Meadow is restored! A warm wind drifts in from the Volcano Isle... (coming soon)",
+      "tasks": [
+        {
+          "id": "clear_vines",
+          "name": "Clear the Vines",
+          "desc": "Thorny vines choke the old paths.",
+          "cost": 25,
+          "xp": 3,
+          "requiresLevel": 1,
+          "requires": [],
+          "element": "vines"
+        },
+        {
+          "id": "fix_bridge",
+          "name": "Fix the Old Bridge",
+          "desc": "Connect the two halves of the island again.",
+          "cost": 50,
+          "xp": 6,
+          "requiresLevel": 1,
+          "requires": ["clear_vines"],
+          "element": "bridge"
+        },
+        {
+          "id": "restore_well",
+          "name": "Restore the Well",
+          "desc": "Fresh spring water for everyone.",
+          "cost": 90,
+          "xp": 8,
+          "requiresLevel": 2,
+          "requires": ["clear_vines"],
+          "element": "well",
+          "perk": { "type": "energyMax", "value": 10, "text": "+10 max energy" }
+        },
+        {
+          "id": "plant_garden",
+          "name": "Plant the Garden",
+          "desc": "Flowers, herbs and a patch of sunfruit.",
+          "cost": 130,
+          "xp": 10,
+          "requiresLevel": 3,
+          "requires": ["fix_bridge"],
+          "element": "garden"
+        },
+        {
+          "id": "dragon_nest",
+          "name": "Build a Dragon Nest",
+          "desc": "A soft, mossy home for your dragons.",
+          "cost": 180,
+          "xp": 12,
+          "requiresLevel": 3,
+          "requires": ["fix_bridge"],
+          "element": "nest",
+          "perk": { "type": "dragonBoost", "value": 0.15, "text": "Dragons earn +15%" }
+        },
+        {
+          "id": "storage_shed",
+          "name": "Build a Storage Shed",
+          "desc": "Somewhere to keep treasures safe.",
+          "cost": 240,
+          "xp": 14,
+          "requiresLevel": 4,
+          "requires": ["restore_well"],
+          "element": "shed",
+          "perk": { "type": "storageSlots", "value": 1, "text": "+1 storage slot" }
+        },
+        {
+          "id": "watchtower",
+          "name": "Rebuild the Watchtower",
+          "desc": "Keep watch over the sleeping dragons.",
+          "cost": 320,
+          "xp": 16,
+          "requiresLevel": 5,
+          "requires": ["plant_garden"],
+          "element": "tower",
+          "perk": { "type": "offlineHours", "value": 2, "text": "+2h offline earnings" }
+        },
+        {
+          "id": "windmill",
+          "name": "Repair the Windmill",
+          "desc": "Its sails turn with the sky breeze again.",
+          "cost": 420,
+          "xp": 18,
+          "requiresLevel": 6,
+          "requires": ["storage_shed"],
+          "element": "windmill",
+          "perk": { "type": "energyMax", "value": 10, "text": "+10 max energy" }
+        },
+        {
+          "id": "lanterns",
+          "name": "Light the Lanterns",
+          "desc": "Warm lights to guide dragons home.",
+          "cost": 540,
+          "xp": 20,
+          "requiresLevel": 7,
+          "requires": ["watchtower", "dragon_nest"],
+          "element": "lanterns",
+          "perk": { "type": "dragonBoost", "value": 0.15, "text": "Dragons earn +15%" }
+        },
+        {
+          "id": "crystal_shrine",
+          "name": "Raise the Crystal Shrine",
+          "desc": "The heart of the island glows once more.",
+          "cost": 700,
+          "xp": 30,
+          "requiresLevel": 8,
+          "requires": ["lanterns", "windmill"],
+          "element": "shrine",
+          "perk": { "type": "offlineHours", "value": 2, "text": "+2h offline earnings" }
+        }
+      ]
+    }
+  ]
+}

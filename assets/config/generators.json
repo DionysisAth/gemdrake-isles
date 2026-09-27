@@ -1,0 +1,87 @@
+{
+  "energyPerTap": 1,
+  "generators": [
+    {
+      "id": "crystal_mine",
+      "name": "Crystal Mine",
+      "desc": "Tap to dig up gems. Sometimes a dragon egg turns up!",
+      "unlockLevel": 1,
+      "spawnCell": [3, 5],
+      "style": "mine",
+      "levels": [
+        {
+          "charges": 20,
+          "cooldownSeconds": 600,
+          "upgradeCost": 0,
+          "drops": [
+            { "item": "gem:1", "weight": 86 },
+            { "item": "gem:2", "weight": 10 },
+            { "item": "egg:1", "weight": 4, "minPlayerLevel": 3 }
+          ]
+        },
+        {
+          "charges": 24,
+          "cooldownSeconds": 540,
+          "upgradeCost": 200,
+          "drops": [
+            { "item": "gem:1", "weight": 76 },
+            { "item": "gem:2", "weight": 18 },
+            { "item": "egg:1", "weight": 6, "minPlayerLevel": 3 }
+          ]
+        },
+        {
+          "charges": 28,
+          "cooldownSeconds": 480,
+          "upgradeCost": 600,
+          "drops": [
+            { "item": "gem:1", "weight": 64 },
+            { "item": "gem:2", "weight": 26 },
+            { "item": "gem:3", "weight": 3 },
+            { "item": "egg:1", "weight": 7, "minPlayerLevel": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seed_basket",
+      "name": "Seed Basket",
+      "desc": "Tap to scatter seeds. Plants grow into trees, and dragons love trees.",
+      "unlockLevel": 2,
+      "spawnCell": [3, 7],
+      "style": "basket",
+      "levels": [
+        {
+          "charges": 20,
+          "cooldownSeconds": 600,
+          "upgradeCost": 0,
+          "drops": [
+            { "item": "plant:1", "weight": 86 },
+            { "item": "plant:2", "weight": 10 },
+            { "item": "egg:1", "weight": 4, "minPlayerLevel": 3 }
+          ]
+        },
+        {
+          "charges": 24,
+          "cooldownSeconds": 540,
+          "upgradeCost": 250,
+          "drops": [
+            { "item": "plant:1", "weight": 76 },
+            { "item": "plant:2", "weight": 18 },
+            { "item": "egg:1", "weight": 6, "minPlayerLevel": 3 }
+          ]
+        },
+        {
+          "charges": 28,
+          "cooldownSeconds": 480,
+          "upgradeCost": 700,
+          "drops": [
+            { "item": "plant:1", "weight": 64 },
+            { "item": "plant:2", "weight": 26 },
+            { "item": "plant:3", "weight": 3 },
+            { "item": "egg:1", "weight": 7, "minPlayerLevel": 3 }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "chains": [
+    {
+      "id": "gem",
+      "name": "Gems",
+      "unlockLevel": 1,
+      "orderable": true,
+      "items": [
+        { "name": "Pebble", "value": 2, "sell": 1, "xp": 1, "desc": "A humble stone with a faint shimmer." },
+        { "name": "Shard", "value": 5, "sell": 1, "xp": 2, "desc": "A sliver of sky-blue crystal." },
+        { "name": "Crystal", "value": 11, "sell": 2, "xp": 3, "desc": "A little cluster that hums when dragons are near." },
+        { "name": "Cut Gem", "value": 24, "sell": 4, "xp": 5, "desc": "Polished by the island winds." },
+        { "name": "Jewel", "value": 50, "sell": 8, "xp": 8, "desc": "Set in old island gold." },
+        { "name": "Crown Jewel", "value": 105, "sell": 16, "xp": 12, "desc": "Fit for the Dragon Queen herself." },
+        { "name": "Heart Gem", "value": 220, "sell": 35, "xp": 18, "desc": "Said to be a Gemdrake's heart. Warm to the touch." }
+      ]
+    },
+    {
+      "id": "plant",
+      "name": "Plants",
+      "unlockLevel": 2,
+      "orderable": true,
+      "items": [
+        { "name": "Seed", "value": 2, "sell": 1, "xp": 1, "desc": "Tiny, but full of hope." },
+        { "name": "Sprout", "value": 5, "sell": 1, "xp": 2, "desc": "Reaching for the sun." },
+        { "name": "Bush", "value": 11, "sell": 2, "xp": 3, "desc": "A cozy hiding spot for baby dragons." },
+        { "name": "Fruit Tree", "value": 24, "sell": 5, "xp": 5, "desc": "Dragons love its sweet sunfruit." },
+        { "name": "Magic Tree", "value": 52, "sell": 10, "xp": 9, "desc": "Its leaves glow softly at night." }
+      ]
+    },
+    {
+      "id": "egg",
+      "name": "Dragon Eggs",
+      "unlockLevel": 3,
+      "orderable": false,
+      "hatchOnMaxMerge": true,
+      "items": [
+        { "name": "Dragon Egg", "value": 15, "sell": 3, "xp": 2, "desc": "Something is sleeping inside." },
+        { "name": "Glowing Egg", "value": 30, "sell": 6, "xp": 4, "desc": "It's warm and softly glowing." },
+        { "name": "Cracking Egg", "value": 60, "sell": 12, "xp": 6, "desc": "Almost ready! Merge two to hatch a dragon." }
+      ]
+    }
+  ]
+}

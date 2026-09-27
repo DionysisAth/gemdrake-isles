@@ -1,0 +1,59 @@
+{
+  "steps": [
+    {
+      "id": "welcome",
+      "speaker": "pip",
+      "text": "Welcome to the Gemdrake Isles! Our island has fallen to ruin... but with your help, the dragons can come home.",
+      "advance": "tap"
+    },
+    {
+      "id": "tap_generator",
+      "speaker": "pip",
+      "text": "Tap the Crystal Mine to dig up gems. Each tap uses 1 energy.",
+      "target": "generator:crystal_mine",
+      "advance": "event:generate",
+      "count": 2
+    },
+    {
+      "id": "first_merge",
+      "speaker": "pip",
+      "text": "Drag one Pebble onto the other to merge them into a Shard!",
+      "target": "merge:gem:1",
+      "advance": "event:merge"
+    },
+    {
+      "id": "first_order",
+      "speaker": "pip",
+      "text": "I need a Shard! When an order is ready, tap it to deliver.",
+      "target": "order:0",
+      "advance": "event:order_complete"
+    },
+    {
+      "id": "island_tab",
+      "speaker": "pip",
+      "text": "Coins! Let's spend them restoring the island. Tap the Island button.",
+      "target": "tab:island",
+      "advance": "event:tab_island"
+    },
+    {
+      "id": "first_task",
+      "speaker": "pip",
+      "text": "Those thorny vines have to go. Tap to clear them!",
+      "target": "task:clear_vines",
+      "advance": "event:task_complete"
+    },
+    {
+      "id": "dragons",
+      "speaker": "pip",
+      "text": "Look how much better it is already! Merge Dragon Eggs to hatch dragons. They'll earn coins for you, even while you're away.",
+      "advance": "tap"
+    },
+    {
+      "id": "back_to_board",
+      "speaker": "pip",
+      "text": "Now head back to the board and keep merging. Tap any item to see what it grows into. Have fun!",
+      "target": "tab:board",
+      "advance": "event:tab_board"
+    }
+  ]
+}

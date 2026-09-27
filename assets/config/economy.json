@@ -1,0 +1,35 @@
+{
+  "start": { "coins": 10, "gems": 5, "energy": 100 },
+  "energy": { "max": 100, "refillSeconds": 120, "overflowCap": 999 },
+  "merge": {
+    "standardConsume": 2,
+    "standardYield": 1,
+    "bonusEnabled": true,
+    "bonusConsume": 5,
+    "bonusYield": 3
+  },
+  "storage": { "freeSlots": 3, "slotCostsGems": [10, 20, 35] },
+  "offline": { "capHours": 8, "welcomeBackMinSeconds": 60 },
+  "levels": {
+    "xpToNext": [12, 30, 50, 75, 105, 140, 180, 225, 275, 330],
+    "xpGrowthAfter": 60,
+    "rewardGems": 3,
+    "refillEnergy": true
+  },
+  "gems": {
+    "energyRefillCost": 15,
+    "cooldownSkipMinutesPerGem": 3,
+    "confirmAbove": 9
+  },
+  "ads": {
+    "freeEnergyAmount": 30,
+    "freeEnergyPerDay": 5,
+    "generatorSkipPerDay": 5,
+    "fallbackToSimulated": true,
+    "simulatedAdSeconds": 3,
+    "rewardedUnitIds": {
+      "android": "ca-app-pub-3940256099942544/5224354917",
+      "ios": "ca-app-pub-3940256099942544/1712485313"
+    }
+  }
+}
