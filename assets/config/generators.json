@@ -34,6 +34,11 @@
               "item": "treasure:1",
               "weight": 3,
               "minPlayerLevel": 2
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -59,6 +64,11 @@
               "item": "treasure:1",
               "weight": 3,
               "minPlayerLevel": 2
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -88,6 +98,11 @@
               "item": "treasure:1",
               "weight": 3,
               "minPlayerLevel": 2
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         }
@@ -126,6 +141,11 @@
               "item": "treasure:1",
               "weight": 3,
               "minPlayerLevel": 2
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -151,6 +171,11 @@
               "item": "treasure:1",
               "weight": 3,
               "minPlayerLevel": 2
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -180,6 +205,11 @@
               "item": "treasure:1",
               "weight": 3,
               "minPlayerLevel": 2
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         }
@@ -217,6 +247,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -240,6 +275,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -267,6 +307,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         }
@@ -304,6 +349,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -327,6 +377,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -354,6 +409,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         }
@@ -391,6 +451,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -414,6 +479,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         },
@@ -441,6 +511,11 @@
             {
               "item": "treasure:1",
               "weight": 3
+            },
+            {
+              "item": "potion:1",
+              "weight": 2,
+              "minPlayerLevel": 3
             }
           ]
         }

@@ -12,6 +12,10 @@ enum Sfx {
   restore,
   tap,
   collect,
+
+  /// A baby dragon's chirp and a grown dragon's roar.
+  chirp,
+  roar,
 }
 
 /// Audio + haptic feedback, abstracted so game logic stays testable.
@@ -26,6 +30,9 @@ abstract class GameFeedback {
   });
   void startMusic();
   void pauseMusic();
+
+  /// Background music for an island theme (meadow, volcano, lagoon...).
+  void setMusicTrack(String track);
 
   /// Silences all game audio while something else is playing (an ad).
   void setSuppressed(bool suppressed);
@@ -47,6 +54,8 @@ class SilentFeedback implements GameFeedback {
   void startMusic() {}
   @override
   void pauseMusic() {}
+  @override
+  void setMusicTrack(String track) {}
   @override
   void setSuppressed(bool suppressed) {}
 }

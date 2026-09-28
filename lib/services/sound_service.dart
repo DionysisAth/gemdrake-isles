@@ -28,6 +28,8 @@ class SoundService implements GameFeedback {
   bool _muted = false;
   bool _haptics = true;
   bool _musicLoaded = false;
+  String _track = 'meadow';
+  static const _tracks = {'meadow', 'volcano', 'lagoon', 'crystal', 'shadow'};
 
   /// Whether the app is in the foreground (no sound at all otherwise).
   bool _foreground = false;
@@ -121,6 +123,21 @@ class SoundService implements GameFeedback {
   }
 
   @override
+  void setMusicTrack(String track) {
+    final t = _tracks.contains(track) ? track : 'meadow';
+    if (t == _track) return;
+    _track = t;
+    if (!_musicLoaded) return;
+    // Load the new file next time music should play.
+    _musicLoaded = false;
+    final wasPlaying = _musicPlaying;
+    _musicPlaying = false;
+    _music.stop().catchError((_) {}).whenComplete(() {
+      if (wasPlaying) _syncMusic();
+    });
+  }
+
+  @override
   void setSuppressed(bool suppressed) {
     if (_suppressed == suppressed) return;
     _suppressed = suppressed;
@@ -150,7 +167,7 @@ class SoundService implements GameFeedback {
       _musicLoaded = true;
       _music
           .play(
-            AssetSource('audio/music_meadow.wav'),
+            AssetSource('audio/music_$_track.wav'),
             volume: _musicVolume * .5,
           )
           .then((_) {

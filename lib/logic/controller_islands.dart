@@ -20,6 +20,7 @@ extension IslandTravel on GameController {
     _refillOrders();
     feedback.play(Sfx.levelUp);
     feedback.haptic(heavy: true);
+    feedback.setMusicTrack(island.theme);
     analytics.log('island_travel', {'island': island.id});
     _emit(IslandTravelEvent(island, unlocks));
     _commit();

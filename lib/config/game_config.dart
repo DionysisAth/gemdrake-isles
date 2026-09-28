@@ -160,6 +160,7 @@ class ItemDef {
     required this.value,
     required this.sell,
     required this.xp,
+    this.energy = 0,
   });
 
   factory ItemDef.fromJson(Map<String, dynamic> j) => ItemDef(
@@ -168,6 +169,7 @@ class ItemDef {
     value: j['value'] as int,
     sell: j['sell'] as int,
     xp: j['xp'] as int,
+    energy: j['energy'] as int? ?? 0,
   );
 
   final String name;
@@ -177,6 +179,9 @@ class ItemDef {
   final int value;
   final int sell;
   final int xp;
+
+  /// Energy gained by drinking it (energy potions).
+  final int energy;
 }
 
 class ChainDef {

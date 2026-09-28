@@ -677,6 +677,30 @@ class GameController extends ChangeNotifier {
     return d;
   }
 
+  /// Energy the item in [s] gives when drunk (0 when it isn't a potion).
+  int drinkableEnergy(Slot s) {
+    final ref = pieceAt(s)?.item;
+    if (ref == null) return 0;
+    if (!s.storage && board.isLocked(s.index)) return 0;
+    return config.item(ref).energy;
+  }
+
+  /// Drinks the energy potion in [s].
+  bool drink(Slot s) {
+    final amount = drinkableEnergy(s);
+    if (amount <= 0) return false;
+    _setPiece(s, null);
+    if (_selected == s) _selected = null;
+    _addEnergy(amount);
+    state.addStat('potions');
+    feedback.play(Sfx.restore);
+    feedback.haptic();
+    _emit(EnergyDrunkEvent(amount, s));
+    analytics.log('potion', {'energy': amount});
+    _commit();
+    return true;
+  }
+
   /// Sells the item in [s] for coins.
   void sell(Slot s) {
     final p = pieceAt(s);
@@ -1091,6 +1115,7 @@ class GameController extends ChangeNotifier {
     state.discovered.add(grown.key);
     state.addStat('dragonMerges');
     feedback.play(Sfx.hatch);
+    feedback.play(grown.level >= 3 ? Sfx.roar : Sfx.chirp);
     feedback.haptic(heavy: true);
     analytics.log('dragon_merge', {'type': a.type, 'level': grown.level});
     _emit(DragonMergedEvent(grown));
@@ -1145,6 +1170,7 @@ class GameController extends ChangeNotifier {
   }
 
   void applyFeedbackSettings() {
+    feedback.setMusicTrack(currentIsland.theme);
     final s = state.settings;
     feedback.applySettings(
       musicVolume: s.musicVolume,

@@ -7,11 +7,13 @@ import '../../config/game_config.dart';
 import '../../logic/game_controller.dart';
 import '../../logic/game_events.dart';
 import '../../model/game_state.dart';
+import '../../services/feedback.dart';
 import '../dialogs/dialogs.dart';
 import '../dialogs/meta_dialogs.dart';
 import '../game_scope.dart';
 import '../targets.dart';
 import '../painters/board_painters.dart';
+import '../painters/dragon_painter.dart';
 import '../painters/island_painter.dart';
 import '../theme.dart';
 import '../widgets/piece_view.dart';
@@ -461,6 +463,49 @@ class _FlyingDragons extends StatelessWidget {
                 builder: (context) {
                   final d = shown[i];
                   final rnd = Random(d.id);
+                  final type = config.dragonType(d.type);
+                  final size = 34.0 + d.level * 8;
+                  // Most dragons fly laps; some nap or play on the island.
+                  final mode = i < 2 ? 0 : rnd.nextInt(5);
+                  if (mode >= 3) {
+                    final gx = w * (.28 + rnd.nextDouble() * .44);
+                    final gy = h * (.56 + rnd.nextDouble() * .08);
+                    if (mode == 3) {
+                      return _SleepingDragon(
+                        key: ValueKey('sleep${d.id}'),
+                        dragon: d,
+                        at: Offset(gx, gy),
+                        size: size * .9,
+                        time: time + i * 1.7,
+                        type: type,
+                        level: d.level,
+                      );
+                    }
+                    final t = time * (.8 + rnd.nextDouble() * .4) + i;
+                    final x = gx + sin(t * .5) * w * .08;
+                    final hop = (sin(t * 3)).abs();
+                    return Positioned(
+                      left: x - size / 2,
+                      top: gy - size / 2 - hop * 16,
+                      child: Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.diagonal3Values(
+                          cos(t * .5) > 0 ? 1 : -1,
+                          1 + (1 - hop) * .06,
+                          1,
+                        ),
+                        child: _Pokeable(
+                          dragon: d,
+                          child: DragonIcon(
+                            type: type,
+                            level: d.level,
+                            size: size,
+                            flap: hop > .3 ? (sin(t * 14) + 1) / 2 : 0,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
                   final speed = .12 + rnd.nextDouble() * .12;
                   final phase = rnd.nextDouble() * pi * 2;
                   final a = time * speed + phase;
@@ -469,7 +514,6 @@ class _FlyingDragons extends StatelessWidget {
                   final cy = h * (.3 + rnd.nextDouble() * .2);
                   final x = w / 2 + cos(a) * rx;
                   final y = cy + sin(a) * ry + sin(time * 2 + i) * 4;
-                  final size = 34.0 + d.level * 8;
                   final facingRight = -sin(a) > 0;
                   final flap = (sin(time * (7 + d.level) + i) + 1) / 2;
                   return Positioned(
@@ -482,11 +526,14 @@ class _FlyingDragons extends StatelessWidget {
                         1,
                         1,
                       ),
-                      child: DragonIcon(
-                        type: config.dragonType(d.type),
-                        level: d.level,
-                        size: size,
-                        flap: flap,
+                      child: _Pokeable(
+                        dragon: d,
+                        child: DragonIcon(
+                          type: type,
+                          level: d.level,
+                          size: size,
+                          flap: flap,
+                        ),
                       ),
                     ),
                   );
@@ -495,6 +542,107 @@ class _FlyingDragons extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// Tapping a dragon on the island: it chirps (babies) or roars (grown).
+class _Pokeable extends StatelessWidget {
+  const _Pokeable({required this.dragon, required this.child});
+
+  final Dragon dragon;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTapDown: (d) {
+      final game = context.game;
+      game.feedback.play(dragon.level >= 3 ? Sfx.roar : Sfx.chirp);
+      game.feedback.haptic(heavy: dragon.level >= 3);
+      context.fx.burst(
+        d.globalPosition,
+        color: const Color(0xFFFF8AC4),
+        count: 6 + dragon.level * 2,
+        spread: 30.0 + dragon.level * 8,
+      );
+      context.fx.floatText(
+        d.globalPosition,
+        dragon.level >= 3 ? 'ROAR!' : 'chirp!',
+        color: const Color(0xFFFFD1EC),
+      );
+    },
+    child: child,
+  );
+}
+
+/// A dragon napping on the island: slow breathing and drifting "z"s.
+class _SleepingDragon extends StatelessWidget {
+  const _SleepingDragon({
+    super.key,
+    required this.dragon,
+    required this.at,
+    required this.size,
+    required this.time,
+    required this.type,
+    required this.level,
+  });
+
+  final Dragon dragon;
+  final Offset at;
+  final double size;
+  final double time;
+  final DragonTypeDef type;
+  final int level;
+
+  @override
+  Widget build(BuildContext context) {
+    final breathe = 1 + sin(time * 1.6) * .035;
+    return Positioned(
+      left: at.dx - size / 2,
+      top: at.dy - size / 2,
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Transform(
+            alignment: Alignment.bottomCenter,
+            transform: Matrix4.diagonal3Values(1, breathe, 1),
+            child: _Pokeable(
+              dragon: dragon,
+              child: CustomPaint(
+                size: Size.square(size),
+                painter: DragonPainter(type: type, level: level, blink: true),
+              ),
+            ),
+          ),
+          for (var k = 0; k < 3; k++)
+            Builder(
+              builder: (context) {
+                final u = ((time * .35 + k / 3) % 1);
+                return Positioned(
+                  left: size * (.62 + u * .3),
+                  top: size * (.1 - u * .55),
+                  child: Opacity(
+                    opacity: (1 - u) * (u < .1 ? u / .1 : 1),
+                    child: Text(
+                      'z',
+                      style: TextStyle(
+                        fontSize: 10 + u * 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        shadows: const [
+                          Shadow(color: Color(0xFF3B2A5A), blurRadius: 2),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 }

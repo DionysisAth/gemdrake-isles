@@ -196,6 +196,46 @@
       ]
     },
     {
+      "id": "potion",
+      "name": "Energy Potions",
+      "unlockLevel": 1,
+      "orderable": false,
+      "items": [
+        {
+          "name": "Energy Drop",
+          "value": 4,
+          "sell": 1,
+          "xp": 1,
+          "energy": 5,
+          "desc": "A single glowing drop. Tap Drink for energy, or merge it."
+        },
+        {
+          "name": "Energy Vial",
+          "value": 10,
+          "sell": 2,
+          "xp": 1,
+          "energy": 12,
+          "desc": "Fizzy and bright."
+        },
+        {
+          "name": "Energy Flask",
+          "value": 24,
+          "sell": 4,
+          "xp": 2,
+          "energy": 30,
+          "desc": "Bubbling with power."
+        },
+        {
+          "name": "Energy Elixir",
+          "value": 60,
+          "sell": 8,
+          "xp": 3,
+          "energy": 70,
+          "desc": "Pure bottled lightning."
+        }
+      ]
+    },
+    {
       "id": "tool",
       "name": "Tools",
       "unlockLevel": 1,

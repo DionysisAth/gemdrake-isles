@@ -33,6 +33,8 @@ class ItemPainter extends CustomPainter {
         _paintEgg(canvas, s, ref.level);
       case 'treasure':
         paintTreasure(canvas, s, ref.level);
+      case 'potion':
+        paintPotion(canvas, s, ref.level);
       case 'tool':
         paintTool(canvas, s, ref.level);
       case 'shell':

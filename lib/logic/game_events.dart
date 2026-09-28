@@ -116,3 +116,10 @@ class EventPointsEvent extends GameEvent {
   /// A reward-track milestone was reached.
   final bool milestone;
 }
+
+/// An energy potion was drunk.
+class EnergyDrunkEvent extends GameEvent {
+  EnergyDrunkEvent(this.amount, this.slot);
+  final int amount;
+  final Slot slot;
+}

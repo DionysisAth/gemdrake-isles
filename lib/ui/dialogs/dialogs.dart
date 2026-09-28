@@ -590,8 +590,24 @@ Future<void> showHatch(
                 ? '${dragons.length} dragons hatched!'
                 : 'A dragon hatched!'),
       titleColor: rarity.color,
+      celebrate: rank >= 1,
       actions: [
+        if (rank >= 1)
+          Builder(
+            builder: (bctx) => GameButton(
+              color: Palette.accent,
+              onTap: () => shareDragonCard(bctx, best, grown: grown),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.ios_share_rounded, size: 18),
+                  Text(' Share'),
+                ],
+              ),
+            ),
+          ),
         GameButton(
+          shine: true,
           onTap: () => Navigator.pop(ctx),
           child: const Text('Welcome home!'),
         ),

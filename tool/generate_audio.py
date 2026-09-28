@@ -119,36 +119,78 @@ def main():
                            *[(0.2 + i * 0.06, pluck(penta(6 + i), 0.5, 0.2)) for i in range(6)],
                            (0.62, 0.5 * chirp)), 0.8)
 
-    # Music: calm pentatonic loop with a soft pad, 32 bars-ish at ~84 bpm.
-    beat = 60 / 84
+    # Dragon voices: a baby's chirp and a grown dragon's friendly roar.
+    ct = t_axis(0.22)
+    chirp_small = np.sin(2 * np.pi * np.cumsum(1700 + 700 * np.sin(ct * 55) + 900 * ct) / RATE)
+    write('chirp.wav', mix((0, chirp_small * env(len(ct), 0.005, 0.08)),
+                           (0.12, 0.7 * chirp_small[:len(ct) // 2] * env(len(ct) // 2, 0.005, 0.05))), 0.55)
+    rt = t_axis(0.9)
+    growl_f = 150 - 60 * rt + 12 * np.sin(rt * 38)
+    growl = np.sign(np.sin(2 * np.pi * np.cumsum(growl_f) / RATE)) * 0.35
+    growl += np.sin(2 * np.pi * np.cumsum(growl_f * 2) / RATE) * 0.4
+    rumble = noise(0.9, 0.5, 0.05) * 0.6
+    roar = (growl * env(len(rt), 0.06, 0.45) + rumble[:len(rt)])
+    # soften the square wave with a simple moving average
+    k = 12
+    roar = np.convolve(roar, np.ones(k) / k, mode='same')
+    write('roar.wav', roar, 0.75)
+
+    # Music: one calm loop per island.
+    make_music('music_meadow.wav', bpm=84, shift=0, seed=3,
+               chords=[[0, 4, 7], [-3, 0, 4], [-7, -3, 0], [-5, -1, 2]], style='pluck')
+    make_music('music_volcano.wav', bpm=92, shift=-3, seed=11,
+               chords=[[-3, 0, 4], [-7, -3, 0], [-5, -2, 2], [-8, -5, -1]], style='drum')
+    make_music('music_lagoon.wav', bpm=78, shift=2, seed=21,
+               chords=[[0, 4, 7], [-5, -1, 2], [-3, 0, 4], [-7, -3, 0]], style='marimba')
+    make_music('music_crystal.wav', bpm=70, shift=5, seed=31,
+               chords=[[0, 4, 7], [-7, -3, 0], [-3, 0, 4], [-5, -1, 2]], style='bell')
+    make_music('music_shadow.wav', bpm=66, shift=-5, seed=41,
+               chords=[[-3, 0, 4], [-8, -5, -1], [-7, -3, 0], [-5, -1, 2]], style='bell')
+
+
+def make_music(name, bpm, shift, seed, chords, style):
+    """A seamless 8-bar loop: soft pad + a gentle pentatonic melody."""
+    beat = 60 / bpm
     bars = 8
     length = bars * 4 * beat
-    music = np.zeros(int(RATE * length) + RATE)
-    rng = np.random.default_rng(3)
-    chords = [[0, 4, 7], [-3, 0, 4], [-7, -3, 0], [-5, -1, 2]]  # C Am F G (roots relative to C5)
+    music = np.zeros(int(RATE * length) + RATE * 2)
+    rng = np.random.default_rng(seed)
     for bar in range(bars):
         chord = chords[bar % 4]
         start = bar * 4 * beat
-        # Pad
         for semi in chord:
-            f = note_freq(semi - 12)
+            f = note_freq(semi - 12 + shift)
             pad = tone(f, 4 * beat + 0.5, 1.6, (1.0, 0.15), attack=0.4) * 0.18
             i = int(start * RATE)
             music[i:i + len(pad)] += pad
-        # Melody: gentle random walk on the pentatonic scale
         step = 5
         for b in range(8):
             if rng.random() < 0.3:
                 continue
             step = int(np.clip(step + rng.integers(-2, 3), 2, 10))
-            n = pluck(penta(step), 0.9, 0.35) * 0.32
+            f = penta(step) * 2 ** (shift / 12)
+            if style == 'bell':
+                n = tone(f, 1.6, 0.8, (1.0, 0.5, 0.25, 0.12)) * 0.22
+            elif style == 'marimba':
+                n = tone(f, 0.5, 0.12, (1.0, 0.0, 0.3)) * 0.34
+            else:
+                n = pluck(f, 0.9, 0.35) * 0.32
             i = int((start + b * beat / 2) * RATE)
             music[i:i + len(n)] += n
+        if style == 'drum':
+            for b in range(4):
+                d = tone(70, 0.3, 0.1, (1.0,), bend=-0.5) * 0.35
+                i = int((start + b * beat) * RATE)
+                music[i:i + len(d)] += d
+        if style == 'marimba':
+            for b in range(8):
+                sh = noise(0.08, 0.03, 0.6) * (0.05 if b % 2 else 0.09)
+                i = int((start + b * beat / 2) * RATE)
+                music[i:i + len(sh)] += sh
     loop = music[:int(RATE * length)]
-    # Cross-fade the tail into the head for a seamless loop
     tail = music[int(RATE * length):int(RATE * length) + RATE // 2]
     loop[:len(tail)] += tail
-    write('music_meadow.wav', loop, 0.55)
+    write(name, loop, 0.55)
 
 
 if __name__ == '__main__':

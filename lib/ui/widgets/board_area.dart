@@ -171,6 +171,22 @@ class _BoardAreaState extends State<BoardArea> {
           fx.burst(g, color: const Color(0xFFFFB300), count: 22, spread: 90);
           showToast(context, 'Festival reward unlocked!');
         }
+      case EnergyDrunkEvent(:final amount, :final slot):
+        final r = _slotRect(slot);
+        if (r != null) {
+          final g = _global(r).center;
+          fx.floatText(g, '+$amount', color: const Color(0xFF9ED8FF));
+          fx.shockwave(g, color: const Color(0xFF6FE3FF), radius: 70);
+          final hud = context.targets.rect('hud:energy');
+          if (hud != null) {
+            fx.fly(
+              from: g,
+              to: hud.center,
+              icon: const CurrencyIcon(CurrencyKind.energy),
+              count: min(8, 2 + amount ~/ 10),
+            );
+          }
+        }
       case SoldEvent(:final coins, :final slot):
         final r = _slotRect(slot);
         if (r != null) {
@@ -259,6 +275,7 @@ class _BoardAreaState extends State<BoardArea> {
     'plant' => const Color(0xFFA6F07A),
     'egg' => const Color(0xFFFFD27A),
     'treasure' => const Color(0xFFFFD54F),
+    'potion' => const Color(0xFF6FE3FF),
     'tool' => const Color(0xFFFFB074),
     'shell' => const Color(0xFFFFB3D1),
     'geode' => const Color(0xFFD7A6FF),

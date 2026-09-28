@@ -18,7 +18,7 @@
   },
   "login": [
     { "coins": 50 },
-    { "energy": 20 },
+    { "item": "potion:2" },
     { "gems": 3 },
     { "item": "egg:1" },
     { "coins": 150 },
@@ -31,7 +31,7 @@
         "id": "merge_chest", "name": "Merge Chest", "desc": "3 random items, eggs or energy.", "costGems": 12, "icon": "treasure:4",
         "loot": { "rolls": 3, "table": [
           { "item": "gem:3", "weight": 25 }, { "item": "plant:3", "weight": 20 }, { "item": "egg:1", "weight": 20 },
-          { "item": "egg:2", "weight": 10 }, { "energy": 20, "weight": 15 }, { "coins": 150, "weight": 10 } ] }
+          { "item": "egg:2", "weight": 10 }, { "item": "potion:2", "weight": 15 }, { "coins": 150, "weight": 10 } ] }
       },
       {
         "id": "grand_chest", "name": "Grand Chest", "desc": "6 rewards, with better eggs and gems.", "costGems": 35, "icon": "treasure:4",

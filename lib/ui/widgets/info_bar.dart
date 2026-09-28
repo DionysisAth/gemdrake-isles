@@ -169,7 +169,20 @@ class InfoBar extends StatelessWidget {
       subtitle: next,
       actions: [
         _iconButton(Icons.info_outline, () => showChainInfo(context, ref)),
-        if (game.canOffer(slot!))
+        if (game.drinkableEnergy(slot!) > 0)
+          _smallButton(
+            color: const Color(0xFF3FA7F5),
+            onTap: () => game.drink(slot),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Drink '),
+                const CurrencyIcon(CurrencyKind.energy, size: 14),
+                Text('+${game.drinkableEnergy(slot)}'),
+              ],
+            ),
+          )
+        else if (game.canOffer(slot))
           _smallButton(
             color: Palette.pink,
             onTap: () => game.offer(slot),

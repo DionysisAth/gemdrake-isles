@@ -1287,3 +1287,169 @@ void paintLantern(Canvas c, double s, int level) {
       paintSparkle(c, Offset(s * .22, s * .74), s * .04);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Energy potions: drop, vial, flask, elixir
+// ---------------------------------------------------------------------------
+
+Path _boltPath(Offset c, double h) {
+  final w = h * .55;
+  return Path()
+    ..moveTo(c.dx + w * .15, c.dy - h * .5)
+    ..lineTo(c.dx - w * .45, c.dy + h * .08)
+    ..lineTo(c.dx - w * .02, c.dy + h * .08)
+    ..lineTo(c.dx - w * .15, c.dy + h * .5)
+    ..lineTo(c.dx + w * .45, c.dy - h * .1)
+    ..lineTo(c.dx + w * .02, c.dy - h * .1)
+    ..close();
+}
+
+void paintPotion(Canvas c, double s, int level) {
+  final stroke = _stroke(s);
+  paintGlow(
+    c,
+    Offset(s * .5, s * .56),
+    s * (.3 + level * .06),
+    const Color(0xFF6FE3FF),
+    .25 + level * .12,
+  );
+  _shadow(c, s, s * (.3 + level * .08));
+  const liquidA = Color(0xFF9DF3FF);
+  const liquidB = Color(0xFF1E88E5);
+  switch (level) {
+    case 1:
+      final drop = Path()
+        ..moveTo(s * .5, s * .2)
+        ..cubicTo(s * .64, s * .42, s * .72, s * .52, s * .72, s * .62)
+        ..arcToPoint(Offset(s * .28, s * .62), radius: Radius.circular(s * .22))
+        ..cubicTo(s * .28, s * .52, s * .36, s * .42, s * .5, s * .2)
+        ..close();
+      c.drawPath(
+        drop,
+        _grad(
+          liquidA,
+          liquidB,
+          Rect.fromLTWH(0, s * .2, s, s * .64),
+          vertical: true,
+        ),
+      );
+      c.drawPath(drop, stroke);
+      c.drawPath(
+        _boltPath(Offset(s * .5, s * .6), s * .24),
+        Paint()..color = const Color(0xFFFFF176),
+      );
+      c.drawOval(
+        Rect.fromLTWH(s * .36, s * .44, s * .08, s * .14),
+        Paint()..color = Colors.white.withValues(alpha: .7),
+      );
+    default:
+      // Bottle grows fancier with level.
+      final bw = s * (.34 + level * .06);
+      final bh = s * (.34 + level * .05);
+      final body = Rect.fromCenter(
+        center: Offset(s * .5, s * .62),
+        width: bw,
+        height: bh,
+      );
+      final neck = Rect.fromCenter(
+        center: Offset(s * .5, body.top - s * .06),
+        width: s * .16,
+        height: s * .14,
+      );
+      final glass = Paint()..color = Colors.white.withValues(alpha: .55);
+      final bottle = Path()
+        ..addRRect(RRect.fromRectAndRadius(neck, Radius.circular(s * .03)));
+      if (level == 2) {
+        bottle.addRRect(
+          RRect.fromRectAndRadius(body, Radius.circular(s * .08)),
+        );
+      } else {
+        bottle.addOval(body);
+      }
+      c.drawPath(bottle, glass);
+      // Liquid
+      c.save();
+      c.clipPath(bottle);
+      final fill = Rect.fromLTRB(
+        body.left,
+        body.top + bh * .25,
+        body.right,
+        body.bottom,
+      );
+      c.drawRect(fill, _grad(liquidA, liquidB, fill, vertical: true));
+      c.drawOval(
+        Rect.fromLTRB(
+          body.left,
+          fill.top - s * .03,
+          body.right,
+          fill.top + s * .03,
+        ),
+        Paint()..color = const Color(0xFFD9FBFF),
+      );
+      // Bubbles
+      for (var i = 0; i < level + 1; i++) {
+        c.drawCircle(
+          Offset(
+            body.left + bw * (.25 + (i * .23) % .55),
+            fill.top + bh * (.2 + (i * .17) % .5),
+          ),
+          s * (.018 + (i % 2) * .012),
+          Paint()..color = Colors.white.withValues(alpha: .7),
+        );
+      }
+      c.restore();
+      c.drawPath(bottle, stroke);
+      c.drawPath(
+        _boltPath(Offset(s * .5, body.center.dy + bh * .08), bh * .42),
+        Paint()..color = const Color(0xFFFFF176),
+      );
+      c.drawPath(
+        _boltPath(Offset(s * .5, body.center.dy + bh * .08), bh * .42),
+        stroke,
+      );
+      // Cork / cap
+      final cap = Rect.fromCenter(
+        center: Offset(s * .5, neck.top - s * .02),
+        width: s * .2,
+        height: s * .08,
+      );
+      c.drawRRect(
+        RRect.fromRectAndRadius(cap, Radius.circular(s * .03)),
+        level >= 4
+            ? _grad(const Color(0xFFFFE27A), const Color(0xFFE0A21A), cap)
+            : _grad(const Color(0xFFD7A77A), const Color(0xFF9A6B4A), cap),
+      );
+      c.drawRRect(
+        RRect.fromRectAndRadius(cap, Radius.circular(s * .03)),
+        stroke,
+      );
+      // Glass shine
+      c.drawArc(
+        body.deflate(s * .05),
+        pi * 1.1,
+        pi * .35,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = s * .03
+          ..strokeCap = StrokeCap.round
+          ..color = Colors.white.withValues(alpha: .8),
+      );
+      if (level >= 4) {
+        // Gold filigree and a heart-gem
+        c.drawArc(
+          body.inflate(s * .01),
+          pi * .15,
+          pi * .7,
+          false,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = s * .03
+            ..color = const Color(0xFFFFC43D),
+        );
+        paintSparkle(c, Offset(s * .78, s * .3), s * .07);
+        paintSparkle(c, Offset(s * .22, s * .44), s * .05);
+      }
+      if (level >= 3) paintSparkle(c, Offset(s * .72, s * .42), s * .05);
+  }
+}

@@ -14,6 +14,7 @@ import 'package:gemdrake_isles/ui/app.dart';
 import 'package:gemdrake_isles/ui/dialogs/dialogs.dart';
 import 'package:gemdrake_isles/ui/dialogs/meta_dialogs.dart';
 import 'package:gemdrake_isles/ui/screens/home_shell.dart';
+import 'package:gemdrake_isles/ui/widgets/piece_view.dart';
 
 import '../test/helpers.dart';
 
@@ -88,6 +89,37 @@ void main() {
     await snap(tester, key, 'dlg_shop');
     Navigator.of(ctx).pop();
     await tester.pump(const Duration(milliseconds: 400));
+    // Share card and potions
+    await tester.runAsync(() async {
+      final img = await renderDragonCard(
+        game.config,
+        Dragon(id: 1, type: 'shadow', level: 1),
+      );
+      final data = await img.toByteData(format: ui.ImageByteFormat.png);
+      File('${Platform.environment['SHOTS'] ?? '/tmp'}/share_card.png')
+          .writeAsBytesSync(data!.buffer.asUint8List());
+    });
+    final pk = GlobalKey();
+    await tester.pumpWidget(RepaintBoundary(
+      key: pk,
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: ColoredBox(
+          color: const Color(0xFFE6F3D8),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var l = 1; l <= 4; l++)
+                  ItemIcon(ItemRef('potion', l), size: 90),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.pump();
+    await snap(tester, pk, 'potions');
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 3));
   });

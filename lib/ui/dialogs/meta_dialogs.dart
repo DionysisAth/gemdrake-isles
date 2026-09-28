@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -8,7 +9,10 @@ import 'package:share_plus/share_plus.dart';
 import '../../config/game_config.dart';
 import '../../logic/game_controller.dart';
 import '../../model/item_ref.dart';
+import '../../model/game_state.dart';
 import '../game_scope.dart';
+import '../painters/dragon_painter.dart';
+import '../painters/item_painter.dart';
 import '../painters/board_painters.dart';
 import '../theme.dart';
 import '../widgets/piece_view.dart';
@@ -692,6 +696,167 @@ Future<void> shareIslandPicture(
     game.analytics.log('share', {'what': 'island'});
   } catch (e) {
     if (context.mounted) showToast(context, "Couldn't share right now");
+  }
+}
+
+/// Shares a vertical 9:16 card of a freshly hatched (or grown) dragon.
+Future<void> shareDragonCard(
+  BuildContext context,
+  Dragon dragon, {
+  bool grown = false,
+}) async {
+  final game = context.game;
+  final origin = _originOf(context);
+  try {
+    final type = game.config.dragonType(dragon.type);
+    final rarity = game.config.rarity(type.rarity);
+    final image = await renderDragonCard(game.config, dragon, grown: grown);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) return;
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [
+          XFile.fromData(
+            bytes.buffer.asUint8List(),
+            mimeType: 'image/png',
+            name: 'gemdrake-${type.id}.png',
+          ),
+        ],
+        text:
+            'I ${grown ? 'raised' : 'hatched'} a ${rarity.name} ${type.name} Dragon in Gemdrake Isles!',
+        sharePositionOrigin: origin,
+      ),
+    );
+    game.analytics.log('share', {'what': 'dragon', 'type': type.id});
+  } catch (e) {
+    if (context.mounted) showToast(context, "Couldn't share right now");
+  }
+}
+
+/// Draws the 1080x1920 share card for [dragon].
+Future<ui.Image> renderDragonCard(
+  GameConfig config,
+  Dragon dragon, {
+  bool grown = false,
+}) async {
+  {
+    final type = config.dragonType(dragon.type);
+    final rarity = config.rarity(type.rarity);
+    final level = config.dragons.level(dragon.level).name;
+    const w = 1080.0, h = 1920.0;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    const full = Rect.fromLTWH(0, 0, w, h);
+    canvas.drawRect(
+      full,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(0, -.15),
+          radius: 1.1,
+          colors: [
+            Color.lerp(rarity.color, Colors.white, .7)!,
+            rarity.color,
+            const Color(0xFF2A1B6E),
+          ],
+          stops: const [0, .45, 1],
+        ).createShader(full),
+    );
+    // Rays
+    final c = const Offset(w / 2, h * .42);
+    final rays = Paint()..color = Colors.white.withValues(alpha: .13);
+    for (var i = 0; i < 16; i++) {
+      final a = i * pi / 8;
+      canvas.drawPath(
+        Path()
+          ..moveTo(c.dx, c.dy)
+          ..lineTo(c.dx + cos(a - .09) * 1500, c.dy + sin(a - .09) * 1500)
+          ..lineTo(c.dx + cos(a + .09) * 1500, c.dy + sin(a + .09) * 1500)
+          ..close(),
+        rays,
+      );
+    }
+    canvas.drawCircle(
+      c,
+      420,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            Colors.white.withValues(alpha: .85),
+            Colors.white.withValues(alpha: 0),
+          ],
+        ).createShader(Rect.fromCircle(center: c, radius: 420)),
+    );
+    for (final (x, y, r) in [
+      (.15, .12, 26.0),
+      (.85, .18, 34.0),
+      (.2, .6, 22.0),
+      (.82, .62, 28.0),
+      (.5, .08, 18.0),
+      (.1, .38, 16.0),
+      (.9, .42, 18.0),
+    ]) {
+      paintSparkle(canvas, Offset(w * x, h * y), r);
+    }
+    // The dragon
+    canvas.save();
+    canvas.translate(c.dx - 380, c.dy - 380);
+    DragonPainter(
+      type: type,
+      level: dragon.level,
+    ).paint(canvas, const Size(760, 760));
+    canvas.restore();
+    void text(
+      String t,
+      double y,
+      double size, {
+      Color color = Colors.white,
+      FontWeight weight = FontWeight.w700,
+    }) {
+      final stroke = TextPainter(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        text: TextSpan(
+          text: t,
+          style: TextStyle(
+            fontFamily: 'Fredoka',
+            fontSize: size,
+            fontWeight: weight,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = size * .16
+              ..strokeJoin = StrokeJoin.round
+              ..color = const Color(0xFF2B1648),
+          ),
+        ),
+      )..layout(maxWidth: w - 80);
+      final fill = TextPainter(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+        text: TextSpan(
+          text: t,
+          style: TextStyle(
+            fontFamily: 'Fredoka',
+            fontSize: size,
+            fontWeight: weight,
+            color: color,
+          ),
+        ),
+      )..layout(maxWidth: w - 80);
+      final o = Offset((w - fill.width) / 2, y);
+      stroke.paint(canvas, o);
+      fill.paint(canvas, o);
+    }
+
+    text(grown ? 'My dragon grew into a' : 'I hatched a', h * .08, 64);
+    text(
+      rarity.name.toUpperCase(),
+      h * .72,
+      84,
+      color: const Color(0xFFFFF1A8),
+    );
+    text('$level ${type.name} Dragon!', h * .78, 76);
+    text('Gemdrake Isles', h * .9, 70, color: const Color(0xFFFFD1EC));
+    return recorder.endRecording().toImage(w.toInt(), h.toInt());
   }
 }
 
