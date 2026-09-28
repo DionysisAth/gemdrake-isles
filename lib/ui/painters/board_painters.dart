@@ -518,85 +518,194 @@ class CurrencyPainter extends CustomPainter {
 
   final CurrencyKind kind;
 
+  static Path _star(Offset c, double outer, double inner, [int points = 5]) {
+    final path = Path();
+    for (var i = 0; i < points * 2; i++) {
+      final r = i.isEven ? outer : inner;
+      final a = -pi / 2 + i * pi / points;
+      final pt = c + Offset(cos(a), sin(a)) * r;
+      i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
+    }
+    return path..close();
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.shortestSide;
     final c = Offset(size.width / 2, size.height / 2);
-    final stroke = Paint()
+    final rect = Offset.zero & size;
+    Paint line(Color color, double w) => Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = max(1.0, s * .07)
-      ..strokeJoin = StrokeJoin.round;
+      ..strokeWidth = max(.8, s * w)
+      ..strokeJoin = StrokeJoin.round
+      ..color = color;
     switch (kind) {
       case CurrencyKind.coin:
-        canvas.drawCircle(c, s * .46, Paint()..color = const Color(0xFFD99A0B));
-        canvas.drawCircle(c, s * .4, Paint()..color = const Color(0xFFFFCB2E));
-        canvas.drawCircle(c, s * .27, stroke..color = const Color(0xFFE8A70F));
-        canvas.drawOval(
-          Rect.fromCenter(
-            center: c + Offset(-s * .12, -s * .16),
-            width: s * .2,
-            height: s * .12,
-          ),
-          Paint()..color = Colors.white.withValues(alpha: .6),
-        );
-      case CurrencyKind.gem:
-        final p = Path()
-          ..moveTo(c.dx - s * .26, c.dy - s * .3)
-          ..lineTo(c.dx + s * .26, c.dy - s * .3)
-          ..lineTo(c.dx + s * .46, c.dy - s * .08)
-          ..lineTo(c.dx, c.dy + s * .44)
-          ..lineTo(c.dx - s * .46, c.dy - s * .08)
-          ..close();
-        canvas.drawPath(
-          p,
+        // Rim
+        canvas.drawCircle(
+          c,
+          s * .47,
           Paint()
             ..shader = const LinearGradient(
-              colors: [Color(0xFFFF9AD5), Color(0xFFE0247A)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-            ).createShader(Offset.zero & size),
+              colors: [Color(0xFFFFE27A), Color(0xFFC77D05)],
+            ).createShader(rect),
         );
+        // Face
+        canvas.drawCircle(
+          c,
+          s * .38,
+          Paint()
+            ..shader = RadialGradient(
+              center: const Alignment(-.35, -.4),
+              radius: .9,
+              colors: const [
+                Color(0xFFFFF4B8),
+                Color(0xFFFFCB2E),
+                Color(0xFFE39A0C),
+              ],
+              stops: const [0, .5, 1],
+            ).createShader(Rect.fromCircle(center: c, radius: s * .38)),
+        );
+        canvas.drawCircle(c, s * .38, line(const Color(0xFFB36B00), .035));
+        // Embossed star
+        final star = _star(c + Offset(0, s * .01), s * .21, s * .09);
         canvas.drawPath(
-          Path()
-            ..moveTo(c.dx - s * .26, c.dy - s * .3)
-            ..lineTo(c.dx, c.dy - s * .08)
-            ..lineTo(c.dx - s * .46, c.dy - s * .08)
-            ..close(),
-          Paint()..color = Colors.white.withValues(alpha: .4),
+          star.shift(Offset(0, s * .025)),
+          Paint()..color = const Color(0xFFC77D05),
         );
-        canvas.drawPath(p, stroke..color = const Color(0x66570030));
-      case CurrencyKind.energy:
-        canvas.drawCircle(c, s * .46, Paint()..color = const Color(0xFF3FA7F5));
-        final bolt = Path()
-          ..moveTo(c.dx + s * .06, c.dy - s * .34)
-          ..lineTo(c.dx - s * .2, c.dy + s * .04)
-          ..lineTo(c.dx - s * .01, c.dy + s * .04)
-          ..lineTo(c.dx - s * .08, c.dy + s * .34)
-          ..lineTo(c.dx + s * .2, c.dy - s * .06)
-          ..lineTo(c.dx + s * .01, c.dy - s * .06)
+        canvas.drawPath(star, Paint()..color = const Color(0xFFFFE680));
+        // Shine
+        canvas.drawArc(
+          Rect.fromCircle(center: c, radius: s * .31),
+          pi * 1.1,
+          pi * .45,
+          false,
+          line(Colors.white.withValues(alpha: .8), .05)
+            ..strokeCap = StrokeCap.round,
+        );
+        canvas.drawCircle(c, s * .47, line(const Color(0xFF8A5200), .04));
+      case CurrencyKind.gem:
+        final top = c.dy - s * .3, mid = c.dy - s * .07, bot = c.dy + s * .45;
+        final l = c.dx - s * .47, r = c.dx + s * .47;
+        final tl = c.dx - s * .25, tr = c.dx + s * .25;
+        final outline = Path()
+          ..moveTo(tl, top)
+          ..lineTo(tr, top)
+          ..lineTo(r, mid)
+          ..lineTo(c.dx, bot)
+          ..lineTo(l, mid)
           ..close();
-        canvas.drawPath(bolt, Paint()..color = const Color(0xFFFFE45C));
+        canvas.drawPath(
+          outline,
+          Paint()
+            ..shader = const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFFFA8DA), Color(0xFFE0247A), Color(0xFF8E0F4F)],
+            ).createShader(rect),
+        );
+        // Crown facets
+        void facet(List<Offset> pts, Color color) => canvas.drawPath(
+          Path()..addPolygon(pts, true),
+          Paint()..color = color,
+        );
+        final a = c.dx - s * .1, b = c.dx + s * .1;
+        facet([
+          Offset(tl, top),
+          Offset(a, top),
+          Offset(c.dx - s * .2, mid),
+          Offset(l, mid),
+        ], const Color(0xFFFFC9E6));
+        facet([
+          Offset(a, top),
+          Offset(b, top),
+          Offset(c.dx + s * .2, mid),
+          Offset(c.dx - s * .2, mid),
+        ], const Color(0xFFFFE6F3));
+        facet([
+          Offset(b, top),
+          Offset(tr, top),
+          Offset(r, mid),
+          Offset(c.dx + s * .2, mid),
+        ], const Color(0xFFFF7CC0));
+        // Pavilion facets
+        facet([
+          Offset(l, mid),
+          Offset(c.dx - s * .2, mid),
+          Offset(c.dx, bot),
+        ], const Color(0xFFFF6FB5));
+        facet([
+          Offset(c.dx + s * .2, mid),
+          Offset(r, mid),
+          Offset(c.dx, bot),
+        ], const Color(0xFFB5145F));
+        canvas.drawPath(outline, line(const Color(0xFF6B0A3A), .045));
+        canvas.drawLine(
+          Offset(l, mid),
+          Offset(r, mid),
+          line(const Color(0x886B0A3A), .025),
+        );
+        paintSparkle(canvas, Offset(c.dx - s * .2, top + s * .08), s * .13);
+      case CurrencyKind.energy:
+        canvas.drawCircle(
+          c,
+          s * .47,
+          Paint()
+            ..shader = RadialGradient(
+              center: const Alignment(-.3, -.4),
+              colors: const [
+                Color(0xFF9ED8FF),
+                Color(0xFF3FA7F5),
+                Color(0xFF1666C4),
+              ],
+              stops: const [0, .55, 1],
+            ).createShader(rect),
+        );
+        canvas.drawCircle(
+          c,
+          s * .47,
+          line(Colors.white.withValues(alpha: .9), .05),
+        );
+        final bolt = Path()
+          ..moveTo(c.dx + s * .08, c.dy - s * .37)
+          ..lineTo(c.dx - s * .22, c.dy + s * .05)
+          ..lineTo(c.dx - s * .01, c.dy + s * .05)
+          ..lineTo(c.dx - s * .1, c.dy + s * .37)
+          ..lineTo(c.dx + s * .22, c.dy - s * .07)
+          ..lineTo(c.dx + s * .01, c.dy - s * .07)
+          ..close();
+        canvas.drawPath(
+          bolt.shift(Offset(0, s * .03)),
+          Paint()..color = const Color(0x55002A66),
+        );
         canvas.drawPath(
           bolt,
-          stroke
-            ..strokeWidth = s * .04
-            ..color = const Color(0x88A0660A),
+          Paint()
+            ..shader = const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFFFF7B0), Color(0xFFFFD21F), Color(0xFFFFA000)],
+            ).createShader(rect),
         );
+        canvas.drawPath(bolt, line(const Color(0xFF9A5B00), .035));
       case CurrencyKind.xp:
-        final path = Path();
-        for (var i = 0; i < 10; i++) {
-          final r = i.isEven ? s * .48 : s * .22;
-          final a = -pi / 2 + i * pi / 5;
-          final pt = c + Offset(cos(a), sin(a)) * r;
-          if (i == 0) {
-            path.moveTo(pt.dx, pt.dy);
-          } else {
-            path.lineTo(pt.dx, pt.dy);
-          }
-        }
-        path.close();
-        canvas.drawPath(path, Paint()..color = const Color(0xFF9C6BFF));
-        canvas.drawPath(path, stroke..color = const Color(0xFF6A3FD0));
+        final star = _star(c, s * .5, s * .23);
+        canvas.drawPath(
+          star,
+          Paint()
+            ..shader = const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFD6BDFF), Color(0xFF9C6BFF), Color(0xFF6A3FD0)],
+            ).createShader(rect),
+        );
+        canvas.drawPath(
+          _star(c + Offset(0, -s * .03), s * .3, s * .14),
+          Paint()..color = Colors.white.withValues(alpha: .25),
+        );
+        canvas.drawPath(star, line(const Color(0xFF45208F), .05));
     }
   }
 

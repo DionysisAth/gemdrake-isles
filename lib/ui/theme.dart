@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'widgets/fancy.dart';
+
 class Palette {
   static const ink = Color(0xFF3B2A5A);
   static const inkSoft = Color(0xFF6E5D8C);
@@ -103,6 +105,7 @@ class GameButton extends StatefulWidget {
     this.color = Palette.green,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     this.radius = 14,
+    this.shine = false,
   });
 
   final Widget child;
@@ -110,6 +113,9 @@ class GameButton extends StatefulWidget {
   final Color color;
   final EdgeInsets padding;
   final double radius;
+
+  /// A light sweep across the button now and then (main call to action).
+  final bool shine;
 
   @override
   State<GameButton> createState() => _GameButtonState();
@@ -175,7 +181,9 @@ class _GameButtonState extends State<GameButton> {
                     child: Center(
                       widthFactor: 1,
                       heightFactor: 1,
-                      child: widget.child,
+                      child: widget.shine && enabled
+                          ? ShineSweep(child: widget.child)
+                          : widget.child,
                     ),
                   ),
                 ),

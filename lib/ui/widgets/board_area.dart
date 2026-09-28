@@ -75,6 +75,7 @@ class _BoardAreaState extends State<BoardArea> {
   _Layout? _layout;
   StreamSubscription<GameEvent>? _sub;
   final _spawnFrom = <int, Offset>{};
+  final _popBoost = <int, double>{};
 
   Slot? _dragFrom;
   int? _dragPieceId;
@@ -147,23 +148,8 @@ class _BoardAreaState extends State<BoardArea> {
             ? l.giftRect.topLeft
             : l.cellRect(cols, fromCell).topLeft;
         _spawnFrom[pieceId] = from - to;
-      case MergeEvent(:final cells, :final result, :final bonus):
-        for (final c in cells) {
-          final center = _global(l.cellRect(cols, c)).center;
-          fx.burst(
-            center,
-            color: _chainColor(result),
-            count: bonus ? 22 : 12,
-            spread: bonus ? 90 : 60,
-          );
-        }
-        if (bonus) {
-          fx.floatText(
-            _global(l.cellRect(cols, cells.first)).center,
-            'BONUS x${cells.length}!',
-            color: Palette.gold,
-          );
-        }
+      case MergeEvent():
+        _mergeFx(e, l);
       case LockHitEvent(:final cell, :final cleared):
         fx.burst(
           _global(l.cellRect(cols, cell)).center,
@@ -172,12 +158,12 @@ class _BoardAreaState extends State<BoardArea> {
           spread: cleared ? 55 : 30,
         );
       case HatchEvent(:final cell?):
-        fx.burst(
-          _global(l.cellRect(cols, cell)).center,
-          color: Palette.gold,
-          count: 26,
-          spread: 110,
-        );
+        final g = _global(l.cellRect(cols, cell)).center;
+        fx.rays(g, color: const Color(0xFFFFF1A8), radius: 190);
+        fx.shockwave(g, color: Palette.gold, radius: 150, width: 14);
+        fx.burst(g, color: Palette.gold, count: 30, spread: 120);
+        fx.confetti(g, count: 50);
+        fx.shake(6, ms: 380);
       case EventPointsEvent(:final points, :final cell?, :final milestone):
         final g = _global(l.cellRect(cols, cell)).center;
         fx.floatText(g, '+$points pts', color: const Color(0xFFFFB300));
@@ -205,10 +191,81 @@ class _BoardAreaState extends State<BoardArea> {
     }
   }
 
+  /// Merge juice that grows with the merge: bigger items, bonus merges and
+  /// max-level results get rings, rays, shakes, words and confetti.
+  void _mergeFx(MergeEvent e, _Layout l) {
+    final fx = context.fx;
+    final cols = game.board.cols;
+    final result = e.result;
+    final chain = game.config.chain(result.chain);
+    final isMax = result.level == chain.maxLevel;
+    final power = result.level + (e.bonus ? 2 : 0) + (isMax ? 2 : 0);
+    final color = _chainColor(result);
+    Offset center(int c) => _global(l.cellRect(cols, c)).center;
+    final target = center(e.target ?? e.cells.first);
+
+    for (final s in e.sources) {
+      fx.streak(center(s), target, color: color);
+    }
+    for (final c in e.cells) {
+      final id = game.board.cells[c]?.id;
+      if (id != null) _popBoost[id] = 1 + min(power, 10) * .045;
+      fx.burst(
+        center(c),
+        color: color,
+        count: 8 + power * 2,
+        spread: 45 + power * 7.0,
+      );
+    }
+    if (power >= 4) {
+      fx.shockwave(target, color: color, radius: 50 + power * 10.0);
+    }
+    if (power >= 6) {
+      fx.rays(target, color: color, radius: 70 + power * 10.0);
+      fx.shake(2.0 + (power - 6) * 1.2, ms: 260);
+    }
+    if (power >= 8) {
+      fx.flash(Colors.white.withValues(alpha: .22));
+      fx.confetti(target, count: 18 + power * 3, power: .7 + power * .04);
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (mounted) {
+          fx.shockwave(target, color: Palette.gold, radius: 90 + power * 12.0);
+        }
+      });
+    }
+    final word = switch (power) {
+      < 5 => null,
+      5 => 'Nice!',
+      6 => 'Great!',
+      7 => 'Awesome!',
+      < 10 => 'Amazing!',
+      _ => 'LEGENDARY!',
+    };
+    if (e.bonus) {
+      fx.combo(
+        target,
+        'BONUS x${e.cells.length}!',
+        colors: const [Color(0xFFFFD1EC), Color(0xFFFF4F9A)],
+        size: 30 + min(power, 10) * 1.5,
+      );
+      if (power < 8) fx.confetti(target, count: 24, power: .7);
+    } else if (word != null) {
+      fx.combo(target, word, size: 24 + min(power, 10) * 2.0);
+    }
+  }
+
   Color _chainColor(ItemRef ref) => switch (ref.chain) {
     'gem' => const Color(0xFF9FE6FF),
     'plant' => const Color(0xFFA6F07A),
     'egg' => const Color(0xFFFFD27A),
+    'treasure' => const Color(0xFFFFD54F),
+    'tool' => const Color(0xFFFFB074),
+    'shell' => const Color(0xFFFFB3D1),
+    'geode' => const Color(0xFFD7A6FF),
+    'star' => const Color(0xFFFFF176),
+    'legend' => const Color(0xFFB388FF),
+    'blossom' => const Color(0xFFFF9EC7),
+    'lantern' => const Color(0xFFFFC94D),
     _ => Colors.white,
   };
 
@@ -541,6 +598,7 @@ class _BoardAreaState extends State<BoardArea> {
         height: size,
         child: PopIn(
           from: _spawnFrom.remove(p.id) ?? Offset.zero,
+          boost: _popBoost.remove(p.id) ?? 1,
           child: Opacity(opacity: hidden ? 0 : 1, child: view),
         ),
       );

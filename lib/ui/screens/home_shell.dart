@@ -8,6 +8,7 @@ import '../dialogs/dialogs.dart';
 import '../dialogs/meta_dialogs.dart';
 import '../fx_layer.dart';
 import '../game_scope.dart';
+import '../painters/nav_icons.dart';
 import '../painters/sky_painter.dart';
 import '../theme.dart';
 import '../widgets/board_area.dart';
@@ -161,66 +162,71 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           const Positioned.fill(
             child: RepaintBoundary(child: CustomPaint(painter: SkyPainter())),
           ),
-          SafeArea(
-            child: Center(
-              // Keep a phone-like column on tablets.
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: Column(
-                  children: [
-                    const TopBar(),
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          _TabPage(
-                            active: _tab == 0,
-                            child: Column(
-                              children: [
-                                ListenableBuilder(
-                                  listenable: context.game,
-                                  builder: (context, _) {
-                                    final game = context.game;
-                                    return Column(
-                                      children: [
-                                        // ignore: prefer_const_constructors
-                                        BoardModeSwitch(),
-                                        if (game.eventMode)
-                                          EventBar(
-                                            onOpenTrack: () => _setTab(2),
-                                          )
-                                        else
-                                          const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 6,
+          ValueListenableBuilder<Offset>(
+            valueListenable: widget.fx.shakeOffset,
+            builder: (context, offset, child) =>
+                Transform.translate(offset: offset, child: child),
+            child: SafeArea(
+              child: Center(
+                // Keep a phone-like column on tablets.
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: Column(
+                    children: [
+                      const TopBar(),
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            _TabPage(
+                              active: _tab == 0,
+                              child: Column(
+                                children: [
+                                  ListenableBuilder(
+                                    listenable: context.game,
+                                    builder: (context, _) {
+                                      final game = context.game;
+                                      return Column(
+                                        children: [
+                                          // ignore: prefer_const_constructors
+                                          BoardModeSwitch(),
+                                          if (game.eventMode)
+                                            EventBar(
+                                              onOpenTrack: () => _setTab(2),
+                                            )
+                                          else
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                              ),
+                                              child: OrdersBar(),
                                             ),
-                                            child: OrdersBar(),
-                                          ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 4),
-                                const Expanded(child: BoardArea()),
-                              ],
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Expanded(child: BoardArea()),
+                                ],
+                              ),
                             ),
-                          ),
-                          _TabPage(
-                            active: _tab == 1,
-                            child: const IslandScreen(),
-                          ),
-                          _TabPage(
-                            active: _tab == 2,
-                            child: EventScreen(onPlay: _playFestival),
-                          ),
-                          _TabPage(
-                            active: _tab == 3,
-                            child: const BookScreen(),
-                          ),
-                        ],
+                            _TabPage(
+                              active: _tab == 1,
+                              child: const IslandScreen(),
+                            ),
+                            _TabPage(
+                              active: _tab == 2,
+                              child: EventScreen(onPlay: _playFestival),
+                            ),
+                            _TabPage(
+                              active: _tab == 3,
+                              child: const BookScreen(),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    _BottomNav(tab: _tab, onTab: _setTab),
-                  ],
+                      _BottomNav(tab: _tab, onTab: _setTab),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -286,7 +292,7 @@ class _BottomNav extends StatelessWidget {
                 Expanded(
                   child: _NavButton(
                     key: targets.keyFor('tab:board'),
-                    icon: Icons.grid_view_rounded,
+                    icon: const NavIcon(NavIconKind.board),
                     label: 'Board',
                     active: tab == 0,
                     badge: readyOrders,
@@ -297,7 +303,7 @@ class _BottomNav extends StatelessWidget {
                 Expanded(
                   child: _NavButton(
                     key: targets.keyFor('tab:island'),
-                    icon: Icons.landscape_rounded,
+                    icon: const NavIcon(NavIconKind.island),
                     label: 'Island',
                     active: tab == 1,
                     badge: islandBadge,
@@ -307,9 +313,7 @@ class _BottomNav extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: _NavButton(
-                    icon: eventLocked
-                        ? Icons.lock_rounded
-                        : Icons.celebration_rounded,
+                    icon: NavIcon(NavIconKind.festival, locked: eventLocked),
                     label: 'Festival',
                     active: tab == 2,
                     badge: game.eventBadge,
@@ -319,7 +323,7 @@ class _BottomNav extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: _NavButton(
-                    icon: Icons.menu_book_rounded,
+                    icon: const NavIcon(NavIconKind.book),
                     label: 'Book',
                     active: tab == 3,
                     badge: game.bookBadge,
@@ -345,7 +349,7 @@ class _NavButton extends StatelessWidget {
     required this.onTap,
   });
 
-  final IconData icon;
+  final Widget icon;
   final String label;
   final bool active;
   final int badge;
@@ -364,7 +368,12 @@ class _NavButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(width: double.infinity),
-              Icon(icon, size: 22),
+              AnimatedScale(
+                scale: active ? 1.18 : 1,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.elasticOut,
+                child: icon,
+              ),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(

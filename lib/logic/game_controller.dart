@@ -601,8 +601,19 @@ class GameController extends ChangeNotifier {
       _eventMergePoints(out, plan.yieldCount, to);
       _selected = Slot.board(to);
       feedback.play(plan.bonus ? Sfx.bonus : Sfx.merge, level: out.level);
-      feedback.haptic(heavy: plan.bonus);
-      _emit(MergeEvent(cells, out, bonus: plan.bonus));
+      feedback.haptic(heavy: plan.bonus || out.level >= 5);
+      _emit(
+        MergeEvent(
+          cells,
+          out,
+          bonus: plan.bonus,
+          target: to,
+          sources: [
+            ...plan.consumed.where((c) => c != to),
+            if (!from.storage) from.index,
+          ],
+        ),
+      );
     }
 
     // Merging next to locked cells chips away at them.

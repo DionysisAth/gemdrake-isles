@@ -190,9 +190,17 @@ class _Badge extends StatelessWidget {
 /// Makes a newly created piece pop in (and optionally fly in from a
 /// generator).
 class PopIn extends StatefulWidget {
-  const PopIn({super.key, required this.child, this.from = Offset.zero});
+  const PopIn({
+    super.key,
+    required this.child,
+    this.from = Offset.zero,
+    this.boost = 1,
+  });
 
   final Widget child;
+
+  /// Extra bulge for big merges (1 = normal).
+  final double boost;
 
   /// Start offset relative to the final position.
   final Offset from;
@@ -204,9 +212,12 @@ class PopIn extends StatefulWidget {
 class _PopInState extends State<PopIn> with SingleTickerProviderStateMixin {
   // Captured once: later rebuilds must not restart or cut the fly-in.
   late final Offset _from = widget.from;
+  late final double _boost = widget.boost;
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: Duration(milliseconds: _from == Offset.zero ? 380 : 420),
+    duration: Duration(
+      milliseconds: _from == Offset.zero ? (380 * _boost).round() : 420,
+    ),
   )..forward();
 
   @override
@@ -225,9 +236,10 @@ class _PopInState extends State<PopIn> with SingleTickerProviderStateMixin {
       // Arc upward while flying out of a generator.
       final arc = _from == Offset.zero ? 0.0 : -sin(t * pi) * 24;
       final scale = Curves.elasticOut.transform(t);
+      final bulge = 1 + (_boost - 1) * sin(t * pi);
       return Transform.translate(
         offset: pos + Offset(0, arc),
-        child: Transform.scale(scale: .2 + .8 * scale, child: child),
+        child: Transform.scale(scale: (.2 + .8 * scale) * bulge, child: child),
       );
     },
     child: widget.child,

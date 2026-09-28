@@ -685,6 +685,7 @@ class _TravelCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           GameButton(
+            shine: true,
             color: Palette.accent,
             onTap: game.travelToNextIsland,
             child: Row(

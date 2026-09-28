@@ -184,6 +184,7 @@ class _EventHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           GameButton(
+            shine: true,
             color: Palette.pink,
             onTap: onPlay,
             child: const Row(

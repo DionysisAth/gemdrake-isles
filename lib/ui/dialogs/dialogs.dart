@@ -10,10 +10,12 @@ import '../game_scope.dart';
 import '../painters/board_painters.dart';
 import '../painters/item_painter.dart';
 import '../theme.dart';
+import '../widgets/fancy.dart';
 import '../widgets/piece_view.dart';
 import 'meta_dialogs.dart';
 
-/// Shared cozy dialog frame with a ribbon title.
+/// Shared cozy dialog frame: pops in with a bounce, gem-studded border,
+/// a ribbon title with a light sweep, and optional celebration rays.
 class GameDialog extends StatelessWidget {
   const GameDialog({
     super.key,
@@ -22,6 +24,7 @@ class GameDialog extends StatelessWidget {
     this.actions = const [],
     this.titleColor = Palette.accent,
     this.onClose,
+    this.celebrate = false,
   });
 
   final String title;
@@ -30,84 +33,174 @@ class GameDialog extends StatelessWidget {
   final Color titleColor;
   final VoidCallback? onClose;
 
+  /// Turning light rays and twinkles behind the popup (rewards, level ups).
+  final bool celebrate;
+
   @override
   Widget build(BuildContext context) {
+    final edge = Color.lerp(titleColor, Colors.white, .35)!;
+    final panel = Container(
+      margin: const EdgeInsets.only(top: 26),
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(27),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [edge, Colors.white, edge],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color.lerp(
+              titleColor,
+              Colors.black,
+              .5,
+            )!.withValues(alpha: .45),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(18, 36, 18, 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFFDF7), Palette.panel, Color(0xFFFBEEDC)],
+          ),
+          border: Border.all(color: Palette.panelEdge, width: 1.5),
+        ),
+        // Transparent Material so list tiles and ink splashes show.
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: SingleChildScrollView(child: child)),
+              if (actions.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: actions,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+    final body = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        if (celebrate)
+          const Positioned(
+            left: -80,
+            right: -80,
+            top: -110,
+            height: 320,
+            child: RotatingRays(),
+          ),
+        panel,
+        for (final (l, t) in [
+          (true, true),
+          (false, true),
+          (true, false),
+          (false, false),
+        ])
+          Positioned(
+            left: l ? -2 : null,
+            right: l ? null : -2,
+            top: t ? 20 : null,
+            bottom: t ? null : -6,
+            child: CornerGem(color: titleColor),
+          ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                RibbonBanner(title: title, color: titleColor),
+                const Positioned(
+                  left: -16,
+                  right: -16,
+                  top: -14,
+                  bottom: -6,
+                  child: Twinkles(count: 6),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (onClose != null)
+          Positioned(top: 36, right: 8, child: _CloseButton(onTap: onClose!)),
+      ],
+    );
     return Dialog(
       backgroundColor: Colors.transparent,
+      elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 380),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 22),
-              padding: const EdgeInsets.fromLTRB(18, 34, 18, 16),
-              decoration: panelDecoration(radius: 24),
-              // Transparent Material so list tiles and ink splashes show.
-              child: Material(
-                type: MaterialType.transparency,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(child: SingleChildScrollView(child: child)),
-                    if (actions.isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 10,
-                        runSpacing: 8,
-                        children: actions,
-                      ),
-                    ],
-                  ],
-                ),
+        constraints: const BoxConstraints(minWidth: 290, maxWidth: 380),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 520),
+          builder: (context, t, child) {
+            final pop = Curves.elasticOut.transform(t);
+            return Opacity(
+              opacity: (t * 4).clamp(0.0, 1.0),
+              child: Transform.translate(
+                offset: Offset(0, 30 * (1 - Curves.easeOut.transform(t))),
+                child: Transform.scale(scale: .75 + .25 * pop, child: child),
               ),
-            ),
-            Positioned(
-              top: 0,
-              left: 40,
-              right: 40,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: titleColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color.lerp(titleColor, Colors.black, .3)!,
-                        width: 4,
-                      ),
-                    ),
-                  ),
-                  child: OutlinedText(
-                    title,
-                    size: 20,
-                    strokeWidth: 3,
-                    stroke: Color.lerp(titleColor, Colors.black, .45)!,
-                  ),
-                ),
-              ),
-            ),
-            if (onClose != null)
-              Positioned(
-                top: 28,
-                right: 6,
-                child: IconButton(
-                  onPressed: onClose,
-                  icon: const Icon(Icons.close_rounded, color: Palette.inkSoft),
-                  tooltip: 'Close',
-                ),
-              ),
-          ],
+            );
+          },
+          child: body,
         ),
       ),
     );
   }
+}
+
+class _CloseButton extends StatelessWidget {
+  const _CloseButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: 'Close',
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFF8A8E), Palette.danger],
+          ),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x40000000),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+      ),
+    ),
+  );
 }
 
 Widget rewardChip(CurrencyKind kind, String text) => Container(
@@ -245,7 +338,11 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
               opacity: o,
               child: Transform.translate(
                 offset: Offset(0, (1 - min(1, t / .1)) * -12),
-                child: child,
+                child: Transform.scale(
+                  scale:
+                      .85 + .15 * Curves.elasticOut.transform(min(1, t / .25)),
+                  child: child,
+                ),
               ),
             );
           },
@@ -258,17 +355,41 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xEE3B2A5A),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  widget.message,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xF26B4BA8), Color(0xF23B2A5A)],
                   ),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: const Color(0x99FFFFFF),
+                    width: 1.5,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x55301E4F),
+                      blurRadius: 12,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CornerGem(size: 14, color: Palette.gold),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        widget.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -289,9 +410,11 @@ Future<void> showWelcomeBack(BuildContext context, WelcomeBack wb) {
     context: context,
     barrierDismissible: false,
     builder: (ctx) => GameDialog(
+      celebrate: true,
       title: 'Welcome back!',
       actions: [
         GameButton(
+          shine: true,
           color: Palette.green,
           onTap: () {
             Navigator.pop(ctx);
@@ -386,6 +509,7 @@ Future<void> showLevelUp(
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
+      celebrate: true,
       title: 'Level $level!',
       titleColor: const Color(0xFF9C6BFF),
       actions: [
@@ -397,7 +521,25 @@ Future<void> showLevelUp(
       child: Column(
         children: [
           const SizedBox(height: 4),
-          const CurrencyIcon(CurrencyKind.xp, size: 64),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 1100),
+            curve: Curves.elasticOut,
+            builder: (context, t, child) => Transform.rotate(
+              angle: (1 - t) * pi,
+              child: Transform.scale(scale: .4 + .6 * t, child: child),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                const CurrencyIcon(CurrencyKind.xp, size: 104),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: OutlinedText('$level', size: 30, strokeWidth: 5),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -816,6 +958,7 @@ Future<void> showChestRewards(
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
+      celebrate: true,
       title: title,
       titleColor: const Color(0xFFE0A21A),
       actions: [
@@ -871,6 +1014,7 @@ Future<void> showIslandArrival(
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
+      celebrate: true,
       title: island.name,
       titleColor: Palette.accent,
       actions: [
@@ -1036,6 +1180,7 @@ Future<void> showTaskComplete(
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
+      celebrate: true,
       title: islandComplete ? 'Island restored!' : 'Restored!',
       titleColor: Palette.green,
       actions: [

@@ -16,10 +16,22 @@ class SpawnEvent extends GameEvent {
 }
 
 class MergeEvent extends GameEvent {
-  MergeEvent(this.cells, this.result, {required this.bonus});
+  MergeEvent(
+    this.cells,
+    this.result, {
+    required this.bonus,
+    this.target,
+    this.sources = const [],
+  });
   final List<int> cells;
   final ItemRef result;
   final bool bonus;
+
+  /// The cell the player merged onto.
+  final int? target;
+
+  /// Board cells the merged items came from (for fusing effects).
+  final List<int> sources;
 }
 
 class HatchEvent extends GameEvent {

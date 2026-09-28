@@ -143,6 +143,7 @@ class _DailyBody extends StatelessWidget {
               const SizedBox(height: 8),
               Center(
                 child: GameButton(
+                  shine: true,
                   color: Palette.pink,
                   onTap: game.claimLogin,
                   child: const Text("Collect today's gift"),
