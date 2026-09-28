@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="44%" r="75%">
+      <stop offset="0" stop-color="#FFE3F6"/>
+      <stop offset="0.22" stop-color="#F59BEA"/>
+      <stop offset="0.5" stop-color="#9B57F2"/>
+      <stop offset="0.78" stop-color="#4A2BB8"/>
+      <stop offset="1" stop-color="#1D1266"/>
+    </radialGradient>
+    <radialGradient id="gemGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#FFB3E0" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#FF5FA2" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8CF5DD"/>
+      <stop offset="0.55" stop-color="#3FCFB8"/>
+      <stop offset="1" stop-color="#1B8E95"/>
+    </linearGradient>
+    <radialGradient id="head" cx="42%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#B8FFEE"/>
+      <stop offset="0.45" stop-color="#5BE3C9"/>
+      <stop offset="1" stop-color="#1E9A9E"/>
+    </radialGradient>
+    <linearGradient id="snout" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E4FFF6"/>
+      <stop offset="1" stop-color="#9DEBD7"/>
+    </linearGradient>
+    <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF6D9"/>
+      <stop offset="1" stop-color="#FFD98A"/>
+    </linearGradient>
+    <linearGradient id="horn" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#E89A12"/>
+      <stop offset="0.6" stop-color="#FFD24D"/>
+      <stop offset="1" stop-color="#FFF4C2"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E3B6FF"/>
+      <stop offset="0.6" stop-color="#A66BFF"/>
+      <stop offset="1" stop-color="#7340D6"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="50%" cy="70%" r="70%">
+      <stop offset="0" stop-color="#9A6BFF"/>
+      <stop offset="0.45" stop-color="#4B23A0"/>
+      <stop offset="1" stop-color="#1A0B3A"/>
+    </radialGradient>
+    <linearGradient id="gemTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE0F1"/>
+      <stop offset="1" stop-color="#FF7CC4"/>
+    </linearGradient>
+    <linearGradient id="gemA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF9AD2"/>
+      <stop offset="1" stop-color="#E0247A"/>
+    </linearGradient>
+    <linearGradient id="gemB" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF5AA8"/>
+      <stop offset="1" stop-color="#9C0F56"/>
+    </linearGradient>
+    <linearGradient id="gemC" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC2E4"/>
+      <stop offset="1" stop-color="#F0408F"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#B6F57A"/>
+      <stop offset="1" stop-color="#4DB85A"/>
+    </linearGradient>
+    <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C98E62"/>
+      <stop offset="0.5" stop-color="#8A5A40"/>
+      <stop offset="1" stop-color="#4A2E2A"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#BDF3FF"/>
+      <stop offset="1" stop-color="#4FB7F0" stop-opacity="0.5"/>
+    </linearGradient>
+    <filter id="blur30" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="30"/></filter>
+    <filter id="blur8" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#1D0B45" flood-opacity="0.45"/>
+    </filter>
+    <symbol id="spark" viewBox="-10 -10 20 20">
+      <path d="M0,-10 C1.2,-2 2,-1.2 10,0 C2,1.2 1.2,2 0,10 C-1.2,2 -2,1.2 -10,0 C-2,-1.2 -1.2,-2 0,-10Z" fill="#FFFFFF"/>
+    </symbol>
+  </defs>
+
+  <g id="bg">
+    <rect width="1024" height="1024" fill="url(#sky)"/>
+    <g opacity="0.16" fill="#FFFFFF" transform="translate(512 470)">
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(0)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(30)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(60)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(90)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(120)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(150)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(180)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(210)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(240)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(270)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(300)"/>
+      <path d="M0,0 L-60,-760 L60,-760Z" transform="rotate(330)"/>
+    </g>
+    <g fill="#FFFFFF">
+      <circle cx="120" cy="170" r="5" opacity="0.8"/>
+      <circle cx="900" cy="140" r="6" opacity="0.8"/>
+      <circle cx="860" cy="320" r="4" opacity="0.7"/>
+      <circle cx="160" cy="420" r="4" opacity="0.7"/>
+      <circle cx="80" cy="640" r="5" opacity="0.6"/>
+      <circle cx="950" cy="600" r="5" opacity="0.6"/>
+      <circle cx="260" cy="90" r="3" opacity="0.7"/>
+      <circle cx="760" cy="70" r="3" opacity="0.7"/>
+    </g>
+    <g filter="url(#blur8)">
+      <circle cx="170" cy="560" r="26" fill="#FFB3E0" opacity="0.5"/>
+      <circle cx="880" cy="470" r="30" fill="#9DF5FF" opacity="0.45"/>
+      <circle cx="220" cy="120" r="20" fill="#FFE38A" opacity="0.5"/>
+      <circle cx="840" cy="760" r="22" fill="#FFB3E0" opacity="0.45"/>
+    </g>
+    <!-- Clouds -->
+    <g fill="#FFFFFF" opacity="0.85">
+      <g transform="translate(90 900)">
+        <circle cx="0" cy="0" r="70"/><circle cx="80" cy="-20" r="80"/><circle cx="170" cy="10" r="60"/>
+        <rect x="-60" y="0" width="290" height="80" rx="40"/>
+      </g>
+      <g transform="translate(800 930)">
+        <circle cx="0" cy="0" r="60"/><circle cx="80" cy="-30" r="80"/><circle cx="170" cy="0" r="70"/>
+        <rect x="-50" y="0" width="290" height="80" rx="40"/>
+      </g>
+    </g>
+  </g>
+
+  <g id="fg" stroke="#2B1648" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Island -->
+    <g filter="url(#shadow)">
+      <path d="M190,860 Q512,1180 834,860 Z" fill="url(#rock)"/>
+      <path d="M300,905 Q320,990 360,1010" fill="none" stroke="#5A3A2E" stroke-width="10" opacity="0.5"/>
+      <path d="M700,915 Q690,980 650,1020" fill="none" stroke="#5A3A2E" stroke-width="10" opacity="0.5"/>
+      <ellipse cx="512" cy="860" rx="330" ry="78" fill="url(#grass)"/>
+      <path d="M260,875 q14,-34 26,0 M300,880 q10,-26 20,0 M720,878 q12,-30 24,0 M760,868 q10,-24 20,0" fill="none" stroke="#2F8A45" stroke-width="7"/>
+      <!-- waterfall -->
+      <path d="M248,880 C236,930 244,990 232,1024 L270,1024 C272,990 266,930 276,884 Z" fill="url(#water)" stroke="none"/>
+    </g>
+    <!-- flowers -->
+    <g stroke-width="6">
+      <circle cx="300" cy="848" r="13" fill="#FF7EB6"/><circle cx="300" cy="848" r="5" fill="#FFE066" stroke="none"/>
+      <circle cx="745" cy="842" r="13" fill="#FFE066"/><circle cx="745" cy="842" r="5" fill="#FF7EB6" stroke="none"/>
+      <circle cx="790" cy="872" r="10" fill="#FFFFFF"/><circle cx="790" cy="872" r="4" fill="#FFB347" stroke="none"/>
+    </g>
+
+    <!-- Halo behind the dragon -->
+    <circle cx="512" cy="600" r="330" fill="url(#gemGlow)" stroke="none" opacity="0.55" filter="url(#blur30)"/>
+    <!-- Wings -->
+    <path d="M360,470 C300,380 200,250 70,210 C110,270 110,330 90,390 C150,380 170,420 150,470 C210,455 240,500 225,550 C280,520 320,540 340,570 Z" fill="url(#wing)"/>
+    <path d="M664,470 C724,380 824,250 954,210 C914,270 914,330 934,390 C874,380 854,420 874,470 C814,455 784,500 799,550 C744,520 704,540 684,570 Z" fill="url(#wing)"/>
+    <g fill="none" stroke="#5B2EAE" stroke-width="8" opacity="0.8">
+      <path d="M340,480 C260,410 170,320 90,390"/>
+      <path d="M340,500 C280,470 200,440 150,470"/>
+      <path d="M684,480 C764,410 854,320 934,390"/>
+      <path d="M684,500 C744,470 824,440 874,470"/>
+    </g>
+
+    <!-- Tail -->
+    <path d="M690,760 C780,790 860,760 880,690 C890,650 860,630 840,650" fill="none" stroke-width="44" stroke="#2B1648"/>
+    <path d="M690,760 C780,790 860,760 880,690 C890,650 860,630 840,650" fill="none" stroke-width="28" stroke="#3FCFB8"/>
+    <path d="M842,652 C800,640 790,590 820,560 C835,585 850,590 866,586 C862,566 868,548 884,532 C906,566 912,612 842,652 Z" fill="#B57BFF"/>
+
+    <!-- Body -->
+    <ellipse cx="512" cy="700" rx="205" ry="170" fill="url(#body)"/>
+    <ellipse cx="512" cy="730" rx="130" ry="120" fill="url(#belly)" stroke="none"/>
+    <!-- Feet -->
+    <ellipse cx="370" cy="840" rx="70" ry="44" fill="url(#body)"/>
+    <ellipse cx="654" cy="840" rx="70" ry="44" fill="url(#body)"/>
+    <g fill="#FFF6D9" stroke-width="6">
+      <circle cx="335" cy="860" r="11"/><circle cx="365" cy="868" r="11"/><circle cx="395" cy="864" r="11"/>
+      <circle cx="629" cy="864" r="11"/><circle cx="659" cy="868" r="11"/><circle cx="689" cy="860" r="11"/>
+    </g>
+
+    <!-- Gem light on the belly -->
+    <circle cx="512" cy="740" r="170" fill="url(#gemGlow)" stroke="none" opacity="0.55" filter="url(#blur30)"/>
+
+    <!-- Gem -->
+    <g>
+      <path d="M402,610 L622,610 L682,670 L512,870 L342,670 Z" fill="url(#gemA)"/>
+      <path d="M402,610 L622,610 L682,670 L342,670 Z" fill="url(#gemTop)"/>
+      <path d="M452,610 L572,610 L602,670 L422,670 Z" fill="#FFF0F8" stroke-width="8"/>
+      <path d="M342,670 L422,670 L512,870 Z" fill="url(#gemC)" stroke-width="8"/>
+      <path d="M422,670 L602,670 L512,870 Z" fill="url(#gemA)" stroke-width="8"/>
+      <path d="M602,670 L682,670 L512,870 Z" fill="url(#gemB)" stroke-width="8"/>
+      <path d="M402,610 L342,670 L422,670 L452,610 Z" fill="#FFB3DC" stroke-width="8"/>
+      <path d="M622,610 L682,670 L602,670 L572,610 Z" fill="#FF6FB5" stroke-width="8"/>
+      <path d="M402,610 L622,610 L682,670 L512,870 L342,670 Z" fill="none"/>
+      <path d="M470,630 L540,630" stroke="#FFFFFF" stroke-width="10" opacity="0.9"/>
+      <path d="M390,700 L450,800" stroke="#FFFFFF" stroke-width="9" opacity="0.6"/>
+    </g>
+
+    <!-- Arms hugging the gem -->
+    <ellipse cx="370" cy="690" rx="46" ry="62" fill="url(#body)" transform="rotate(-25 370 690)"/>
+    <ellipse cx="654" cy="690" rx="46" ry="62" fill="url(#body)" transform="rotate(25 654 690)"/>
+    <g fill="#FFF6D9" stroke-width="6">
+      <circle cx="398" cy="730" r="10"/><circle cx="410" cy="708" r="10"/>
+      <circle cx="626" cy="730" r="10"/><circle cx="614" cy="708" r="10"/>
+    </g>
+
+    <!-- Horns -->
+    <path d="M400,270 C370,200 330,150 270,120 C300,190 320,250 350,300 Z" fill="url(#horn)"/>
+    <path d="M624,270 C654,200 694,150 754,120 C724,190 704,250 674,300 Z" fill="url(#horn)"/>
+    <!-- Crest -->
+    <path d="M470,215 L495,160 L520,212 L545,168 L562,222 Z" fill="#B57BFF"/>
+    <!-- Ear frills -->
+    <path d="M318,370 L240,330 L270,390 L230,420 L312,430 Z" fill="#B57BFF"/>
+    <path d="M706,370 L784,330 L754,390 L794,420 L712,430 Z" fill="#B57BFF"/>
+
+    <!-- Head -->
+    <ellipse cx="512" cy="390" rx="215" ry="185" fill="url(#head)"/>
+    <!-- head shine -->
+    <ellipse cx="430" cy="290" rx="70" ry="34" fill="#FFFFFF" opacity="0.55" stroke="none" transform="rotate(-18 430 290)"/>
+    <!-- Snout -->
+    <ellipse cx="512" cy="480" rx="125" ry="80" fill="url(#snout)"/>
+    <ellipse cx="470" cy="462" rx="12" ry="9" fill="#2B1648" stroke="none"/>
+    <ellipse cx="554" cy="462" rx="12" ry="9" fill="#2B1648" stroke="none"/>
+    <!-- Smile -->
+    <path d="M462,508 Q512,548 562,508" fill="none" stroke-width="11"/>
+    <path d="M532,522 L540,544 L550,518 Z" fill="#FFFFFF" stroke-width="5"/>
+    <!-- Eyes -->
+    <ellipse cx="418" cy="370" rx="52" ry="62" fill="url(#eye)"/>
+    <ellipse cx="606" cy="370" rx="52" ry="62" fill="url(#eye)"/>
+    <g fill="#FFFFFF" stroke="none">
+      <circle cx="400" cy="346" r="20"/><circle cx="434" cy="396" r="9"/>
+      <circle cx="588" cy="346" r="20"/><circle cx="622" cy="396" r="9"/>
+    </g>
+    <!-- Blush -->
+    <ellipse cx="350" cy="450" rx="40" ry="22" fill="#FF8AC4" opacity="0.65" stroke="none"/>
+    <ellipse cx="674" cy="450" rx="40" ry="22" fill="#FF8AC4" opacity="0.65" stroke="none"/>
+    <!-- Forehead gem -->
+    <path d="M512,232 L540,262 L512,296 L484,262 Z" fill="#FF5FA2" stroke-width="8"/>
+    <path d="M504,250 L512,242 L520,250" fill="none" stroke="#FFFFFF" stroke-width="5"/>
+  </g>
+
+  <g id="sparkles">
+    <use href="#spark" x="690" y="560" width="70" height="70"/>
+    <use href="#spark" x="300" y="600" width="46" height="46"/>
+    <use href="#spark" x="820" y="200" width="60" height="60"/>
+    <use href="#spark" x="130" y="230" width="44" height="44"/>
+    <use href="#spark" x="420" y="120" width="34" height="34"/>
+    <use href="#spark" x="560" y="800" width="40" height="40"/>
+  </g>
+</svg>
