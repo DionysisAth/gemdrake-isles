@@ -11,6 +11,7 @@ import '../painters/board_painters.dart';
 import '../painters/item_painter.dart';
 import '../theme.dart';
 import '../widgets/fancy.dart';
+import '../widgets/online_widgets.dart';
 import '../widgets/piece_view.dart';
 import 'meta_dialogs.dart';
 
@@ -1268,6 +1269,7 @@ Future<void> showSettings(BuildContext context) {
                 value: game.state.notifications,
                 onChanged: (v) => game.setReminders(v),
               ),
+              const OnlineSettings(),
               TextButton(
                 onPressed: () => showBackup(ctx),
                 child: const Text('Backup & restore'),

@@ -48,6 +48,9 @@
             </intent-filter>
         </receiver>
         <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/game_services_project_id" />
+        <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>

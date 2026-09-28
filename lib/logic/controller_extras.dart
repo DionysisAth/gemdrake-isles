@@ -1,7 +1,45 @@
 part of 'game_controller.dart';
 
-/// Local reminders and save backup codes.
+/// Local reminders, achievements, leaderboard values and backup codes.
 extension Extras on GameController {
+  // ---------------------------------------------------------------------
+  // Achievements and leaderboard values
+  // ---------------------------------------------------------------------
+
+  /// A number the game tracks: a stats counter or a derived value.
+  int metric(String name) => switch (name) {
+    'level' => state.level,
+    'island' => state.island + 1,
+    'streak' => state.loginStreak,
+    'maxDragonLevel' => state.dragons.fold(0, (m, d) => max(m, d.level)),
+    'bookDiscovered' => bookDiscovered,
+    'dragons' => state.dragons.length,
+    'eventPoints' => state.event?.points ?? 0,
+    _ => state.stat(name),
+  };
+
+  int achievementProgress(AchievementDef a) => min(metric(a.metric), a.target);
+
+  bool achievementDone(AchievementDef a) => metric(a.metric) >= a.target;
+
+  bool achievementClaimable(AchievementDef a) =>
+      achievementDone(a) && !state.achievements.contains(a.id);
+
+  int get achievementBadge =>
+      config.services.achievements.where(achievementClaimable).length;
+
+  bool claimAchievement(String id) {
+    final a = config.services.achievements.where((a) => a.id == id).firstOrNull;
+    if (a == null || !achievementClaimable(a)) return false;
+    state.achievements.add(a.id);
+    state.gems += a.gems;
+    feedback.play(Sfx.levelUp);
+    feedback.haptic(heavy: true);
+    analytics.log('achievement', {'id': id});
+    _commit();
+    return true;
+  }
+
   // ---------------------------------------------------------------------
   // Reminders
   // ---------------------------------------------------------------------

@@ -603,69 +603,6 @@ class _GemButton extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// League result
-// ---------------------------------------------------------------------------
-
-Future<void> showLeagueResult(BuildContext context) {
-  final game = context.game;
-  final r = game.state.leagueResult;
-  if (r == null) return Future.value();
-  final tiers = game.config.events.league.tiers;
-  final moved = r.tierAfter > r.tierBefore
-      ? 'Promoted to ${tiers[r.tierAfter].name} League!'
-      : r.tierAfter < r.tierBefore
-      ? 'Moved down to ${tiers[r.tierAfter].name} League.'
-      : 'You stay in ${tiers[r.tierAfter].name} League.';
-  return showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (ctx) => GameDialog(
-      title: 'League results',
-      titleColor: const Color(0xFFE0A21A),
-      actions: [
-        GameButton(
-          onTap: () {
-            game.claimLeagueResult();
-            Navigator.pop(ctx);
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Collect ${r.gems} '),
-              const CurrencyIcon(CurrencyKind.gem, size: 18),
-            ],
-          ),
-        ),
-      ],
-      child: Column(
-        children: [
-          Icon(
-            Icons.emoji_events_rounded,
-            size: 60,
-            color: r.rank == 1
-                ? Palette.gold
-                : r.rank <= 3
-                ? const Color(0xFFB0BEC5)
-                : Palette.inkSoft,
-          ),
-          Text(
-            'You finished #${r.rank} last week',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          Text(moved),
-          const SizedBox(height: 6),
-          Text(
-            game.config.events.league.note,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11.5, color: Palette.inkSoft),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Sharing
 // ---------------------------------------------------------------------------
 

@@ -320,39 +320,6 @@ class EventState {
   };
 }
 
-/// Final standing of a finished practice-league week, waiting to be seen.
-class LeagueResult {
-  LeagueResult({
-    required this.week,
-    required this.rank,
-    required this.gems,
-    required this.tierBefore,
-    required this.tierAfter,
-  });
-
-  factory LeagueResult.fromJson(Map<String, dynamic> j) => LeagueResult(
-    week: j['week'] as int,
-    rank: j['rank'] as int,
-    gems: j['gems'] as int,
-    tierBefore: j['from'] as int,
-    tierAfter: j['to'] as int,
-  );
-
-  final int week;
-  final int rank;
-  final int gems;
-  final int tierBefore;
-  final int tierAfter;
-
-  Map<String, dynamic> toJson() => {
-    'week': week,
-    'rank': rank,
-    'gems': gems,
-    'from': tierBefore,
-    'to': tierAfter,
-  };
-}
-
 /// Everything that is saved. Plain mutable data; all rules live in
 /// `GameController`.
 class GameState {
@@ -394,10 +361,10 @@ class GameState {
     Set<String>? bookClaimed,
     this.hoardLevel = 0,
     this.event,
-    this.leagueTier = 0,
-    this.leagueResult,
     this.notifications = true,
-  }) : dailyTasks = dailyTasks ?? [],
+    Set<String>? achievements,
+  }) : achievements = achievements ?? {},
+       dailyTasks = dailyTasks ?? [],
        bookClaimed = bookClaimed ?? {},
        pending = pending ?? [],
        orders = orders ?? [],
@@ -458,11 +425,8 @@ class GameState {
     event: j['event'] == null
         ? null
         : EventState.fromJson(j['event'] as Map<String, dynamic>),
-    leagueTier: j['lgTier'] as int? ?? 0,
-    leagueResult: j['lgResult'] == null
-        ? null
-        : LeagueResult.fromJson(j['lgResult'] as Map<String, dynamic>),
     notifications: j['notif'] as bool? ?? true,
+    achievements: (j['ach'] as List? ?? const []).cast<String>().toSet(),
   );
 
   int version;
@@ -526,11 +490,12 @@ class GameState {
 
   /// This week's festival, once the player has joined it.
   EventState? event;
-  int leagueTier;
-  LeagueResult? leagueResult;
 
   /// Local reminder notifications enabled.
   bool notifications;
+
+  /// Achievement rewards collected.
+  Set<String> achievements;
 
   int newId() => nextId++;
 
@@ -575,9 +540,8 @@ class GameState {
     'book': bookClaimed.toList(),
     'hoard': hoardLevel,
     'event': event?.toJson(),
-    'lgTier': leagueTier,
-    'lgResult': leagueResult?.toJson(),
     'notif': notifications,
+    'ach': achievements.toList(),
   };
 }
 

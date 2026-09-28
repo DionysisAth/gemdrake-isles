@@ -8,10 +8,11 @@ import '../dialogs/meta_dialogs.dart';
 import '../game_scope.dart';
 import '../painters/board_painters.dart';
 import '../theme.dart';
+import '../widgets/online_widgets.dart';
 import '../widgets/piece_view.dart';
 
 /// The weekly festival: its reward track (free and premium) and the
-/// practice league.
+/// weekly leaderboard.
 class EventScreen extends StatelessWidget {
   const EventScreen({super.key, required this.onPlay});
 
@@ -32,14 +33,10 @@ class EventScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(10, 4, 10, 12),
           children: [
             _EventHeader(def: def, onPlay: onPlay),
-            if (game.state.leagueResult != null) ...[
-              const SizedBox(height: 8),
-              _LastWeekCard(game: game),
-            ],
             const SizedBox(height: 10),
             _RewardTrack(def: def),
             const SizedBox(height: 10),
-            const _LeagueCard(),
+            const FestivalLeaderboardCard(),
           ],
         );
       },
@@ -75,7 +72,7 @@ class _Locked extends StatelessWidget {
             const SizedBox(height: 4),
             const Text(
               'Each week a new festival comes to the isles, with its own board, '
-              'rewards, an exclusive dragon and a friendly league.',
+              'rewards and an exclusive dragon.',
               textAlign: TextAlign.center,
             ),
           ],
@@ -194,38 +191,6 @@ class _EventHeader extends StatelessWidget {
                 Text('Play festival board', style: TextStyle(fontSize: 17)),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LastWeekCard extends StatelessWidget {
-  const _LastWeekCard({required this.game});
-
-  final GameController game;
-
-  @override
-  Widget build(BuildContext context) {
-    final r = game.state.leagueResult!;
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: panelDecoration(color: const Color(0xFFFFE9A8)),
-      child: Row(
-        children: [
-          const Icon(Icons.emoji_events_rounded, color: Color(0xFFE0A21A)),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              'Last week you finished #${r.rank}!',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          GameButton(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            onTap: () => showLeagueResult(context),
-            child: const Text('Collect'),
           ),
         ],
       ),
@@ -483,154 +448,6 @@ class _TrackReward extends StatelessWidget {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _LeagueCard extends StatelessWidget {
-  const _LeagueCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final game = context.game;
-    final lc = game.config.events.league;
-    final table = game.leagueStandings;
-    final tier = game.leagueTier;
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: panelDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.emoji_events_rounded, color: Color(0xFFE0A21A)),
-              const SizedBox(width: 4),
-              Text(
-                '${tier.name} Practice League',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEDE5F7),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.smart_toy_outlined,
-                  size: 16,
-                  color: Palette.inkSoft,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(lc.note, style: const TextStyle(fontSize: 11.5)),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            'Top ${lc.promote} move up, bottom ${lc.demote} move down. '
-            'Ranks are final when the festival ends.',
-            style: const TextStyle(fontSize: 11.5, color: Palette.inkSoft),
-          ),
-          const SizedBox(height: 6),
-          for (var i = 0; i < table.length; i++)
-            _LeagueRow(
-              rank: i + 1,
-              entry: table[i],
-              gems: lc.gemsForRank(i + 1),
-              zone: i < lc.promote
-                  ? 1
-                  : i >= lc.size - lc.demote && game.state.leagueTier > 0
-                  ? -1
-                  : 0,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LeagueRow extends StatelessWidget {
-  const _LeagueRow({
-    required this.rank,
-    required this.entry,
-    required this.gems,
-    required this.zone,
-  });
-
-  final int rank;
-  final LeagueEntry entry;
-  final int gems;
-  final int zone;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 1.5),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-      decoration: BoxDecoration(
-        color: entry.you
-            ? const Color(0xFFFFE9A8)
-            : zone > 0
-            ? const Color(0xFFE6F6E6)
-            : zone < 0
-            ? const Color(0xFFFBE4E4)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: entry.you ? Border.all(color: Palette.gold, width: 2) : null,
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 26,
-            child: Text(
-              '$rank',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          if (!entry.you)
-            const Padding(
-              padding: EdgeInsets.only(right: 4),
-              child: Icon(
-                Icons.smart_toy_outlined,
-                size: 14,
-                color: Palette.inkSoft,
-              ),
-            ),
-          Expanded(
-            child: Text(
-              entry.you ? 'You' : entry.name,
-              style: TextStyle(
-                fontWeight: entry.you ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ),
-          Text(
-            '${entry.score}',
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 40,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text('$gems', style: const TextStyle(fontSize: 12)),
-                const CurrencyIcon(CurrencyKind.gem, size: 14),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -273,37 +273,17 @@ void main() {
       expect(g.claimMilestone(0, premium: true), isTrue);
     });
 
-    test('next week: rewards are sent, league result recorded, new event', () {
+    test('next week: unclaimed rewards are sent and a new event starts', () {
       final clock = FakeClock();
       final g = eventReady(clock);
       final first = g.state.event!.id;
-      g.state.event!.points = 5000; // beats every simulated rival
+      g.state.event!.points = 5000;
       final dragons = g.state.dragons.length;
       clock.advance(const Duration(days: 7));
       g.tick();
       expect(g.state.event!.id, isNot(first));
       expect(g.state.event!.points, 0);
       expect(g.state.dragons.length, dragons + 1); // unclaimed dragon sent
-      final r = g.state.leagueResult!;
-      expect(r.rank, 1);
-      expect(r.tierAfter, 1);
-      expect(g.state.leagueTier, 1);
-      final gems = g.state.gems;
-      expect(g.claimLeagueResult(), isTrue);
-      expect(g.state.gems, gems + r.gems);
-    });
-
-    test('league table: rivals are simulated and grow during the week', () {
-      final clock = FakeClock(DateTime(2026, 1, 5, 0, 30)); // a Monday
-      final g = eventReady(clock);
-      final early = g.leagueStandings;
-      expect(early.length, g.config.events.league.size);
-      expect(early.where((e) => e.you).length, 1);
-      clock.advance(const Duration(days: 5));
-      g.tick();
-      final late = g.leagueStandings;
-      int total(List<LeagueEntry> l) => l.fold(0, (s, e) => s + e.score);
-      expect(total(late), greaterThan(total(early)));
     });
 
     test('event state survives save and load', () {

@@ -1,24 +1,7 @@
 part of 'game_controller.dart';
 
-/// One row of the practice league table.
-class LeagueEntry {
-  LeagueEntry(this.name, this.score, {this.you = false});
-  final String name;
-  final int score;
-  final bool you;
-}
-
-class _Rival {
-  _Rival(this.name, this.finalScore, this.curve);
-  final String name;
-  final int finalScore;
-  final double curve;
-
-  int scoreAt(double f) => (finalScore * pow(f.clamp(0.0, 1.0), curve)).round();
-}
-
-/// Weekly festival events (event board, reward track with a premium track
-/// unlocked by gems) and the practice league against simulated rivals.
+/// Weekly festival events: an event board and a reward track with a premium
+/// track unlocked by gems.
 extension FestivalEvents on GameController {
   EventsConfig get ev => config.events;
 
@@ -108,30 +91,6 @@ extension FestivalEvents on GameController {
       }
     }
     grantLoot(missed);
-    if (e.points > 0) {
-      // Pay out a result the player never looked at before replacing it.
-      claimLeagueResult();
-      final standings = leagueStandingsFor(
-        e.week,
-        state.leagueTier,
-        e.points,
-        1,
-      );
-      final rank = standings.indexWhere((s) => s.you) + 1;
-      final lc = ev.league;
-      final before = state.leagueTier;
-      var after = before;
-      if (rank <= lc.promote) after = min(before + 1, lc.tiers.length - 1);
-      if (rank > lc.size - lc.demote) after = max(before - 1, 0);
-      state.leagueTier = after;
-      state.leagueResult = LeagueResult(
-        week: e.week,
-        rank: rank,
-        gems: lc.gemsForRank(rank),
-        tierBefore: before,
-        tierAfter: after,
-      );
-    }
     analytics.log('event_end', {'event': e.id, 'points': e.points});
     state.event = null;
   }
@@ -171,6 +130,8 @@ extension FestivalEvents on GameController {
       for (final m in ev.milestones)
         if (m.points > before && m.points <= e.points) m,
     ];
+    final last = ev.milestones.last.points;
+    if (before < last && e.points >= last) state.addStat('festivalsCompleted');
     _emit(EventPointsEvent(pts, cell, milestone: reached.isNotEmpty));
   }
 
@@ -240,7 +201,7 @@ extension FestivalEvents on GameController {
       if (milestoneClaimable(i)) n++;
       if (milestoneClaimable(i, premium: true)) n++;
     }
-    return n + (state.leagueResult != null ? 1 : 0);
+    return n;
   }
 
   bool unlockPremium() {
@@ -252,70 +213,6 @@ extension FestivalEvents on GameController {
     e.premium = true;
     feedback.play(Sfx.levelUp);
     analytics.log('gem_spend', {'on': 'premium', 'gems': ev.premiumCostGems});
-    _commit();
-    return true;
-  }
-
-  // ---------------------------------------------------------------------
-  // Practice league (simulated rivals)
-  // ---------------------------------------------------------------------
-
-  List<_Rival> _rivals(int week, int tier) {
-    final lc = ev.league;
-    final r = Random(week * 7919 + tier * 104729 + 13);
-    final names = [...lc.names]..shuffle(r);
-    final base = lc.tiers[tier.clamp(0, lc.tiers.length - 1)].rivalScore;
-    return [
-      for (var i = 0; i < lc.rivals; i++)
-        _Rival(
-          names[i % names.length],
-          (base * (0.3 + r.nextDouble() * 1.4)).round(),
-          0.7 + r.nextDouble() * 0.8,
-        ),
-    ];
-  }
-
-  /// League table for [week] at [tier] with the player on [points], with
-  /// rivals' scores as they are [fraction] of the way through the week.
-  List<LeagueEntry> leagueStandingsFor(
-    int week,
-    int tier,
-    int points,
-    double fraction,
-  ) {
-    final list = [
-      for (final r in _rivals(week, tier))
-        LeagueEntry(r.name, r.scoreAt(fraction)),
-      LeagueEntry('You', points, you: true),
-    ];
-    // Ties go to the player.
-    list.sort((a, b) {
-      final c = b.score.compareTo(a.score);
-      if (c != 0) return c;
-      return a.you ? -1 : (b.you ? 1 : 0);
-    });
-    return list;
-  }
-
-  List<LeagueEntry> get leagueStandings => leagueStandingsFor(
-    weekNumber,
-    state.leagueTier,
-    state.event?.points ?? 0,
-    weekFraction,
-  );
-
-  int get leagueRank => leagueStandings.indexWhere((e) => e.you) + 1;
-
-  LeagueTierDef get leagueTier =>
-      ev.league.tiers[state.leagueTier.clamp(0, ev.league.tiers.length - 1)];
-
-  /// Collects last week's league reward.
-  bool claimLeagueResult() {
-    final r = state.leagueResult;
-    if (r == null) return false;
-    state.leagueResult = null;
-    state.gems += r.gems;
-    analytics.log('league_claim', {'rank': r.rank, 'gems': r.gems});
     _commit();
     return true;
   }

@@ -24,6 +24,7 @@ class GameConfig {
     required this.tutorial,
     required this.meta,
     required this.events,
+    required this.services,
   });
 
   static const files = [
@@ -37,15 +38,22 @@ class GameConfig {
     'tutorial',
     'meta',
     'events',
+    'services',
   ];
 
-  static Future<GameConfig> load(AssetBundle bundle) async {
+  static Future<GameConfig> load(AssetBundle bundle) async =>
+      GameConfig.fromJson(await loadJson(bundle));
+
+  /// The bundled config files, decoded.
+  static Future<Map<String, Map<String, dynamic>>> loadJson(
+    AssetBundle bundle,
+  ) async {
     final json = <String, Map<String, dynamic>>{};
     for (final name in files) {
       final raw = await bundle.loadString('assets/config/$name.json');
       json[name] = jsonDecode(raw) as Map<String, dynamic>;
     }
-    return GameConfig.fromJson(json);
+    return json;
   }
 
   factory GameConfig.fromJson(Map<String, Map<String, dynamic>> j) {
@@ -71,6 +79,7 @@ class GameConfig {
       ],
       meta: MetaConfig.fromJson(j['meta']!),
       events: EventsConfig.fromJson(j['events']!),
+      services: ServicesConfig.fromJson(j['services']!),
     );
   }
 
@@ -85,6 +94,7 @@ class GameConfig {
   final List<TutorialStepDef> tutorial;
   final MetaConfig meta;
   final EventsConfig events;
+  final ServicesConfig services;
 
   ChainDef chain(String id) => chains.firstWhere((c) => c.id == id);
   ItemDef item(ItemRef ref) => chain(ref.chain).items[ref.level - 1];
@@ -1044,43 +1054,7 @@ class MilestoneDef {
   final LootEntry premium;
 }
 
-class LeagueTierDef {
-  LeagueTierDef(this.name, this.rivalScore);
-  final String name;
-
-  /// Typical end-of-week score of a rival in this tier.
-  final int rivalScore;
-}
-
-class LeagueConfig {
-  LeagueConfig(Map<String, dynamic> j)
-    : note = j['note'] as String,
-      tiers = [
-        for (final t in j['tiers'] as List)
-          LeagueTierDef(t['name'] as String, t['rivalScore'] as int),
-      ],
-      rivals = j['rivals'] as int,
-      promote = j['promote'] as int,
-      demote = j['demote'] as int,
-      rewardGems = (j['rewardGems'] as List).cast<int>(),
-      names = (j['names'] as List).cast<String>();
-
-  final String note;
-  final List<LeagueTierDef> tiers;
-  final int rivals;
-  final int promote;
-  final int demote;
-
-  /// Gems by final rank (1st first).
-  final List<int> rewardGems;
-  final List<String> names;
-
-  int get size => rivals + 1;
-  int gemsForRank(int rank) =>
-      rank - 1 < rewardGems.length ? rewardGems[rank - 1] : 0;
-}
-
-/// Weekly festival events and the practice league (`events.json`).
+/// Weekly festival events (`events.json`).
 class EventsConfig {
   EventsConfig(Map<String, dynamic> j)
     : unlockLevel = j['unlockLevel'] as int,
@@ -1100,8 +1074,7 @@ class EventsConfig {
             rewardFromJson(m['premium'] as Map<String, dynamic>),
           ),
       ],
-      events = [for (final e in j['events'] as List) EventDef.fromJson(e)],
-      league = LeagueConfig(j['league'] as Map<String, dynamic>);
+      events = [for (final e in j['events'] as List) EventDef.fromJson(e)];
 
   factory EventsConfig.fromJson(Map<String, dynamic> j) => EventsConfig(j);
 
@@ -1117,9 +1090,82 @@ class EventsConfig {
   final Point<int> generatorCell;
   final List<MilestoneDef> milestones;
   final List<EventDef> events;
-  final LeagueConfig league;
 
   EventDef event(String id) => events.firstWhere((e) => e.id == id);
   int pointsForMerge(int outputLevel) =>
       outputLevel < mergePoints.length ? mergePoints[outputLevel] : 0;
+}
+
+class LeaderboardDef {
+  LeaderboardDef(Map<String, dynamic> j)
+    : key = j['key'] as String,
+      name = j['name'] as String,
+      metric = j['metric'] as String,
+      weekly = j['weekly'] as bool? ?? false,
+      androidId = j['android'] as String? ?? '',
+      iosId = j['ios'] as String? ?? '';
+
+  final String key;
+  final String name;
+
+  /// What is submitted (see `GameController.metric`).
+  final String metric;
+
+  /// Shown for this week only (festival points reset every week).
+  final bool weekly;
+  final String androidId;
+  final String iosId;
+}
+
+class AchievementDef {
+  AchievementDef(Map<String, dynamic> j)
+    : id = j['id'] as String,
+      name = j['name'] as String,
+      desc = j['desc'] as String,
+      metric = j['metric'] as String,
+      target = j['target'] as int,
+      gems = j['gems'] as int? ?? 0,
+      androidId = j['android'] as String? ?? '',
+      iosId = j['ios'] as String? ?? '';
+
+  final String id;
+  final String name;
+  final String desc;
+  final String metric;
+  final int target;
+  final int gems;
+  final String androidId;
+  final String iosId;
+}
+
+/// Free platform services (`services.json`): Google Play Games / Game
+/// Center, cloud save, a time check and optional remote config.
+class ServicesConfig {
+  ServicesConfig(Map<String, dynamic> j)
+    : playGames = j['playGames']?['enabled'] as bool? ?? false,
+      gameCenter = j['gameCenter']?['enabled'] as bool? ?? false,
+      cloudSave = j['cloudSave'] as bool? ?? false,
+      timeCheckUrl = j['timeCheckUrl'] as String? ?? '',
+      remoteConfigUrl = j['remoteConfigUrl'] as String? ?? '',
+      leaderboards = [
+        for (final l in j['leaderboards'] as List? ?? const [])
+          LeaderboardDef(l as Map<String, dynamic>),
+      ],
+      achievements = [
+        for (final a in j['achievements'] as List? ?? const [])
+          AchievementDef(a as Map<String, dynamic>),
+      ];
+
+  factory ServicesConfig.fromJson(Map<String, dynamic> j) => ServicesConfig(j);
+
+  final bool playGames;
+  final bool gameCenter;
+  final bool cloudSave;
+  final String timeCheckUrl;
+  final String remoteConfigUrl;
+  final List<LeaderboardDef> leaderboards;
+  final List<AchievementDef> achievements;
+
+  LeaderboardDef? leaderboard(String key) =>
+      leaderboards.where((l) => l.key == key).firstOrNull;
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../logic/game_controller.dart';
 import '../../logic/game_events.dart';
+import '../../services/time_sync.dart';
 import '../dialogs/dialogs.dart';
 import '../dialogs/meta_dialogs.dart';
 import '../fx_layer.dart';
@@ -13,6 +14,7 @@ import '../painters/sky_painter.dart';
 import '../theme.dart';
 import '../widgets/board_area.dart';
 import '../widgets/event_bar.dart';
+import '../widgets/online_widgets.dart';
 import '../widgets/orders_bar.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/tutorial_overlay.dart';
@@ -51,10 +53,21 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _sub ??= context.game.events.listen(_onEvent);
+    if (_cloud == null) {
+      _cloud = context.online.cloudOffer;
+      _cloud!.addListener(_onCloudOffer);
+    }
+  }
+
+  ValueNotifier<String?>? _cloud;
+
+  void _onCloudOffer() {
+    if (_cloud?.value != null) _queue(() => showCloudOffer(context));
   }
 
   @override
   void dispose() {
+    _cloud?.removeListener(_onCloudOffer);
     WidgetsBinding.instance.removeObserver(this);
     _clock?.cancel();
     _sub?.cancel();
@@ -73,6 +86,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         _clock?.cancel();
         _clock = null;
         game.onPause();
+        context.online.onPause();
       case AppLifecycleState.inactive:
         break;
     }
@@ -81,6 +95,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void _onForeground({bool initial = false}) {
     if (!mounted) return;
     final game = context.game;
+    if (!initial) {
+      TimeSync.sync(game.config.services.timeCheckUrl);
+    }
     final wb = game.checkWelcomeBack();
     _clock?.cancel();
     game.tick();
@@ -88,9 +105,6 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     game.feedback.startMusic();
     if (wb != null && !game.tutorialActive) {
       _queue(() => showWelcomeBack(context, wb));
-    }
-    if (game.state.leagueResult != null) {
-      _queue(() => showLeagueResult(context));
     }
     if (game.loginRewardReady) _queue(() => showDaily(context));
     if (game.shouldAskReminders) _queue(game.askReminders);
@@ -326,7 +340,7 @@ class _BottomNav extends StatelessWidget {
                     icon: const NavIcon(NavIconKind.book),
                     label: 'Book',
                     active: tab == 3,
-                    badge: game.bookBadge,
+                    badge: game.bookBadge + game.achievementBadge,
                     onTap: () => onTab(3),
                   ),
                 ),
