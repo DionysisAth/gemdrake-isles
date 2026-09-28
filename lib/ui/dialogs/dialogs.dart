@@ -94,8 +94,12 @@ class GameDialog extends StatelessWidget {
         ),
       ),
     );
+    // Passthrough so the panel itself takes the dialog's minimum width;
+    // with a loose fit a narrow panel sat at the left of a wider stack
+    // while the ribbon and corner gems were placed on the stack.
     final body = Stack(
       clipBehavior: Clip.none,
+      fit: StackFit.passthrough,
       children: [
         if (celebrate)
           const Positioned(
