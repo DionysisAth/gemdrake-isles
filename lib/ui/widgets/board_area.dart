@@ -375,7 +375,7 @@ class _BoardAreaState extends State<BoardArea> {
     final board = game.board;
     const infoH = 70.0;
     const storageH = 60.0;
-    const frame = 8.0;
+    const frame = 10.0;
     final availH = size.height - infoH - storageH - _Layout.gap * 2 - frame * 2;
     final cell = min(
       (size.width - 20 - frame * 2) / board.cols,
@@ -451,13 +451,14 @@ class _BoardAreaState extends State<BoardArea> {
     final requested = game.requestedItems;
     final selected = game.selected;
     final children = <Widget>[];
+    final theme = game.config.island(game.state.island).theme;
 
     // Frame + tiles
     children.add(
       Positioned.fromRect(
-        rect: l.boardRect.inflate(10),
-        child: const RepaintBoundary(
-          child: CustomPaint(painter: BoardFramePainter()),
+        rect: l.boardRect.inflate(13),
+        child: RepaintBoundary(
+          child: CustomPaint(painter: BoardFramePainter(theme)),
         ),
       ),
     );
@@ -466,7 +467,7 @@ class _BoardAreaState extends State<BoardArea> {
         rect: l.boardRect,
         child: RepaintBoundary(
           child: CustomPaint(
-            painter: BoardBackgroundPainter(cols, board.rows, l.cell),
+            painter: BoardBackgroundPainter(cols, board.rows, l.cell, theme),
           ),
         ),
       ),
