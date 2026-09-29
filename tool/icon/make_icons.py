@@ -32,6 +32,17 @@ for name, k in dens.items():
     s = round(108 * k)
     fg.resize((s, s), Image.LANCZOS).save(d / 'ic_launcher_foreground.png')
     bg.resize((s, s), Image.LANCZOS).convert('RGB').save(d / 'ic_launcher_background.png')
+# Launch splash before Android 12: the icon with rounded corners, 160dp.
+# (Android 12+ shows the adaptive launcher icon, see values-v31/styles.xml.)
+from PIL import ImageDraw
+mask = Image.new('L', full.size, 0)
+ImageDraw.Draw(mask).rounded_rectangle((0, 0, full.width - 1, full.height - 1), radius=full.width // 5, fill=255)
+rounded = full.copy()
+rounded.putalpha(mask)
+for name, k in dens.items():
+    d = RES / f'drawable-{name}'
+    d.mkdir(exist_ok=True)
+    rounded.resize((round(160 * k),) * 2, Image.LANCZOS).save(d / 'splash_icon.png')
 any_dir = RES / 'mipmap-anydpi-v26'
 any_dir.mkdir(exist_ok=True)
 xml = '''<?xml version="1.0" encoding="utf-8"?>
@@ -51,3 +62,9 @@ for img in contents['images']:
     px = round(size * scale)
     full.resize((px, px), Image.LANCZOS).convert('RGB').save(IOS / img['filename'])
 print('icons written')
+
+# iOS launch screen image (LaunchScreen.storyboard), 160pt.
+LAUNCH = ROOT / 'ios/Runner/Assets.xcassets/LaunchImage.imageset'
+for suffix, k in [('', 1), ('@2x', 2), ('@3x', 3)]:
+    rounded.resize((160 * k,) * 2, Image.LANCZOS).save(LAUNCH / f'LaunchImage{suffix}.png')
+print('launch images written')
