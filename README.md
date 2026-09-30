@@ -186,6 +186,22 @@ Test purchases: in Play Console add license testers; on iOS use a Sandbox accoun
 
 ### 4. Store listings
 
+- **Listing text** is in `tool/play/listing/en-US/`. **Screenshots, feature graphic, icon and a
+  15-second 9:16 promo video** (TikTok, Reels, Shorts) are made from the game itself:
+  ```bash
+  SHOTS=build/promo flutter test test_shots/promo_test.dart
+  python3 tool/promo/make_promo.py build/promo build/store   # pip install pillow imageio-ffmpeg
+  ```
+- **Uploading to Play Console:** with a service account that has access to the app
+  (Play Console → *Users and permissions*):
+  ```bash
+  python3 tool/play/upload.py --key play-key.json --listing --graphics build/store
+  python3 tool/play/upload.py --key play-key.json --bundle app.aab --track internal
+  ```
+  Releases are created as drafts; roll them out in Play Console. Add the key's JSON as the
+  GitHub secret `PLAY_SERVICE_ACCOUNT_JSON` and CI uploads every signed build from `main`
+  to the internal testing track by itself.
+
 - **Privacy policy:** `docs/privacy-policy.md`. Put your contact email in place of
   `CONTACT_EMAIL`, then turn on GitHub Pages (*Settings → Pages → Deploy from branch, folder
   /docs*). The policy's address is then `https://<you>.github.io/gemdrake-isles/privacy-policy`.

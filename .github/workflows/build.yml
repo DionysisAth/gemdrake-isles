@@ -120,6 +120,33 @@ jobs:
             crash.txt
             screen.png
 
+  # Uploads the signed bundle from main to Play Console's internal testing
+  # track as a draft release. Runs only once the PLAY_SERVICE_ACCOUNT_JSON
+  # and ANDROID_KEYSTORE_* secrets are set (see README).
+  play-upload:
+    needs: [android, android-launch-test]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      PLAY_KEY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+      SIGNED: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.PLAY_KEY != '' && env.SIGNED == 'true'
+      - uses: actions/download-artifact@v4
+        if: env.PLAY_KEY != '' && env.SIGNED == 'true'
+        with:
+          name: android-aab
+      - name: Upload to the internal testing track
+        if: env.PLAY_KEY != '' && env.SIGNED == 'true'
+        run: |
+          pip install google-auth requests
+          echo "$PLAY_KEY" > play-key.json
+          python3 tool/play/upload.py --key play-key.json \
+            --bundle gemdrake-isles.aab --track internal \
+            --notes "Build ${{ github.run_number }}"
+          rm play-key.json
+
   release:
     needs: [android, android-launch-test, ios]
     # Publish even if the iOS build fails, but never an APK that crashes.
