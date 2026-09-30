@@ -119,6 +119,7 @@ jobs:
           name: android-launch-test
           path: |
             logcat.txt
+            logcat_live.txt
             crash.txt
             screen.png
 

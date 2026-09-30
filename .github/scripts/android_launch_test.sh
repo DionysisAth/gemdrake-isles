@@ -13,10 +13,15 @@ adb() { timeout 60 "$ADB" "$@"; }
 adb install -r gemdrake-isles.apk || exit 1
 adb logcat -c
 adb logcat -b crash -c
+# Stream the log while the app runs, so it survives if the emulator dies.
+"$ADB" logcat -v time > logcat_live.txt 2>&1 &
 adb shell am start -W -n "$PKG/.MainActivity"
 sleep 30
-if ! adb get-state >/dev/null 2>&1; then
+if ! adb shell true >/dev/null 2>&1; then
   echo "EMULATOR LOST (the emulator stopped responding, not an app crash)"
+  echo "=== LAST LOG LINES BEFORE IT WENT AWAY ==="
+  tail -200 logcat_live.txt
+  cp logcat_live.txt logcat.txt
   exit 1
 fi
 adb logcat -d > logcat.txt
