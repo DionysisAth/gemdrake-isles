@@ -1,0 +1,166 @@
+{
+  "unlockLevel": 4,
+  "premiumCostGems": 80,
+  "mergePoints": [
+    0,
+    0,
+    1,
+    2,
+    4,
+    7
+  ],
+  "offerPoints": 20,
+  "board": {
+    "locks": [
+      "fffffff",
+      "fw...wf",
+      "f.....f",
+      "w.....w",
+      ".......",
+      "w.....w",
+      "f.....f",
+      "fw...wf",
+      "fffffff"
+    ],
+    "generatorCell": [
+      3,
+      4
+    ]
+  },
+  "milestones": [
+    {
+      "points": 25,
+      "free": {
+        "coins": 100
+      },
+      "premium": {
+        "gems": 5
+      }
+    },
+    {
+      "points": 60,
+      "free": {
+        "energy": 20
+      },
+      "premium": {
+        "item": "egg:2"
+      }
+    },
+    {
+      "points": 110,
+      "free": {
+        "gems": 3
+      },
+      "premium": {
+        "energy": 50
+      }
+    },
+    {
+      "points": 180,
+      "free": {
+        "item": "egg:1"
+      },
+      "premium": {
+        "item": "treasure:4"
+      }
+    },
+    {
+      "points": 270,
+      "free": {
+        "coins": 300
+      },
+      "premium": {
+        "gems": 10
+      }
+    },
+    {
+      "points": 380,
+      "free": {
+        "energy": 40
+      },
+      "premium": {
+        "item": "egg:3"
+      }
+    },
+    {
+      "points": 510,
+      "free": {
+        "gems": 5
+      },
+      "premium": {
+        "coins": 800
+      }
+    },
+    {
+      "points": 660,
+      "free": {
+        "item": "treasure:4"
+      },
+      "premium": {
+        "item": "legend:1"
+      }
+    },
+    {
+      "points": 830,
+      "free": {
+        "item": "egg:2"
+      },
+      "premium": {
+        "gems": 15
+      }
+    },
+    {
+      "points": 1020,
+      "free": {
+        "gems": 8
+      },
+      "premium": {
+        "item": "treasure:4"
+      }
+    },
+    {
+      "points": 1240,
+      "free": {
+        "energy": 60
+      },
+      "premium": {
+        "energy": 100
+      }
+    },
+    {
+      "points": 1500,
+      "free": {
+        "dragon": "event"
+      },
+      "premium": {
+        "item": "legend:2"
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "blossom",
+      "name": "Blossom Festival",
+      "desc": "Shake the festival tree, merge blossoms and win the Blossom Dragon!",
+      "chain": "blossom",
+      "generator": "blossom_tree",
+      "dragon": "blossom",
+      "colors": [
+        "#FF9EC7",
+        "#FFE3F0"
+      ]
+    },
+    {
+      "id": "lantern",
+      "name": "Lantern Festival",
+      "desc": "Fold paper lanterns to light the sky and win the Lumen Dragon!",
+      "chain": "lantern",
+      "generator": "lantern_stall",
+      "dragon": "lumen",
+      "colors": [
+        "#FFB300",
+        "#FFF3D6"
+      ]
+    }
+  ]
+}

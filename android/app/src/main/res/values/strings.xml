@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Google Play Games project ID (Play Console > Play Games Services >
+         Configuration). Placeholder until the game is set up there; also
+         set "playGames.enabled" in assets/config/services.json. -->
+    <string name="game_services_project_id" translatable="false">000000000000</string>
+</resources>

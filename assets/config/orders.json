@@ -1,0 +1,203 @@
+{
+  "characters": [
+    {
+      "id": "pip",
+      "name": "Pip",
+      "title": "Island Caretaker",
+      "unlockLevel": 1,
+      "skin": "#FFD9B8",
+      "hat": "leaf",
+      "hatColor": "#6BBF59",
+      "lines": [
+        "Oh! That's exactly what I needed!",
+        "The island thanks you, friend!",
+        "Wonderful! Let's keep fixing things up.",
+        "You're a natural at this!"
+      ]
+    },
+    {
+      "id": "sage",
+      "name": "Sage Ember",
+      "title": "Dragon Scholar",
+      "unlockLevel": 2,
+      "skin": "#F5C9A6",
+      "hat": "wizard",
+      "hatColor": "#7E57C2",
+      "lines": [
+        "Fascinating! For my research, of course.",
+        "The dragons will be delighted.",
+        "Splendid specimen! Thank you.",
+        "Ah, just what my notes predicted."
+      ]
+    },
+    {
+      "id": "brann",
+      "name": "Brann",
+      "title": "Forgemaster",
+      "unlockLevel": 1,
+      "unlockIsland": 2,
+      "skin": "#E8B08A",
+      "hat": "helmet",
+      "hatColor": "#C0392B",
+      "lines": [
+        "Hah! Good sturdy work!",
+        "The forge thanks you, friend.",
+        "That'll hold for a hundred years!"
+      ]
+    },
+    {
+      "id": "marina",
+      "name": "Marina",
+      "title": "Coral Queen",
+      "unlockLevel": 1,
+      "unlockIsland": 3,
+      "skin": "#F7D4C0",
+      "hat": "crown",
+      "hatColor": "#26C6DA",
+      "lines": [
+        "How lovely! The lagoon is grateful.",
+        "Just like the tide promised.",
+        "You have the heart of the sea!"
+      ]
+    },
+    {
+      "id": "quartz",
+      "name": "Quartz",
+      "title": "Gem Sage",
+      "unlockLevel": 1,
+      "unlockIsland": 4,
+      "skin": "#E9D3F5",
+      "hat": "wizard",
+      "hatColor": "#80DEEA",
+      "lines": [
+        "Brilliant. Truly brilliant.",
+        "The peaks will ring with joy!",
+        "Crystal clear, as always."
+      ]
+    },
+    {
+      "id": "umbra",
+      "name": "Umbra",
+      "title": "Night Warden",
+      "unlockLevel": 1,
+      "unlockIsland": 5,
+      "skin": "#CFC4E8",
+      "hat": "hood",
+      "hatColor": "#4A3B7A",
+      "lines": [
+        "The stars thank you, keeper.",
+        "Light returns, little by little.",
+        "Even shadows smile today."
+      ]
+    }
+  ],
+  "maxActiveByLevel": [
+    {
+      "fromLevel": 1,
+      "count": 2
+    },
+    {
+      "fromLevel": 3,
+      "count": 3
+    },
+    {
+      "fromLevel": 5,
+      "count": 4
+    }
+  ],
+  "scripted": [
+    {
+      "character": "pip",
+      "lines": [
+        {
+          "item": "gem:2",
+          "count": 1
+        }
+      ],
+      "coins": 20,
+      "xp": 3
+    },
+    {
+      "character": "pip",
+      "lines": [
+        {
+          "item": "gem:3",
+          "count": 1
+        }
+      ],
+      "coins": 20,
+      "xp": 5
+    },
+    {
+      "character": "pip",
+      "lines": [
+        {
+          "item": "gem:2",
+          "count": 2
+        }
+      ],
+      "coins": 16,
+      "xp": 4
+    }
+  ],
+  "bands": [
+    {
+      "fromLevel": 1,
+      "minItemLevel": 2,
+      "maxItemLevel": 3,
+      "maxLines": 1,
+      "maxCount": 2
+    },
+    {
+      "fromLevel": 2,
+      "minItemLevel": 2,
+      "maxItemLevel": 3,
+      "maxLines": 2,
+      "maxCount": 2
+    },
+    {
+      "fromLevel": 4,
+      "minItemLevel": 2,
+      "maxItemLevel": 4,
+      "maxLines": 2,
+      "maxCount": 2
+    },
+    {
+      "fromLevel": 6,
+      "minItemLevel": 3,
+      "maxItemLevel": 5,
+      "maxLines": 2,
+      "maxCount": 1
+    },
+    {
+      "fromLevel": 9,
+      "minItemLevel": 3,
+      "maxItemLevel": 6,
+      "maxLines": 3,
+      "maxCount": 1
+    },
+    {
+      "fromLevel": 12,
+      "minItemLevel": 4,
+      "maxItemLevel": 7,
+      "maxLines": 3,
+      "maxCount": 1
+    }
+  ],
+  "coinMultiplier": 1.2,
+  "xpMultiplier": 1.0,
+  "bonus": {
+    "eggChance": 0.15,
+    "eggItem": "egg:1",
+    "gemChance": 0.12,
+    "gemAmount": [
+      1,
+      2
+    ],
+    "energyChance": 0.1,
+    "energyAmount": [
+      5,
+      10
+    ]
+  }
+}

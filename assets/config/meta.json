@@ -1,0 +1,386 @@
+{
+  "daily": {
+    "count": 3,
+    "unlockLevel": 2,
+    "pool": [
+      {
+        "id": "merge",
+        "text": "Merge {n} times",
+        "stat": "merges",
+        "targets": [
+          30,
+          50,
+          80
+        ],
+        "reward": {
+          "coins": 80,
+          "gems": 2
+        }
+      },
+      {
+        "id": "generate",
+        "text": "Tap generators {n} times",
+        "stat": "generated",
+        "targets": [
+          40,
+          60,
+          90
+        ],
+        "reward": {
+          "energy": 20
+        }
+      },
+      {
+        "id": "orders",
+        "text": "Deliver {n} orders",
+        "stat": "orders",
+        "targets": [
+          3,
+          5,
+          8
+        ],
+        "reward": {
+          "coins": 120,
+          "gems": 3
+        }
+      },
+      {
+        "id": "hatch",
+        "minLevel": 3,
+        "text": "Hatch {n} dragon",
+        "stat": "hatches",
+        "targets": [
+          1
+        ],
+        "reward": {
+          "gems": 5
+        }
+      },
+      {
+        "id": "sell",
+        "text": "Sell {n} items",
+        "stat": "sold",
+        "targets": [
+          5,
+          10
+        ],
+        "reward": {
+          "coins": 60
+        }
+      },
+      {
+        "id": "unlock",
+        "text": "Clear {n} locked tiles",
+        "stat": "unlocked",
+        "targets": [
+          2,
+          4
+        ],
+        "reward": {
+          "gems": 2,
+          "energy": 10
+        }
+      },
+      {
+        "id": "chest",
+        "minLevel": 3,
+        "text": "Open {n} treasure chest",
+        "stat": "chests",
+        "targets": [
+          1
+        ],
+        "reward": {
+          "gems": 4
+        }
+      },
+      {
+        "id": "collect",
+        "minLevel": 2,
+        "text": "Collect dragon coins {n} times",
+        "stat": "idleCollects",
+        "targets": [
+          2,
+          3
+        ],
+        "reward": {
+          "energy": 15
+        }
+      },
+      {
+        "id": "bonus",
+        "minLevel": 3,
+        "text": "Make {n} bonus merges (5 at once)",
+        "stat": "bonusMerges",
+        "targets": [
+          1,
+          2
+        ],
+        "reward": {
+          "gems": 4
+        }
+      }
+    ],
+    "allDoneReward": {
+      "gems": 5,
+      "item": "treasure:4"
+    },
+    "streakBonusGems": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      10
+    ]
+  },
+  "login": [
+    {
+      "coins": 50
+    },
+    {
+      "item": "potion:2"
+    },
+    {
+      "gems": 3
+    },
+    {
+      "item": "egg:1"
+    },
+    {
+      "coins": 150
+    },
+    {
+      "energy": 40
+    },
+    {
+      "gems": 8,
+      "item": "treasure:4"
+    }
+  ],
+  "shop": {
+    "items": [
+      {
+        "id": "merge_chest",
+        "name": "Merge Chest",
+        "desc": "3 random items, eggs or energy.",
+        "costGems": 12,
+        "icon": "treasure:4",
+        "loot": {
+          "rolls": 3,
+          "table": [
+            {
+              "item": "gem:3",
+              "weight": 25
+            },
+            {
+              "item": "plant:3",
+              "weight": 20
+            },
+            {
+              "item": "egg:1",
+              "weight": 20
+            },
+            {
+              "item": "egg:2",
+              "weight": 10
+            },
+            {
+              "item": "potion:2",
+              "weight": 15
+            },
+            {
+              "coins": 150,
+              "weight": 10
+            }
+          ]
+        }
+      },
+      {
+        "id": "grand_chest",
+        "name": "Grand Chest",
+        "desc": "6 rewards, with better eggs and gems.",
+        "costGems": 35,
+        "icon": "treasure:4",
+        "loot": {
+          "rolls": 6,
+          "table": [
+            {
+              "item": "gem:4",
+              "weight": 20
+            },
+            {
+              "item": "plant:4",
+              "weight": 15
+            },
+            {
+              "item": "egg:2",
+              "weight": 20
+            },
+            {
+              "item": "egg:3",
+              "weight": 10
+            },
+            {
+              "energy": 40,
+              "weight": 15
+            },
+            {
+              "coins": 400,
+              "weight": 15
+            },
+            {
+              "item": "legend:1",
+              "weight": 5
+            }
+          ]
+        }
+      },
+      {
+        "id": "egg_pack",
+        "name": "Egg Pack",
+        "desc": "3 dragon eggs of different sizes.",
+        "costGems": 25,
+        "icon": "egg:2",
+        "loot": {
+          "rolls": 3,
+          "table": [
+            {
+              "item": "egg:1",
+              "weight": 60
+            },
+            {
+              "item": "egg:2",
+              "weight": 30
+            },
+            {
+              "item": "egg:3",
+              "weight": 10
+            }
+          ]
+        }
+      },
+      {
+        "id": "fire_egg",
+        "name": "Fire Egg",
+        "desc": "Hatches a Fire dragon (rare).",
+        "costGems": 60,
+        "icon": "dragon:fire",
+        "loot": {
+          "rolls": 1,
+          "table": [
+            {
+              "dragon": "fire",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "crystal_egg",
+        "name": "Crystal Egg",
+        "desc": "Hatches a Crystal dragon (epic).",
+        "costGems": 150,
+        "icon": "dragon:crystal",
+        "unlockIsland": 2,
+        "loot": {
+          "rolls": 1,
+          "table": [
+            {
+              "dragon": "crystal",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "shadow_egg",
+        "name": "Shadow Egg",
+        "desc": "Hatches a Shadow dragon (legendary).",
+        "costGems": 320,
+        "icon": "dragon:shadow",
+        "unlockIsland": 4,
+        "loot": {
+          "rolls": 1,
+          "table": [
+            {
+              "dragon": "shadow",
+              "weight": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "legend_pack",
+        "name": "Legendary Egg",
+        "desc": "A mysterious egg from the Shadow Sky.",
+        "costGems": 90,
+        "icon": "legend:1",
+        "unlockIsland": 3,
+        "loot": {
+          "rolls": 1,
+          "table": [
+            {
+              "item": "legend:1",
+              "weight": 80
+            },
+            {
+              "item": "legend:2",
+              "weight": 20
+            }
+          ]
+        }
+      },
+      {
+        "id": "coin_pouch",
+        "name": "Coin Pouch",
+        "desc": "A pouch of 500 coins.",
+        "costGems": 10,
+        "icon": "treasure:3",
+        "loot": {
+          "rolls": 1,
+          "table": [
+            {
+              "coins": 500,
+              "weight": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "energy_pack",
+        "name": "Energy Pack",
+        "desc": "+60 energy right away.",
+        "costGems": 10,
+        "icon": "energy",
+        "loot": {
+          "rolls": 1,
+          "table": [
+            {
+              "energy": 60,
+              "weight": 1
+            }
+          ]
+        }
+      }
+    ],
+    "hoardUpgrades": [
+      {
+        "hours": 12,
+        "costGems": 40
+      },
+      {
+        "hours": 24,
+        "costGems": 120
+      }
+    ],
+    "boardRows": [
+      {
+        "costGems": 150
+      },
+      {
+        "costGems": 300
+      }
+    ]
+  }
+}

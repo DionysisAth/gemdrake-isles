@@ -1,0 +1,116 @@
+{
+  "enabled": true,
+  "vip": {
+    "dailyGems": 30,
+    "energyMax": 50,
+    "offlineHours": 8
+  },
+  "products": [
+    {
+      "id": "starter_pack",
+      "kind": "consumable",
+      "section": "offer",
+      "name": "Starter Pack",
+      "desc": "300 gems, 1,500 coins, 150 energy, a big egg and 2 potions.",
+      "icon": "treasure:4",
+      "badge": "One time only",
+      "priceHint": "$2.99",
+      "once": true,
+      "minLevel": 3,
+      "gems": 300,
+      "coins": 1500,
+      "energy": 150,
+      "items": ["egg:3", "potion:3", "potion:3"]
+    },
+    {
+      "id": "vip_monthly",
+      "kind": "subscription",
+      "section": "offer",
+      "name": "Dragon Club",
+      "desc": "30 gems every day, +50 max energy and +8h dragon hoard.",
+      "icon": "vip",
+      "badge": "Monthly",
+      "priceHint": "$4.99 / month",
+      "vipDays": 31
+    },
+    {
+      "id": "festival_pass",
+      "kind": "consumable",
+      "section": "festival",
+      "name": "Festival Pass",
+      "desc": "Unlocks this festival's premium reward track.",
+      "icon": "pass",
+      "priceHint": "$4.99",
+      "festivalPass": true
+    },
+    {
+      "id": "gems_80",
+      "kind": "consumable",
+      "section": "gems",
+      "name": "Pouch of Gems",
+      "icon": "gems:1",
+      "priceHint": "$0.99",
+      "gems": 80
+    },
+    {
+      "id": "gems_450",
+      "kind": "consumable",
+      "section": "gems",
+      "name": "Bag of Gems",
+      "icon": "gems:2",
+      "badge": "Popular",
+      "priceHint": "$4.99",
+      "gems": 450
+    },
+    {
+      "id": "gems_1000",
+      "kind": "consumable",
+      "section": "gems",
+      "name": "Chest of Gems",
+      "icon": "gems:3",
+      "priceHint": "$9.99",
+      "gems": 1000
+    },
+    {
+      "id": "gems_2200",
+      "kind": "consumable",
+      "section": "gems",
+      "name": "Crate of Gems",
+      "icon": "gems:4",
+      "priceHint": "$19.99",
+      "gems": 2200
+    },
+    {
+      "id": "gems_6000",
+      "kind": "consumable",
+      "section": "gems",
+      "name": "Dragon's Hoard",
+      "icon": "gems:5",
+      "badge": "Best value",
+      "priceHint": "$49.99",
+      "gems": 6000
+    },
+    {
+      "id": "energy_400",
+      "kind": "consumable",
+      "section": "bundles",
+      "name": "Energy Bundle",
+      "desc": "+400 energy.",
+      "icon": "energy",
+      "priceHint": "$1.99",
+      "energy": 400
+    },
+    {
+      "id": "dragon_bundle",
+      "kind": "consumable",
+      "section": "bundles",
+      "name": "Dragon Bundle",
+      "desc": "2 big eggs, a legendary egg and 200 gems.",
+      "icon": "legend:1",
+      "priceHint": "$7.99",
+      "minLevel": 5,
+      "gems": 200,
+      "items": ["egg:3", "egg:3", "legend:1"]
+    }
+  ]
+}

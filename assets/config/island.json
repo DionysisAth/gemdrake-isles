@@ -1,0 +1,903 @@
+{
+  "islands": [
+    {
+      "id": "meadow",
+      "name": "Meadow Ruins",
+      "theme": "meadow",
+      "completeText": "The Meadow is restored! A warm wind drifts in from the Volcano Isle...",
+      "tasks": [
+        {
+          "id": "clear_vines",
+          "name": "Clear the Vines",
+          "desc": "Thorny vines choke the old paths.",
+          "cost": 25,
+          "xp": 3,
+          "requiresLevel": 1,
+          "requires": [],
+          "element": "vines"
+        },
+        {
+          "id": "fix_bridge",
+          "name": "Fix the Old Bridge",
+          "desc": "Connect the two halves of the island again.",
+          "cost": 50,
+          "xp": 6,
+          "requiresLevel": 1,
+          "requires": [
+            "clear_vines"
+          ],
+          "element": "bridge"
+        },
+        {
+          "id": "restore_well",
+          "name": "Restore the Well",
+          "desc": "Fresh spring water for everyone.",
+          "cost": 90,
+          "xp": 8,
+          "requiresLevel": 2,
+          "requires": [
+            "clear_vines"
+          ],
+          "element": "well",
+          "perk": {
+            "type": "energyMax",
+            "value": 10,
+            "text": "+10 max energy"
+          }
+        },
+        {
+          "id": "plant_garden",
+          "name": "Plant the Garden",
+          "desc": "Flowers, herbs and a patch of sunfruit.",
+          "cost": 130,
+          "xp": 10,
+          "requiresLevel": 3,
+          "requires": [
+            "fix_bridge"
+          ],
+          "element": "garden"
+        },
+        {
+          "id": "dragon_nest",
+          "name": "Build a Dragon Nest",
+          "desc": "A soft, mossy home for your dragons.",
+          "cost": 180,
+          "xp": 12,
+          "requiresLevel": 3,
+          "requires": [
+            "fix_bridge"
+          ],
+          "element": "nest",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.15,
+            "text": "Dragons earn +15%"
+          }
+        },
+        {
+          "id": "storage_shed",
+          "name": "Build a Storage Shed",
+          "desc": "Somewhere to keep treasures safe.",
+          "cost": 240,
+          "xp": 14,
+          "requiresLevel": 4,
+          "requires": [
+            "restore_well"
+          ],
+          "element": "shed",
+          "perk": {
+            "type": "storageSlots",
+            "value": 1,
+            "text": "+1 storage slot"
+          }
+        },
+        {
+          "id": "watchtower",
+          "name": "Rebuild the Watchtower",
+          "desc": "Keep watch over the sleeping dragons.",
+          "cost": 320,
+          "xp": 16,
+          "requiresLevel": 5,
+          "requires": [
+            "plant_garden"
+          ],
+          "element": "tower",
+          "perk": {
+            "type": "offlineHours",
+            "value": 2,
+            "text": "+2h offline earnings"
+          }
+        },
+        {
+          "id": "windmill",
+          "name": "Repair the Windmill",
+          "desc": "Its sails turn with the sky breeze again.",
+          "cost": 420,
+          "xp": 18,
+          "requiresLevel": 6,
+          "requires": [
+            "storage_shed"
+          ],
+          "element": "windmill",
+          "perk": {
+            "type": "energyMax",
+            "value": 10,
+            "text": "+10 max energy"
+          }
+        },
+        {
+          "id": "lanterns",
+          "name": "Light the Lanterns",
+          "desc": "Warm lights to guide dragons home.",
+          "cost": 540,
+          "xp": 20,
+          "requiresLevel": 7,
+          "requires": [
+            "watchtower",
+            "dragon_nest"
+          ],
+          "element": "lanterns",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.15,
+            "text": "Dragons earn +15%"
+          }
+        },
+        {
+          "id": "crystal_shrine",
+          "name": "Raise the Crystal Shrine",
+          "desc": "The heart of the island glows once more.",
+          "cost": 700,
+          "xp": 30,
+          "requiresLevel": 8,
+          "requires": [
+            "lanterns",
+            "windmill"
+          ],
+          "element": "shrine",
+          "perk": {
+            "type": "offlineHours",
+            "value": 2,
+            "text": "+2h offline earnings"
+          }
+        }
+      ],
+      "hatchTable": [
+        {
+          "type": "earth",
+          "weight": 45
+        },
+        {
+          "type": "water",
+          "weight": 35
+        },
+        {
+          "type": "fire",
+          "weight": 15
+        },
+        {
+          "type": "crystal",
+          "weight": 5
+        }
+      ]
+    },
+    {
+      "id": "volcano",
+      "name": "Ember Volcano",
+      "theme": "volcano",
+      "completeText": "The volcano glows with life again! Sea breezes whisper of a Coral Lagoon...",
+      "hatchTable": [
+        {
+          "type": "fire",
+          "weight": 40
+        },
+        {
+          "type": "earth",
+          "weight": 30
+        },
+        {
+          "type": "water",
+          "weight": 20
+        },
+        {
+          "type": "crystal",
+          "weight": 10
+        }
+      ],
+      "tasks": [
+        {
+          "id": "vol_vines",
+          "name": "Cool the Lava Cracks",
+          "desc": "Molten cracks split the ground.",
+          "cost": 400,
+          "xp": 16,
+          "requiresLevel": 6,
+          "requires": [],
+          "element": "vines"
+        },
+        {
+          "id": "vol_bridge",
+          "name": "Build the Obsidian Bridge",
+          "desc": "Black glass, strong enough for dragons.",
+          "cost": 620,
+          "xp": 20,
+          "requiresLevel": 6,
+          "requires": [
+            "vol_vines"
+          ],
+          "element": "bridge"
+        },
+        {
+          "id": "vol_well",
+          "name": "Tap the Hot Spring",
+          "desc": "Warm water for tired wings.",
+          "cost": 840,
+          "xp": 24,
+          "requiresLevel": 7,
+          "requires": [
+            "vol_vines"
+          ],
+          "element": "well",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "vol_garden",
+          "name": "Grow the Ember Garden",
+          "desc": "Flowers that love the heat.",
+          "cost": 1060,
+          "xp": 28,
+          "requiresLevel": 7,
+          "requires": [
+            "vol_bridge"
+          ],
+          "element": "garden"
+        },
+        {
+          "id": "vol_nest",
+          "name": "Weave a Fire Nest",
+          "desc": "A toasty home for fire dragons.",
+          "cost": 1280,
+          "xp": 32,
+          "requiresLevel": 8,
+          "requires": [
+            "vol_bridge"
+          ],
+          "element": "nest",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "vol_shed",
+          "name": "Rebuild the Forge Hut",
+          "desc": "Where the island's tools are made.",
+          "cost": 1500,
+          "xp": 36,
+          "requiresLevel": 8,
+          "requires": [
+            "vol_well"
+          ],
+          "element": "shed",
+          "perk": {
+            "type": "storageSlots",
+            "value": 1,
+            "text": "+1 storage slot"
+          }
+        },
+        {
+          "id": "vol_tower",
+          "name": "Raise the Smoke Tower",
+          "desc": "A lookout above the smoke.",
+          "cost": 1720,
+          "xp": 40,
+          "requiresLevel": 9,
+          "requires": [
+            "vol_garden"
+          ],
+          "element": "tower",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        },
+        {
+          "id": "vol_windmill",
+          "name": "Fix the Bellows Mill",
+          "desc": "Its bellows keep the forge alive.",
+          "cost": 1940,
+          "xp": 44,
+          "requiresLevel": 9,
+          "requires": [
+            "vol_shed"
+          ],
+          "element": "windmill",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "vol_lanterns",
+          "name": "Light the Ember Beacons",
+          "desc": "Beacons to guide dragons through the ash.",
+          "cost": 2160,
+          "xp": 48,
+          "requiresLevel": 10,
+          "requires": [
+            "vol_tower",
+            "vol_nest"
+          ],
+          "element": "lanterns",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "vol_shrine",
+          "name": "Awaken the Flame Shrine",
+          "desc": "The heart of the volcano burns bright again.",
+          "cost": 2380,
+          "xp": 52,
+          "requiresLevel": 10,
+          "requires": [
+            "vol_lanterns",
+            "vol_windmill"
+          ],
+          "element": "shrine",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        }
+      ]
+    },
+    {
+      "id": "lagoon",
+      "name": "Coral Lagoon",
+      "theme": "lagoon",
+      "completeText": "The lagoon sparkles! Far above, the Crystal Peaks catch the light...",
+      "hatchTable": [
+        {
+          "type": "water",
+          "weight": 45
+        },
+        {
+          "type": "earth",
+          "weight": 20
+        },
+        {
+          "type": "fire",
+          "weight": 20
+        },
+        {
+          "type": "crystal",
+          "weight": 15
+        }
+      ],
+      "tasks": [
+        {
+          "id": "lag_vines",
+          "name": "Clear the Kelp Tangles",
+          "desc": "Slippery kelp covers everything.",
+          "cost": 1100,
+          "xp": 24,
+          "requiresLevel": 9,
+          "requires": [],
+          "element": "vines"
+        },
+        {
+          "id": "lag_bridge",
+          "name": "Mend the Coral Bridge",
+          "desc": "Living coral, gently arched.",
+          "cost": 1700,
+          "xp": 28,
+          "requiresLevel": 10,
+          "requires": [
+            "lag_vines"
+          ],
+          "element": "bridge"
+        },
+        {
+          "id": "lag_well",
+          "name": "Open the Tide Well",
+          "desc": "Crystal-clear lagoon water.",
+          "cost": 2310,
+          "xp": 32,
+          "requiresLevel": 10,
+          "requires": [
+            "lag_vines"
+          ],
+          "element": "well",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "lag_garden",
+          "name": "Plant the Sea Garden",
+          "desc": "Anemones and sea flowers.",
+          "cost": 2920,
+          "xp": 36,
+          "requiresLevel": 11,
+          "requires": [
+            "lag_bridge"
+          ],
+          "element": "garden"
+        },
+        {
+          "id": "lag_nest",
+          "name": "Shape a Shell Nest",
+          "desc": "A pearly nest for water dragons.",
+          "cost": 3520,
+          "xp": 40,
+          "requiresLevel": 11,
+          "requires": [
+            "lag_bridge"
+          ],
+          "element": "nest",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "lag_shed",
+          "name": "Build the Boathouse",
+          "desc": "Shelter for little boats.",
+          "cost": 4120,
+          "xp": 44,
+          "requiresLevel": 12,
+          "requires": [
+            "lag_well"
+          ],
+          "element": "shed"
+        },
+        {
+          "id": "lag_tower",
+          "name": "Raise the Lighthouse",
+          "desc": "Its light reaches every reef.",
+          "cost": 4730,
+          "xp": 48,
+          "requiresLevel": 12,
+          "requires": [
+            "lag_garden"
+          ],
+          "element": "tower",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        },
+        {
+          "id": "lag_windmill",
+          "name": "Spin the Tide Mill",
+          "desc": "Powered by the tides.",
+          "cost": 5340,
+          "xp": 52,
+          "requiresLevel": 13,
+          "requires": [
+            "lag_shed"
+          ],
+          "element": "windmill",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "lag_lanterns",
+          "name": "Hang the Pearl Lamps",
+          "desc": "Pearls that glow at dusk.",
+          "cost": 5940,
+          "xp": 56,
+          "requiresLevel": 13,
+          "requires": [
+            "lag_tower",
+            "lag_nest"
+          ],
+          "element": "lanterns",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "lag_shrine",
+          "name": "Awaken the Coral Shrine",
+          "desc": "The lagoon sings once more.",
+          "cost": 6540,
+          "xp": 60,
+          "requiresLevel": 14,
+          "requires": [
+            "lag_lanterns",
+            "lag_windmill"
+          ],
+          "element": "shrine",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        }
+      ]
+    },
+    {
+      "id": "peaks",
+      "name": "Crystal Peaks",
+      "theme": "crystal",
+      "completeText": "The peaks shimmer! Beyond them, a dark island drifts in the Shadow Sky...",
+      "hatchTable": [
+        {
+          "type": "crystal",
+          "weight": 35
+        },
+        {
+          "type": "water",
+          "weight": 25
+        },
+        {
+          "type": "fire",
+          "weight": 20
+        },
+        {
+          "type": "earth",
+          "weight": 20
+        }
+      ],
+      "tasks": [
+        {
+          "id": "pk_vines",
+          "name": "Break the Ice Crust",
+          "desc": "Ice seals the old paths.",
+          "cost": 2600,
+          "xp": 32,
+          "requiresLevel": 12,
+          "requires": [],
+          "element": "vines"
+        },
+        {
+          "id": "pk_bridge",
+          "name": "Span the Crystal Bridge",
+          "desc": "A bridge of pure crystal.",
+          "cost": 4030,
+          "xp": 36,
+          "requiresLevel": 13,
+          "requires": [
+            "pk_vines"
+          ],
+          "element": "bridge"
+        },
+        {
+          "id": "pk_well",
+          "name": "Unfreeze the Spring",
+          "desc": "Melt the frozen spring.",
+          "cost": 5460,
+          "xp": 40,
+          "requiresLevel": 13,
+          "requires": [
+            "pk_vines"
+          ],
+          "element": "well",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "pk_garden",
+          "name": "Grow the Frost Garden",
+          "desc": "Frost flowers bloom in the cold.",
+          "cost": 6890,
+          "xp": 44,
+          "requiresLevel": 14,
+          "requires": [
+            "pk_bridge"
+          ],
+          "element": "garden"
+        },
+        {
+          "id": "pk_nest",
+          "name": "Carve a Crystal Nest",
+          "desc": "Carved from a single crystal.",
+          "cost": 8320,
+          "xp": 48,
+          "requiresLevel": 15,
+          "requires": [
+            "pk_bridge"
+          ],
+          "element": "nest",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "pk_shed",
+          "name": "Build the Gem Workshop",
+          "desc": "Where geodes are polished.",
+          "cost": 9750,
+          "xp": 52,
+          "requiresLevel": 15,
+          "requires": [
+            "pk_well"
+          ],
+          "element": "shed",
+          "perk": {
+            "type": "storageSlots",
+            "value": 1,
+            "text": "+1 storage slot"
+          }
+        },
+        {
+          "id": "pk_tower",
+          "name": "Raise the Prism Tower",
+          "desc": "It bends light into rainbows.",
+          "cost": 11180,
+          "xp": 56,
+          "requiresLevel": 16,
+          "requires": [
+            "pk_garden"
+          ],
+          "element": "tower",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        },
+        {
+          "id": "pk_windmill",
+          "name": "Tune the Wind Chimes",
+          "desc": "The wind plays a gentle tune.",
+          "cost": 12610,
+          "xp": 60,
+          "requiresLevel": 17,
+          "requires": [
+            "pk_shed"
+          ],
+          "element": "windmill",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "pk_lanterns",
+          "name": "Light the Aurora Lamps",
+          "desc": "Lamps glowing with aurora light.",
+          "cost": 14040,
+          "xp": 64,
+          "requiresLevel": 17,
+          "requires": [
+            "pk_tower",
+            "pk_nest"
+          ],
+          "element": "lanterns",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "pk_shrine",
+          "name": "Awaken the Prism Shrine",
+          "desc": "The peaks shine brighter than ever.",
+          "cost": 15470,
+          "xp": 68,
+          "requiresLevel": 18,
+          "requires": [
+            "pk_lanterns",
+            "pk_windmill"
+          ],
+          "element": "shrine",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        }
+      ]
+    },
+    {
+      "id": "shadow",
+      "name": "Shadow Sky",
+      "theme": "shadow",
+      "completeText": "Every island is restored. The Gemdrakes are home. Thank you, Keeper of the Isles!",
+      "hatchTable": [
+        {
+          "type": "shadow",
+          "weight": 8
+        },
+        {
+          "type": "crystal",
+          "weight": 30
+        },
+        {
+          "type": "fire",
+          "weight": 25
+        },
+        {
+          "type": "water",
+          "weight": 20
+        },
+        {
+          "type": "earth",
+          "weight": 17
+        }
+      ],
+      "tasks": [
+        {
+          "id": "sh_vines",
+          "name": "Dispel the Shadow Brambles",
+          "desc": "Thorny shadows smother the island.",
+          "cost": 5500,
+          "xp": 40,
+          "requiresLevel": 15,
+          "requires": [],
+          "element": "vines"
+        },
+        {
+          "id": "sh_bridge",
+          "name": "Build the Starlight Bridge",
+          "desc": "Woven from starlight.",
+          "cost": 8520,
+          "xp": 44,
+          "requiresLevel": 16,
+          "requires": [
+            "sh_vines"
+          ],
+          "element": "bridge"
+        },
+        {
+          "id": "sh_well",
+          "name": "Fill the Moon Well",
+          "desc": "It reflects every moon.",
+          "cost": 11550,
+          "xp": 48,
+          "requiresLevel": 17,
+          "requires": [
+            "sh_vines"
+          ],
+          "element": "well",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "sh_garden",
+          "name": "Plant the Night Garden",
+          "desc": "Flowers that bloom only at night.",
+          "cost": 14580,
+          "xp": 52,
+          "requiresLevel": 17,
+          "requires": [
+            "sh_bridge"
+          ],
+          "element": "garden"
+        },
+        {
+          "id": "sh_nest",
+          "name": "Craft a Dream Nest",
+          "desc": "Where shadow dragons dream.",
+          "cost": 17600,
+          "xp": 56,
+          "requiresLevel": 18,
+          "requires": [
+            "sh_bridge"
+          ],
+          "element": "nest",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "sh_shed",
+          "name": "Build the Stargazer Hut",
+          "desc": "A cozy place to count stars.",
+          "cost": 20620,
+          "xp": 60,
+          "requiresLevel": 19,
+          "requires": [
+            "sh_well"
+          ],
+          "element": "shed"
+        },
+        {
+          "id": "sh_tower",
+          "name": "Raise the Observatory",
+          "desc": "Watch comets race by.",
+          "cost": 23650,
+          "xp": 64,
+          "requiresLevel": 20,
+          "requires": [
+            "sh_garden"
+          ],
+          "element": "tower",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        },
+        {
+          "id": "sh_windmill",
+          "name": "Turn the Comet Mill",
+          "desc": "Spun by passing comets.",
+          "cost": 26680,
+          "xp": 68,
+          "requiresLevel": 20,
+          "requires": [
+            "sh_shed"
+          ],
+          "element": "windmill",
+          "perk": {
+            "type": "energyMax",
+            "value": 5,
+            "text": "+5 max energy"
+          }
+        },
+        {
+          "id": "sh_lanterns",
+          "name": "Kindle the Star Lanterns",
+          "desc": "Tiny stars in glass jars.",
+          "cost": 29700,
+          "xp": 72,
+          "requiresLevel": 21,
+          "requires": [
+            "sh_tower",
+            "sh_nest"
+          ],
+          "element": "lanterns",
+          "perk": {
+            "type": "dragonBoost",
+            "value": 0.1,
+            "text": "Dragons earn +10%"
+          }
+        },
+        {
+          "id": "sh_shrine",
+          "name": "Awaken the Eclipse Shrine",
+          "desc": "Light returns to the Shadow Sky.",
+          "cost": 32720,
+          "xp": 76,
+          "requiresLevel": 22,
+          "requires": [
+            "sh_lanterns",
+            "sh_windmill"
+          ],
+          "element": "shrine",
+          "perk": {
+            "type": "offlineHours",
+            "value": 1,
+            "text": "+1h offline earnings"
+          }
+        }
+      ]
+    }
+  ]
+}

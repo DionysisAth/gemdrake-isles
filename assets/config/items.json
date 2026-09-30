@@ -1,0 +1,542 @@
+{
+  "chains": [
+    {
+      "id": "gem",
+      "name": "Gems",
+      "unlockLevel": 1,
+      "orderable": true,
+      "items": [
+        {
+          "name": "Pebble",
+          "value": 2,
+          "sell": 1,
+          "xp": 1,
+          "desc": "A humble stone with a faint shimmer."
+        },
+        {
+          "name": "Shard",
+          "value": 5,
+          "sell": 1,
+          "xp": 2,
+          "desc": "A sliver of sky-blue crystal."
+        },
+        {
+          "name": "Crystal",
+          "value": 11,
+          "sell": 2,
+          "xp": 3,
+          "desc": "A little cluster that hums when dragons are near."
+        },
+        {
+          "name": "Cut Gem",
+          "value": 24,
+          "sell": 4,
+          "xp": 5,
+          "desc": "Polished by the island winds."
+        },
+        {
+          "name": "Jewel",
+          "value": 50,
+          "sell": 8,
+          "xp": 8,
+          "desc": "Set in old island gold."
+        },
+        {
+          "name": "Crown Jewel",
+          "value": 105,
+          "sell": 16,
+          "xp": 12,
+          "desc": "Fit for the Dragon Queen herself."
+        },
+        {
+          "name": "Heart Gem",
+          "value": 220,
+          "sell": 35,
+          "xp": 18,
+          "desc": "Said to be a Gemdrake's heart. Warm to the touch."
+        }
+      ]
+    },
+    {
+      "id": "plant",
+      "name": "Plants",
+      "unlockLevel": 2,
+      "orderable": true,
+      "items": [
+        {
+          "name": "Seed",
+          "value": 2,
+          "sell": 1,
+          "xp": 1,
+          "desc": "Tiny, but full of hope."
+        },
+        {
+          "name": "Sprout",
+          "value": 5,
+          "sell": 1,
+          "xp": 2,
+          "desc": "Reaching for the sun."
+        },
+        {
+          "name": "Bush",
+          "value": 11,
+          "sell": 2,
+          "xp": 3,
+          "desc": "A cozy hiding spot for baby dragons."
+        },
+        {
+          "name": "Fruit Tree",
+          "value": 24,
+          "sell": 5,
+          "xp": 5,
+          "desc": "Dragons love its sweet sunfruit."
+        },
+        {
+          "name": "Magic Tree",
+          "value": 52,
+          "sell": 10,
+          "xp": 9,
+          "desc": "Its leaves glow softly at night."
+        }
+      ]
+    },
+    {
+      "id": "egg",
+      "name": "Dragon Eggs",
+      "unlockLevel": 3,
+      "orderable": false,
+      "hatchOnMaxMerge": true,
+      "items": [
+        {
+          "name": "Dragon Egg",
+          "value": 15,
+          "sell": 3,
+          "xp": 2,
+          "desc": "Something is sleeping inside."
+        },
+        {
+          "name": "Glowing Egg",
+          "value": 30,
+          "sell": 6,
+          "xp": 4,
+          "desc": "It's warm and softly glowing."
+        },
+        {
+          "name": "Cracking Egg",
+          "value": 60,
+          "sell": 12,
+          "xp": 6,
+          "desc": "Almost ready! Merge two to hatch a dragon."
+        }
+      ]
+    },
+    {
+      "id": "treasure",
+      "name": "Treasure",
+      "unlockLevel": 1,
+      "orderable": false,
+      "loot": {
+        "rolls": 3,
+        "table": [
+          {
+            "coins": 60,
+            "weight": 30
+          },
+          {
+            "gems": 3,
+            "weight": 20
+          },
+          {
+            "energy": 15,
+            "weight": 20
+          },
+          {
+            "item": "egg:1",
+            "weight": 15
+          },
+          {
+            "item": "egg:2",
+            "weight": 8
+          },
+          {
+            "item": "gem:4",
+            "weight": 7
+          }
+        ]
+      },
+      "items": [
+        {
+          "name": "Copper Coin",
+          "value": 4,
+          "sell": 4,
+          "xp": 1,
+          "desc": "Shiny! Worth a few coins."
+        },
+        {
+          "name": "Coin Stack",
+          "value": 8,
+          "sell": 10,
+          "xp": 1,
+          "desc": "A neat little tower of coins."
+        },
+        {
+          "name": "Coin Bag",
+          "value": 16,
+          "sell": 25,
+          "xp": 2,
+          "desc": "Heavy and jingly."
+        },
+        {
+          "name": "Treasure Chest",
+          "value": 40,
+          "sell": 0,
+          "xp": 4,
+          "desc": "Tap it and press Open to see what's inside!"
+        }
+      ]
+    },
+    {
+      "id": "potion",
+      "name": "Energy Potions",
+      "unlockLevel": 1,
+      "orderable": false,
+      "items": [
+        {
+          "name": "Energy Drop",
+          "value": 4,
+          "sell": 1,
+          "xp": 1,
+          "energy": 5,
+          "desc": "A single glowing drop. Tap Drink for energy, or merge it."
+        },
+        {
+          "name": "Energy Vial",
+          "value": 10,
+          "sell": 2,
+          "xp": 1,
+          "energy": 12,
+          "desc": "Fizzy and bright."
+        },
+        {
+          "name": "Energy Flask",
+          "value": 24,
+          "sell": 4,
+          "xp": 2,
+          "energy": 30,
+          "desc": "Bubbling with power."
+        },
+        {
+          "name": "Energy Elixir",
+          "value": 60,
+          "sell": 8,
+          "xp": 3,
+          "energy": 70,
+          "desc": "Pure bottled lightning."
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "name": "Tools",
+      "unlockLevel": 1,
+      "unlockIsland": 2,
+      "orderable": true,
+      "items": [
+        {
+          "name": "Nail",
+          "value": 3,
+          "sell": 1,
+          "xp": 1,
+          "desc": "Small, but it holds the island together."
+        },
+        {
+          "name": "Hammer",
+          "value": 7,
+          "sell": 2,
+          "xp": 2,
+          "desc": "Bonk! Perfect for fixing bridges."
+        },
+        {
+          "name": "Toolbox",
+          "value": 15,
+          "sell": 3,
+          "xp": 3,
+          "desc": "Everything a builder needs."
+        },
+        {
+          "name": "Anvil",
+          "value": 32,
+          "sell": 6,
+          "xp": 5,
+          "desc": "Forged in volcano fire."
+        },
+        {
+          "name": "Workbench",
+          "value": 66,
+          "sell": 12,
+          "xp": 8,
+          "desc": "Where island wonders get built."
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "name": "Shells & Pearls",
+      "unlockLevel": 1,
+      "unlockIsland": 3,
+      "orderable": true,
+      "items": [
+        {
+          "name": "Sand Dollar",
+          "value": 3,
+          "sell": 1,
+          "xp": 1,
+          "desc": "A little round treasure from the tide."
+        },
+        {
+          "name": "Seashell",
+          "value": 7,
+          "sell": 2,
+          "xp": 2,
+          "desc": "Hold it close and hear the sea."
+        },
+        {
+          "name": "Conch",
+          "value": 15,
+          "sell": 3,
+          "xp": 3,
+          "desc": "The lagoon dragons love its song."
+        },
+        {
+          "name": "Oyster",
+          "value": 32,
+          "sell": 6,
+          "xp": 5,
+          "desc": "There's something shiny inside..."
+        },
+        {
+          "name": "Pearl",
+          "value": 68,
+          "sell": 13,
+          "xp": 8,
+          "desc": "A flawless pearl, glowing softly."
+        },
+        {
+          "name": "Pearl Crown",
+          "value": 140,
+          "sell": 26,
+          "xp": 12,
+          "desc": "Fit for the Coral Queen."
+        }
+      ]
+    },
+    {
+      "id": "geode",
+      "name": "Geodes",
+      "unlockLevel": 1,
+      "unlockIsland": 4,
+      "orderable": true,
+      "items": [
+        {
+          "name": "Rough Geode",
+          "value": 4,
+          "sell": 1,
+          "xp": 1,
+          "desc": "Plain on the outside..."
+        },
+        {
+          "name": "Split Geode",
+          "value": 9,
+          "sell": 2,
+          "xp": 2,
+          "desc": "...sparkling on the inside!"
+        },
+        {
+          "name": "Amethyst Heart",
+          "value": 20,
+          "sell": 4,
+          "xp": 3,
+          "desc": "Deep purple and warm."
+        },
+        {
+          "name": "Crystal Orb",
+          "value": 42,
+          "sell": 8,
+          "xp": 5,
+          "desc": "You can see the peaks inside it."
+        },
+        {
+          "name": "Prism Star",
+          "value": 90,
+          "sell": 16,
+          "xp": 9,
+          "desc": "It splits sunlight into rainbows."
+        }
+      ]
+    },
+    {
+      "id": "star",
+      "name": "Starlight",
+      "unlockLevel": 1,
+      "unlockIsland": 5,
+      "orderable": true,
+      "items": [
+        {
+          "name": "Stardust",
+          "value": 4,
+          "sell": 1,
+          "xp": 1,
+          "desc": "A pinch of fallen sky."
+        },
+        {
+          "name": "Little Star",
+          "value": 9,
+          "sell": 2,
+          "xp": 2,
+          "desc": "It twinkles when you smile."
+        },
+        {
+          "name": "Moon Charm",
+          "value": 20,
+          "sell": 4,
+          "xp": 3,
+          "desc": "Cool and silver, like moonlight."
+        },
+        {
+          "name": "Comet",
+          "value": 44,
+          "sell": 8,
+          "xp": 5,
+          "desc": "Still warm from its journey."
+        },
+        {
+          "name": "Galaxy Orb",
+          "value": 95,
+          "sell": 17,
+          "xp": 9,
+          "desc": "A whole galaxy, in your hands."
+        }
+      ]
+    },
+    {
+      "id": "legend",
+      "name": "Legendary Eggs",
+      "unlockLevel": 1,
+      "unlockIsland": 5,
+      "orderable": false,
+      "hatchOnMaxMerge": true,
+      "hatchTable": "legendary",
+      "items": [
+        {
+          "name": "Starlit Egg",
+          "value": 60,
+          "sell": 12,
+          "xp": 5,
+          "desc": "It hums with ancient power."
+        },
+        {
+          "name": "Moonlit Egg",
+          "value": 120,
+          "sell": 24,
+          "xp": 8,
+          "desc": "Shadows swirl beneath the shell."
+        },
+        {
+          "name": "Eclipse Egg",
+          "value": 240,
+          "sell": 48,
+          "xp": 12,
+          "desc": "Merge two to hatch a legendary dragon!"
+        }
+      ]
+    },
+    {
+      "id": "blossom",
+      "name": "Festival Blossoms",
+      "unlockLevel": 1,
+      "orderable": false,
+      "event": true,
+      "items": [
+        {
+          "name": "Petal",
+          "value": 0,
+          "sell": 0,
+          "xp": 1,
+          "desc": "Drifting on the festival breeze."
+        },
+        {
+          "name": "Blossom",
+          "value": 0,
+          "sell": 0,
+          "xp": 1,
+          "desc": "Freshly bloomed."
+        },
+        {
+          "name": "Bouquet",
+          "value": 0,
+          "sell": 0,
+          "xp": 2,
+          "desc": "A gift for the festival."
+        },
+        {
+          "name": "Flower Crown",
+          "value": 0,
+          "sell": 0,
+          "xp": 3,
+          "desc": "Worn by the festival queen."
+        },
+        {
+          "name": "Blossom Totem",
+          "value": 0,
+          "sell": 0,
+          "xp": 5,
+          "desc": "Offer it to the festival for lots of points!"
+        }
+      ]
+    },
+    {
+      "id": "lantern",
+      "name": "Festival Lanterns",
+      "unlockLevel": 1,
+      "orderable": false,
+      "event": true,
+      "items": [
+        {
+          "name": "Paper",
+          "value": 0,
+          "sell": 0,
+          "xp": 1,
+          "desc": "Thin and light, ready to fold."
+        },
+        {
+          "name": "Paper Lantern",
+          "value": 0,
+          "sell": 0,
+          "xp": 1,
+          "desc": "Glowing softly."
+        },
+        {
+          "name": "Lantern String",
+          "value": 0,
+          "sell": 0,
+          "xp": 2,
+          "desc": "A garland of little lights."
+        },
+        {
+          "name": "Lantern Boat",
+          "value": 0,
+          "sell": 0,
+          "xp": 3,
+          "desc": "It floats on the lagoon."
+        },
+        {
+          "name": "Sky Lantern",
+          "value": 0,
+          "sell": 0,
+          "xp": 5,
+          "desc": "Offer it to the festival for lots of points!"
+        }
+      ]
+    }
+  ]
+}

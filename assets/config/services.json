@@ -1,0 +1,32 @@
+{
+  "_comment": "Free platform services. Turn on Google Play Games / Game Center after creating the game in Play Console / App Store Connect and fill in the leaderboard and achievement IDs (see README).",
+  "playGames": { "enabled": false },
+  "gameCenter": { "enabled": false },
+  "cloudSave": true,
+  "timeCheckUrl": "https://www.google.com/generate_204",
+  "remoteConfigUrl": "",
+  "leaderboards": [
+    { "key": "festival", "name": "Festival points this week", "metric": "eventPoints", "weekly": true, "android": "", "ios": "" },
+    { "key": "level", "name": "Highest level", "metric": "level", "android": "", "ios": "" },
+    { "key": "dragons", "name": "Dragons discovered", "metric": "bookDiscovered", "android": "", "ios": "" },
+    { "key": "merges", "name": "Total merges", "metric": "merges", "android": "", "ios": "" }
+  ],
+  "achievements": [
+    { "id": "first_hatch", "name": "Egg Whisperer", "desc": "Hatch your first dragon", "metric": "hatches", "target": 1, "gems": 5, "android": "", "ios": "" },
+    { "id": "merge_100", "name": "Merge Apprentice", "desc": "Merge 100 times", "metric": "merges", "target": 100, "gems": 5, "android": "", "ios": "" },
+    { "id": "orders_50", "name": "Helping Hand", "desc": "Deliver 50 orders", "metric": "orders", "target": 50, "gems": 10, "android": "", "ios": "" },
+    { "id": "level_10", "name": "Rising Keeper", "desc": "Reach level 10", "metric": "level", "target": 10, "gems": 10, "android": "", "ios": "" },
+    { "id": "bonus_10", "name": "Bonus Hunter", "desc": "Make 10 bonus merges (5 at once)", "metric": "bonusMerges", "target": 10, "gems": 10, "android": "", "ios": "" },
+    { "id": "island_2", "name": "Island Hopper", "desc": "Travel to the Ember Volcano", "metric": "island", "target": 2, "gems": 15, "android": "", "ios": "" },
+    { "id": "chests_20", "name": "Treasure Seeker", "desc": "Open 20 treasure chests", "metric": "chests", "target": 20, "gems": 10, "android": "", "ios": "" },
+    { "id": "streak_7", "name": "Faithful Friend", "desc": "Play 7 days in a row", "metric": "streak", "target": 7, "gems": 15, "android": "", "ios": "" },
+    { "id": "gemdrake", "name": "A True Gemdrake", "desc": "Raise a dragon to the top level", "metric": "maxDragonLevel", "target": 5, "gems": 25, "android": "", "ios": "" },
+    { "id": "festival", "name": "Festival Star", "desc": "Reach the last festival reward", "metric": "festivalsCompleted", "target": 1, "gems": 20, "android": "", "ios": "" },
+    { "id": "hatch_25", "name": "Dragon Keeper", "desc": "Hatch 25 dragons", "metric": "hatches", "target": 25, "gems": 15, "android": "", "ios": "" },
+    { "id": "book_half", "name": "Naturalist", "desc": "Discover 18 dragons in the Dragon Book", "metric": "bookDiscovered", "target": 18, "gems": 20, "android": "", "ios": "" },
+    { "id": "merge_1000", "name": "Merge Master", "desc": "Merge 1,000 times", "metric": "merges", "target": 1000, "gems": 20, "android": "", "ios": "" },
+    { "id": "level_25", "name": "Isle Legend", "desc": "Reach level 25", "metric": "level", "target": 25, "gems": 25, "android": "", "ios": "" },
+    { "id": "orders_500", "name": "Pillar of the Isles", "desc": "Deliver 500 orders", "metric": "orders", "target": 500, "gems": 30, "android": "", "ios": "" },
+    { "id": "island_5", "name": "Sky Explorer", "desc": "Reach the Shadow Sky", "metric": "island", "target": 5, "gems": 40, "android": "", "ios": "" }
+  ]
+}
