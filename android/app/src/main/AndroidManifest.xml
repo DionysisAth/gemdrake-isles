@@ -33,11 +33,11 @@
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
-        <!-- AdMob app ID. This is Google's public TEST ID: replace it with
-             your own before release (and the ad unit IDs in economy.json). -->
+        <!-- AdMob app ID (set with tool/set_admob_ids.py, together with the
+             rewarded ad unit ID in economy.json). -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-1774874652706103~9898129135"/>
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>
