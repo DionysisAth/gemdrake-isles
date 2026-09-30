@@ -18,6 +18,9 @@ abstract class AdsService {
   /// Whether a "Privacy options" entry must be offered (GDPR/UMP).
   bool get privacyOptionsRequired;
   Future<void> showPrivacyOptions();
+
+  /// Why the last [showRewarded] showed nothing, for a short message.
+  String? get lastProblem => null;
 }
 
 /// Stand-in used in tests, on unsupported platforms, and as a fallback
@@ -32,6 +35,9 @@ class SimulatedAdsService implements AdsService {
 
   @override
   bool get privacyOptionsRequired => false;
+
+  @override
+  String? get lastProblem => null;
 
   @override
   Future<void> showPrivacyOptions() async {}
@@ -131,6 +137,8 @@ class AdMobAdsService implements AdsService {
   final SimulatedAdsService _fallback;
   RewardedAd? _ad;
   bool _loading = false;
+  Completer<void>? _loaded;
+  String? _problem;
   bool _canRequestAds = false;
   bool _privacyRequired = false;
 
@@ -139,6 +147,12 @@ class AdMobAdsService implements AdsService {
 
   String get _unitId =>
       economy.rewardedUnitIds[Platform.isIOS ? 'ios' : 'android'] ?? '';
+
+  /// Google's public test ad units are configured (not real ads yet).
+  bool get usingTestAds => _unitId.startsWith('ca-app-pub-3940256099942544');
+
+  @override
+  String? get lastProblem => _problem;
 
   @override
   bool get privacyOptionsRequired => _privacyRequired;
@@ -184,6 +198,8 @@ class AdMobAdsService implements AdsService {
         onAdLoaded: (ad) {
           _ad = ad;
           _loading = false;
+          _loaded?.complete();
+          _loaded = null;
         },
         onAdFailedToLoad: (error) {
           debugPrint('Rewarded ad failed to load: ${error.message}');
@@ -196,12 +212,16 @@ class AdMobAdsService implements AdsService {
 
   @override
   Future<bool> showRewarded(BuildContext context, String placement) async {
+    _problem = null;
+    if (_ad == null && _canRequestAds) await _waitForAd(context);
     final ad = _ad;
     if (ad == null) {
       _load();
-      if (economy.adsFallbackToSimulated) {
+      // The placeholder is for development only: never with real ads.
+      if (economy.adsFallbackToSimulated && usingTestAds && context.mounted) {
         return _fallback.showRewarded(context, placement);
       }
+      _problem = 'No video is available right now. Please try again soon.';
       return false;
     }
     _ad = null;
@@ -221,6 +241,35 @@ class AdMobAdsService implements AdsService {
     );
     await ad.show(onUserEarnedReward: (_, _) => earned = true);
     return done.future;
+  }
+
+  /// Shows a small "loading" popup for up to a few seconds while an ad
+  /// that isn't ready yet loads.
+  Future<void> _waitForAd(BuildContext context) async {
+    _load();
+    final loaded = _loaded ??= Completer<void>();
+    var open = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 12),
+                Text('Loading video...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).whenComplete(() => open = false);
+    await loaded.future.timeout(const Duration(seconds: 8), onTimeout: () {});
+    if (open && context.mounted) Navigator.of(context).pop();
   }
 
   @override

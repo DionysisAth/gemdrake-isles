@@ -20,12 +20,13 @@ part 'controller_islands.dart';
 part 'controller_meta.dart';
 part 'controller_events.dart';
 part 'controller_extras.dart';
+part 'controller_purchases.dart';
 
 typedef Clock = DateTime Function();
 
 enum ProduceResult { ok, noEnergy, boardFull, recharging }
 
-enum AdReward { freeEnergy, doubleIdle, generatorSkip }
+enum AdReward { freeEnergy, doubleIdle, generatorSkip, freeChest }
 
 class WelcomeBack {
   WelcomeBack(this.away, this.coins, this.gems);
@@ -154,7 +155,10 @@ class GameController extends ChangeNotifier {
   IslandDef get currentIsland => config.island(state.island);
   bool get hasNextIsland => state.island < config.islands.length - 1;
 
-  int get energyMax => eco.energyMax + perk('energyMax').round();
+  int get energyMax =>
+      eco.energyMax +
+      perk('energyMax').round() +
+      (state.vipUntil > nowMs ? config.store.vip.energyMax : 0);
   int get storageSlotCount =>
       eco.freeStorageSlots +
       state.purchasedSlots +
@@ -171,7 +175,10 @@ class GameController extends ChangeNotifier {
     return lvl > 0 ? ups[lvl - 1].hours : eco.offlineCapHours;
   }
 
-  double get offlineCapHours => hoardBaseHours + perk('offlineHours');
+  double get offlineCapHours =>
+      hoardBaseHours +
+      perk('offlineHours') +
+      (state.vipUntil > nowMs ? config.store.vip.offlineHours : 0);
   double get dragonBoost => 1 + perk('dragonBoost');
 
   double dragonCoinsPerMinute(Dragon d) {
@@ -1037,6 +1044,8 @@ class GameController extends ChangeNotifier {
     AdReward.freeEnergy => eco.adFreeEnergyPerDay - adsUsedToday(r),
     AdReward.generatorSkip => eco.adGeneratorSkipPerDay - adsUsedToday(r),
     AdReward.doubleIdle => 1 << 20,
+    AdReward.freeChest =>
+      eco.adFreeChest == null ? 0 : eco.adFreeChestPerDay - adsUsedToday(r),
   };
 
   /// Grants the reward for a rewarded ad the player finished watching.
@@ -1057,6 +1066,15 @@ class GameController extends ChangeNotifier {
       case AdReward.generatorSkip:
         final gen = generator == null ? null : pieceAt(generator);
         if (gen != null && gen.isGenerator) _finishCooldown(gen);
+      case AdReward.freeChest:
+        final loot = eco.adFreeChest;
+        if (loot != null) {
+          final rewards = rollLoot(loot);
+          grantLoot(rewards);
+          state.addStat('chests');
+          feedback.play(Sfx.collect);
+          _emit(ChestOpenedEvent('Free Chest', rewards));
+        }
     }
     _commit();
   }

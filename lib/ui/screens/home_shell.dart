@@ -7,6 +7,7 @@ import '../../logic/game_events.dart';
 import '../../services/time_sync.dart';
 import '../dialogs/dialogs.dart';
 import '../dialogs/meta_dialogs.dart';
+import '../dialogs/store_widgets.dart';
 import '../fx_layer.dart';
 import '../game_scope.dart';
 import '../painters/nav_icons.dart';
@@ -37,6 +38,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _tab = 0;
   Timer? _clock;
   StreamSubscription<GameEvent>? _sub;
+  StreamSubscription<String>? _storeSub;
   final _popups = <Future<void> Function()>[];
   bool _showingPopup = false;
 
@@ -53,6 +55,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _sub ??= context.game.events.listen(_onEvent);
+    _storeSub ??= context.store.messages.listen((m) {
+      if (mounted) showToast(context, m);
+    });
     if (_cloud == null) {
       _cloud = context.online.cloudOffer;
       _cloud!.addListener(_onCloudOffer);
@@ -71,6 +76,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _clock?.cancel();
     _sub?.cancel();
+    _storeSub?.cancel();
     super.dispose();
   }
 
@@ -145,6 +151,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         if (!_showingPopup) _queue(() => showOutOfEnergy(context));
       case ChestOpenedEvent(:final title, :final rewards):
         _queue(() => showChestRewards(context, title, rewards));
+      case PurchaseEvent(:final product, :final rewards):
+        _queue(() => showPurchaseThanks(context, product, rewards));
       case IslandTravelEvent(:final island, :final unlocks):
         _queue(() => showIslandArrival(context, island, unlocks));
       case ToastEvent(:final message):

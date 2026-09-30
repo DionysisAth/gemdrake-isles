@@ -233,7 +233,10 @@ Future<bool> showRewardedAd(BuildContext context, String placement) async {
   final ads = context.ads;
   feedback.setSuppressed(true);
   try {
-    return await ads.showRewarded(context, placement);
+    final ok = await ads.showRewarded(context, placement);
+    final problem = ads.lastProblem;
+    if (!ok && problem != null && context.mounted) showToast(context, problem);
+    return ok;
   } finally {
     feedback.setSuppressed(false);
   }

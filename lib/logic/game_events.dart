@@ -123,3 +123,10 @@ class EnergyDrunkEvent extends GameEvent {
   final int amount;
   final Slot slot;
 }
+
+/// A real-money purchase was handed out.
+class PurchaseEvent extends GameEvent {
+  PurchaseEvent(this.product, this.rewards);
+  final StoreProductDef product;
+  final List<LootEntry> rewards;
+}

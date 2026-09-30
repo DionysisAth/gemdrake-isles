@@ -10,6 +10,7 @@ import 'services/analytics.dart';
 import 'services/notification_service.dart';
 import 'services/online_games.dart';
 import 'services/online_sync.dart';
+import 'services/purchase_service.dart';
 import 'services/remote_config.dart';
 import 'services/save_store.dart';
 import 'services/sound_service.dart';
@@ -47,9 +48,14 @@ Future<void> main() async {
       ? AdMobAdsService(config.economy)
       : SimulatedAdsService(seconds: config.economy.simulatedAdSeconds);
 
-  runApp(GemdrakeApp(game: game, ads: ads, online: online));
+  final PurchaseService store = StorePurchaseService.supported
+      ? StorePurchaseService(game)
+      : NoPurchaseService();
+
+  runApp(GemdrakeApp(game: game, ads: ads, online: online, store: store));
   // After the first frame so the GDPR consent form can be shown.
   unawaited(ads.init());
   unawaited(online.start());
+  unawaited(store.init());
   unawaited(RemoteConfig.refresh(rootBundle, services.remoteConfigUrl));
 }

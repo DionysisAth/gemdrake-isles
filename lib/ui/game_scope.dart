@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../logic/game_controller.dart';
 import '../services/ads_service.dart';
 import '../services/online_sync.dart';
+import '../services/purchase_service.dart';
 import 'fx_layer.dart';
 import 'targets.dart';
 
@@ -17,6 +18,7 @@ class GameScope extends InheritedWidget {
     required this.targets,
     required this.ads,
     required this.online,
+    required this.store,
     required super.child,
   });
 
@@ -25,6 +27,7 @@ class GameScope extends InheritedWidget {
   final TargetRegistry targets;
   final AdsService ads;
   final OnlineSync online;
+  final PurchaseService store;
 
   static GameScope of(BuildContext context) =>
       context.getInheritedWidgetOfExactType<GameScope>()!;
@@ -39,4 +42,5 @@ extension GameContext on BuildContext {
   TargetRegistry get targets => GameScope.of(this).targets;
   AdsService get ads => GameScope.of(this).ads;
   OnlineSync get online => GameScope.of(this).online;
+  PurchaseService get store => GameScope.of(this).store;
 }

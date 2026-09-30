@@ -17,6 +17,7 @@ import '../painters/board_painters.dart';
 import '../theme.dart';
 import '../widgets/piece_view.dart';
 import 'dialogs.dart';
+import 'store_widgets.dart';
 
 /// A small reward tile: icon plus label.
 class RewardTile extends StatelessWidget {
@@ -401,11 +402,13 @@ class _ShopBody extends StatelessWidget {
             ),
             const Text(
               'Gems come from orders, level-ups, daily tasks, chests and '
-              'dragons. There are no real-money purchases.',
+              'dragons.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11.5, color: Palette.inkSoft),
             ),
             const SizedBox(height: 8),
+            if (game.eco.adFreeChest != null) const _FreeChestCard(),
+            const StoreSection(),
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -470,9 +473,123 @@ class _ShopBody extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 8),
+            const _BoardRowCard(),
           ],
         );
       },
+    );
+  }
+}
+
+/// Buys an extra row for the main board.
+class _BoardRowCard extends StatelessWidget {
+  const _BoardRowCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final game = context.game;
+    final cost = game.nextBoardRowCost;
+    final b = game.state.board;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.grid_on_rounded, color: Color(0xFF4CBF6B), size: 34),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Bigger board',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  cost == null
+                      ? 'Maxed! Your board is ${b.cols} x ${b.rows}.'
+                      : 'Add a row of ${b.cols} free cells '
+                            '(${b.cols} x ${b.rows} to ${b.cols} x ${b.rows + 1}).',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          if (cost != null)
+            _GemButton(
+              cost: cost,
+              onTap: () async {
+                if (await confirmGems(context, cost, 'Add a board row') &&
+                    context.mounted) {
+                  game.buyBoardRow();
+                }
+              },
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A free chest for watching a video, once a day.
+class _FreeChestCard extends StatelessWidget {
+  const _FreeChestCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final game = context.game;
+    final left = game.adsLeftToday(AdReward.freeChest);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFBFE8C8), width: 2),
+      ),
+      child: Row(
+        children: [
+          ItemIcon(ItemRef.parse('treasure:3'), size: 48),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Free Chest',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                ),
+                Text(
+                  left > 0
+                      ? 'Watch a short video for '
+                            '${game.eco.adFreeChest!.rolls} random rewards.'
+                      : 'Come back tomorrow for another one.',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          if (left > 0)
+            GameButton(
+              color: Palette.green,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              onTap: () => watchAdFor(context, AdReward.freeChest),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.play_circle_fill_rounded, size: 18),
+                  Text(' Free', style: TextStyle(fontSize: 14)),
+                ],
+              ),
+            )
+          else
+            const Icon(Icons.check_circle_rounded, color: Palette.green),
+        ],
+      ),
     );
   }
 }
@@ -519,6 +636,14 @@ class _ShopCard extends StatelessWidget {
             child: item.icon == 'energy'
                 ? const Center(
                     child: CurrencyIcon(CurrencyKind.energy, size: 50),
+                  )
+                : item.icon.startsWith('dragon:')
+                ? Center(
+                    child: DragonIcon(
+                      type: game.config.dragonType(item.icon.substring(7)),
+                      level: 1,
+                      size: 56,
+                    ),
                   )
                 : ItemIcon(ItemRef.parse(item.icon), size: 58),
           ),

@@ -31,12 +31,39 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      # Signs with your upload key when the ANDROID_KEYSTORE_* secrets are
+      # set (see README); otherwise with the debug key, for testing only.
+      - name: Set up release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No signing secrets: using the debug key."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload.jks
+          {
+            echo "storeFile=upload.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+          } > android/key.properties
       - run: flutter build apk --release --build-number=${{ github.run_number }}
       - run: cp build/app/outputs/flutter-apk/app-release.apk gemdrake-isles.apk
+      # The .aab is what Google Play wants for uploads.
+      - run: flutter build appbundle --release --build-number=${{ github.run_number }}
+      - run: cp build/app/outputs/bundle/release/app-release.aab gemdrake-isles.aab
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: gemdrake-isles.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: gemdrake-isles.aab
 
   ios:
     runs-on: macos-latest
@@ -104,7 +131,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: '*-{apk,ipa}'
+          pattern: '*-{apk,aab,ipa}'
           merge-multiple: true
       - name: Create release
         env:
@@ -119,4 +146,5 @@ jobs:
             --notes "Automated build of ${{ github.ref_name }} @ ${{ github.sha }}.
 
           - **gemdrake-isles.apk**: Android. Install directly (allow installs from unknown sources).
+          - **gemdrake-isles.aab**: Android App Bundle, for uploading to Google Play Console.
           - **gemdrake-isles-unsigned.ipa**: iOS, unsigned. Needs re-signing to install (e.g. Sideloadly/AltStore) or an Apple Developer account for TestFlight."

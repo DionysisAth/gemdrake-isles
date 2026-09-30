@@ -5,6 +5,7 @@ import '../../logic/game_controller.dart';
 import '../../model/item_ref.dart';
 import '../dialogs/dialogs.dart';
 import '../dialogs/meta_dialogs.dart';
+import '../dialogs/store_widgets.dart';
 import '../game_scope.dart';
 import '../painters/board_painters.dart';
 import '../theme.dart';
@@ -235,33 +236,41 @@ class _RewardTrack extends StatelessWidget {
                             color: Color(0xFFB8860B),
                           ),
                         )
-                      : GameButton(
-                          color: const Color(0xFFE0A21A),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 5,
-                          ),
-                          onTap: () async {
-                            if (await confirmGems(
-                                  context,
-                                  ev.premiumCostGems,
-                                  'Unlock the premium track',
-                                ) &&
-                                context.mounted) {
-                              game.unlockPremium();
-                            }
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.lock_open_rounded, size: 16),
-                              Text(
-                                ' Premium ${ev.premiumCostGems} ',
-                                style: const TextStyle(fontSize: 13),
+                      : Column(
+                          children: [
+                            GameButton(
+                              color: const Color(0xFFE0A21A),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 5,
                               ),
-                              const CurrencyIcon(CurrencyKind.gem, size: 15),
-                            ],
-                          ),
+                              onTap: () async {
+                                if (await confirmGems(
+                                      context,
+                                      ev.premiumCostGems,
+                                      'Unlock the premium track',
+                                    ) &&
+                                    context.mounted) {
+                                  game.unlockPremium();
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.lock_open_rounded, size: 16),
+                                  Text(
+                                    ' Premium ${ev.premiumCostGems} ',
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                  const CurrencyIcon(
+                                    CurrencyKind.gem,
+                                    size: 15,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const FestivalPassButton(),
+                          ],
                         ),
                 ),
               ),

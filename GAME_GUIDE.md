@@ -281,19 +281,42 @@ Open it with the **calendar** button. It also pops up by itself once a day.
 
 ## Gem Shop
 
-Tap the **gem counter** to open it. Gems are **only earned by playing**: orders, level ups,
-daily tasks, chests, achievements, the Dragon Book and grown dragons. There's nothing to buy with
-real money.
+Tap the **gem counter** to open it. Gems are earned by playing (orders, level ups, daily tasks,
+chests, achievements, the Dragon Book and grown dragons), and can also be bought.
+
+**Free Chest:** once a day, watch a short video for **2 random rewards**.
+
+**For real money** (shown only when the store can be reached; prices are in your currency):
+
+| Product | Price (US) | What you get |
+|---|---|---|
+| Starter Pack | $2.99 | 300 gems, 1,500 coins, 150 energy, a big egg and 2 potions. From level 3, **once only** |
+| Dragon Club | $4.99 / month | **30 gems every day** (collect in the shop), **+50 max energy**, **+8h dragon hoard**. Renews monthly; cancel in your Google Play or App Store account |
+| Gems | $0.99 to $49.99 | 80, 450, 1,000, 2,200 or 6,000 gems |
+| Energy Bundle | $1.99 | +400 energy |
+| Dragon Bundle | $7.99 | 2 big eggs, a Legendary Egg and 200 gems. From level 5 |
+| Festival Pass | $4.99 | Unlocks the current festival's premium track (the Festival tab also takes gems) |
+
+- **Restore purchases** at the bottom of the money section brings back an active Dragon Club on
+  a new phone.
+- A payment that's still **pending** (e.g. waiting for a parent's approval) is delivered as soon
+  as it goes through, even if the game was closed.
+
+**For gems:**
 
 | Item | Cost | What you get |
 |---|---|---|
 | Merge Chest | 12 | 3 random rewards (items, eggs, energy potion, coins) |
 | Grand Chest | 35 | 6 random rewards with better eggs and gems (can include a Legendary Egg) |
 | Egg Pack | 25 | 3 dragon eggs of different sizes |
+| Fire Egg | 60 | A Fire dragon (rare) |
+| Crystal Egg | 150 | A Crystal dragon (epic), from island 2 on |
+| Shadow Egg | 320 | A Shadow dragon (legendary), from island 4 on |
 | Legendary Egg | 90 | A Legendary Egg (from island 3 on) |
 | Coin Pouch | 10 | 500 coins |
 | Energy Pack | 10 | +60 energy |
 | Bigger Dragon Hoard | 40, then 120 | The hoard holds 12h, then 24h (plus perks) |
+| Bigger Board | 150, then 300 | Adds a row of 7 free cells to the island board (up to 7 x 11) |
 
 - Tap **(i)** on any chest or pack to see the **exact odds** before buying.
 - Spending more than 9 gems always asks you to confirm first.
@@ -318,8 +341,8 @@ Open from **level 4**, in the **Festival** tab.
   - A bar shows your progress to the next reward.
 - **Reward track:** 12 rewards, from 25 up to 1,500 points.
   - The **free track** ends with the festival's **exclusive Legendary dragon**: Blossom or Lumen.
-  - The **premium track** unlocks for **80 gems** and adds extra gems, eggs, chests, energy, a
-    Legendary Egg and more.
+  - The **premium track** unlocks for **80 gems** (or with a **Festival Pass** from the store)
+    and adds extra gems, eggs, chests, energy, a Legendary Egg and more.
 - Tap a reward to claim it once you've reached it. **Anything you reached but forgot to claim is
   sent to you automatically** when the festival ends.
 - **Weekly leaderboard:** compare festival points with players everywhere through Google Play
@@ -403,8 +426,11 @@ Always your choice, never forced:
 - **Collect double** idle earnings (welcome back).
 - **+30 free energy** (5 a day).
 - **Finish a generator's recharge** now (5 a day).
+- **Free Chest** in the Gem Shop (1 a day).
 
-*In this build they are Google test ads or a short placeholder; real ads are not set up.*
+If a video isn't ready, a short "Loading video..." appears; if none is available you're told to
+try again soon, and nothing is used up. *Until the game's own AdMob IDs are set, these are
+Google test ads (or a short placeholder).*
 
 ## Saving
 
@@ -415,56 +441,41 @@ Progress lives on your phone; use a **backup code** or **cloud save** to keep it
 
 ## Not yet implemented (from the original design document)
 
-**Left out on purpose (payments and ads):**
+**Needs the store accounts to go live (built, waiting for setup):**
 
-- **Real-money purchases:**
-  - gem packs,
-  - energy bundles,
-  - the **Starter Pack**,
-  - **event packs**,
-  - chests or egg packs sold for money,
-  - **VIP subscription** (daily gems, bigger energy cap, longer offline earnings),
-  - purchase receipt checking,
-  - "any purchase removes forced ads".
-- **Real ads:** the video ads use Google's test ads or a placeholder. Real ad accounts, ad
-  mediation and a real reward for watching aren't set up. There are no interstitial (forced)
-  ads, which matches the design doc.
-- **Paid premium event pass:** the festival's premium track is unlocked with earned gems, not
-  money.
+- **Real ads:** the game uses Google's test ads until the game's own AdMob IDs are added
+  (one command, see README). There are no forced (interstitial) ads, as in the design doc.
+- **Real purchases:** everything is built; the products must be created in Google Play Console
+  and App Store Connect before they appear in the shop.
+- **Cloud save and leaderboards:** built in; need the game registered in Play Console and App
+  Store Connect, then the IDs added.
+- **Apple's App Tracking Transparency prompt:** set up in the AdMob account (the game already
+  has the required text).
 
 **Would need a server of your own (not free platform services):**
 
+- **Purchase receipt checking on a server.** The stores confirm every payment, and the game
+  never gives a purchase twice, but receipts aren't re-checked by a server of our own.
 - **Leaderboard events in groups of ~50 players** with rewards for your rank. There are real
   weekly leaderboards (Play Games / Game Center), but no grouped competition with prizes.
 - **Friends and gifting:** sending energy or items to friends.
 - **Visiting friends' islands.**
 - **Invite a friend**, where both players get a reward.
-- **Remote push notifications** sent by the game's team, such as "Event ends in 2 hours" sent
-  from outside. Reminders are local notifications only.
-- **Analytics dashboards** (retention, funnels, where players get stuck, what they buy). The game
-  only keeps a simple log on the phone.
-- **A live remote-config service** to tune the economy and run A/B tests. The game can load
-  updated settings from a simple web address, but there's no control panel or testing tool.
-- **Fully server-verified time.** The game corrects the clock using public internet time, but
-  there's no game server checking it.
+- **Remote push notifications** sent by the game's team. Reminders are local notifications only.
+- **Analytics dashboards** (retention, funnels, where players get stuck, what they buy).
+- **A live remote-config service** with A/B tests. The game can load updated settings from a
+  simple web address, but there's no control panel or testing tool.
+- **Fully server-verified time.** The game corrects the clock using public internet time.
 
-**Not built yet (could be added without payments or servers):**
+**Not built (could be added later):**
 
-- **Egg packs for a specific dragon kind:** the shop's Egg Pack gives random eggs.
-- **Board expansion:** making the 7 × 9 board bigger.
-- **Decorating the island freely**, and decorations as event-pass rewards. Restoration follows
-  the fixed tasks.
+- **Decorating the island freely**, and decorations as rewards. Restoration follows the fixed
+  tasks.
 - **Story quests** with their own story line. The story is told through the island tasks and the
   characters' lines.
-- **Rewarded video for a free chest** (the other video rewards exist).
 - **Short video clips** of big merges and hatches for sharing. Sharing makes pictures only.
 - **Event pass on a 4–6 week season.** Festivals run weekly instead.
-- **Cloud save and leaderboards switched on:** built in, but they need the game registered in
-  Google Play Console (one-time $25 developer fee) and App Store Connect (Apple developer account,
-  $99/year), then the IDs added to the game.
-- **Apple's App Tracking Transparency prompt:** needs to be set up in the AdMob account, together
-  with real ads.
-- **Final art and audio:** all art is drawn by the game's code and all sound is synthesized. A
-  professional artist or asset pack could replace them.
+- **"Any purchase removes forced ads":** there are no forced ads to remove.
+- **Final art and audio:** all art is drawn by the game's code and all sound is synthesized.
 - **Soft launch and metrics** (Day 1 / Day 7 / Day 30 retention, conversion). These happen after
   release.

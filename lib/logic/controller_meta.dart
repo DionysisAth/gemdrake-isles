@@ -237,6 +237,32 @@ extension MetaSystems on GameController {
     return true;
   }
 
+  /// Gem price of the next extra board row, or null when maxed.
+  int? get nextBoardRowCost {
+    final costs = config.meta.boardRowCosts;
+    return state.extraRows < costs.length ? costs[state.extraRows] : null;
+  }
+
+  /// Adds an empty row at the bottom of the main board.
+  bool buyBoardRow() {
+    final cost = nextBoardRowCost;
+    if (cost == null || state.gems < cost) return false;
+    state.gems -= cost;
+    final old = state.board;
+    final grown = Board(old.cols, old.rows + 1);
+    for (var i = 0; i < old.size; i++) {
+      grown.cells[i] = old.cells[i];
+      grown.locks[i] = old.locks[i];
+    }
+    state.board = grown;
+    state.extraRows += 1;
+    feedback.play(Sfx.unlock);
+    feedback.haptic(heavy: true);
+    analytics.log('gem_spend', {'on': 'board_row', 'gems': cost});
+    _commit();
+    return true;
+  }
+
   HoardUpgradeDef? get nextHoardUpgrade {
     final ups = config.meta.hoardUpgrades;
     return state.hoardLevel < ups.length ? ups[state.hoardLevel] : null;

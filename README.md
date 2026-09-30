@@ -5,9 +5,9 @@ Merge gems, plants and dragon eggs, hatch dragons that earn coins while you're a
 restore a ruined floating island.
 
 This repo implements the **MVP milestone** from the design doc (section 17) plus the post-launch
-roadmap, except real-money purchases and real ads. Online features use only free platform
+roadmap, including in-app purchases and rewarded ads. Online features use only free platform
 services (Google Play Games, Game Center); nothing needs a server of our own (see
-[Online features](#online-features)).
+[Online features](#online-features)). To go live, follow [Going live](#going-live).
 
 ## What's in the MVP
 
@@ -50,6 +50,8 @@ services (Google Play Games, Game Center); nothing needs a server of our own (se
 | **Local reminders**: energy full, hoard full, daily gift, festival ending soon (toggle in Settings) | `notification_service.dart`, `controller_extras.dart` |
 | **Sharing**: share a picture of your island, or a 9:16 card of a rare dragon from the hatch popup | share button on the island, hatch popup |
 | **Backup codes**: copy or save your whole game as a code and restore it on another device | Settings → Backup & restore |
+| **In-app purchases**: Starter Pack (once), gem packs, Energy and Dragon bundles, a Festival Pass for the premium track, and the **Dragon Club** monthly subscription (daily gems, +max energy, +hoard hours). Products and what they give are data in `store.json`; prices come from the stores | `store.json`, `purchase_service.dart`, `controller_purchases.dart`, `store_widgets.dart` |
+| **Free Chest** for a rewarded video (once a day), **species eggs** (Fire, Crystal, Shadow) and a **bigger board** (+1 row, twice) for gems | `economy.json` → `ads.freeChest`, `meta.json` → `shop` |
 
 **Look and feel:** a new app icon (`tool/icon/`, rendered by `tool/icon/make_icons.py`), animated
 dialogs with gem-studded frames and ribbon titles, hand-painted currency and tab icons, and merge
@@ -68,7 +70,7 @@ Requires Flutter 3.47+ (Dart 3.13+).
 ```bash
 flutter pub get
 flutter run            # on a connected iOS/Android device or simulator
-flutter test           # 90 logic + widget tests
+flutter test           # 100 logic + widget tests
 flutter test test_shots  # renders screens/effects to PNGs (SHOTS=dir) for visual checks
 flutter analyze
 ```
@@ -90,7 +92,7 @@ lib/
     order_generator.dart    Scripted + level-scaled random orders
     new_game.dart           Builds a fresh save from board.json
   services/                 Save (SharedPreferences), sound (audioplayers), ads (AdMob + UMP),
-                            local notifications, analytics
+                            in-app purchases, local notifications, analytics
   ui/
     screens/                Home shell (tabs, popups, lifecycle), island, festival, Dragon Book
     widgets/                Board area, orders bar, info bar, HUD, tutorial overlay
@@ -111,17 +113,88 @@ assets/
 - **Saving:** state is serialized after every action (coalesced within 250 ms) and on app pause.
   Corrupt or outdated saves are repaired or replaced instead of crashing.
 
-## Before shipping to the stores
+## Going live
 
-- **Ads:** `AndroidManifest.xml`, `ios/Runner/Info.plist` and `economy.json` use Google's public
-  **test** AdMob IDs. Replace them with your own. Consent (GDPR) goes through Google UMP; configure the
-  consent and IDFA messages in the AdMob console. If no ad is available, a placeholder "ad" is shown
-  (`fallbackToSimulated` in `economy.json`); set it to `false` for release.
-- **Bundle IDs and signing:** `com.gemdrake.gemdrake_isles` / `com.gemdrake.gemdrakeIsles` are
-  placeholders. Android release builds are signed with the debug key until you add a signing config.
-- **Art and audio:** everything is procedural placeholder art and synthesized sound. Swap in final
-  assets, or tweak the painters and `tool/generate_audio.py`.
-- **Left out on purpose:** real-money purchases (IAP, VIP) and real ad units.
+### 1. Ads (AdMob)
+
+1. In [AdMob](https://admob.google.com), add the app twice (Android and iOS) and create one
+   **Rewarded** ad unit for each.
+2. Put the four IDs into the game with one command:
+   ```bash
+   python3 tool/set_admob_ids.py \
+       --android-app ca-app-pub-XXXXXXXXXXXXXXXX~AAAAAAAAAA \
+       --android-rewarded ca-app-pub-XXXXXXXXXXXXXXXX/BBBBBBBBBB \
+       --ios-app ca-app-pub-XXXXXXXXXXXXXXXX~CCCCCCCCCC \
+       --ios-rewarded ca-app-pub-XXXXXXXXXXXXXXXX/DDDDDDDDDD
+   ```
+   It updates `AndroidManifest.xml`, `Info.plist`, `economy.json` and writes `docs/app-ads.txt`.
+   With real IDs the placeholder "ad" is never shown; if no video loads, the player is told to
+   try again later and nothing is used up.
+3. In AdMob → *Privacy & messaging*, create a **GDPR** message and an **IDFA explainer** (iOS
+   App Tracking Transparency). The game shows them through Google UMP and offers
+   *Settings → Privacy options*.
+4. **app-ads.txt:** AdMob checks it on the developer website listed in the stores. With GitHub
+   Pages, it must be at the root of a user site, i.e. a repo named `<you>.github.io` with
+   `app-ads.txt` in it; that site's address is then your store "website".
+
+### 2. In-app purchases
+
+Create these products in **Google Play Console** (*Monetize → Products*) and **App Store
+Connect** (*In-App Purchases* / *Subscriptions*), with the **same IDs**:
+
+| ID | Type | Suggested price |
+|---|---|---|
+| `starter_pack` | consumable | $2.99 |
+| `gems_80`, `gems_450`, `gems_1000`, `gems_2200`, `gems_6000` | consumable | $0.99, $4.99, $9.99, $19.99, $49.99 |
+| `energy_400` | consumable | $1.99 |
+| `dragon_bundle` | consumable | $7.99 |
+| `festival_pass` | consumable | $4.99 |
+| `vip_monthly` | auto-renewing subscription, 1 month | $4.99 |
+
+Products that aren't set up (or a store that can't be reached, as in sideloaded test builds)
+are simply hidden. What each product gives is in `assets/config/store.json`.
+
+How payments are handled (`purchase_service.dart`): the reward is saved before the store is
+told the purchase is done, every transaction id is remembered so nothing is given twice, and
+purchases that finished while the game was closed are delivered on the next launch. The
+Dragon Club lasts 31 days from each payment and is re-confirmed from Google Play at launch
+(on iOS, renewals arrive as new transactions; *Restore purchases* recovers it on a new
+phone). There is **no receipt-checking server**; add one (e.g. a Firebase function) if fraud
+becomes a problem.
+
+Test purchases: in Play Console add license testers; on iOS use a Sandbox account.
+
+### 3. App identity, signing and store builds
+
+- **Package name:** `com.gemdrake.gemdrake_isles` (Android) / `com.gemdrake.gemdrakeIsles`
+  (iOS). Change them before the first upload if you want different ones; they can't be
+  changed afterwards.
+- **Android signing:** create an upload key once:
+  ```bash
+  keytool -genkey -v -keystore upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+  ```
+  Then add GitHub secrets `ANDROID_KEYSTORE_BASE64` (`base64 -w0 upload.jks`),
+  `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (`upload`) and, if different,
+  `ANDROID_KEY_PASSWORD`. CI then signs the APK and the **`.aab`** (the file to upload to
+  Play Console) with it. Locally, put the same values in `android/key.properties`
+  (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; never committed). Keep the keystore
+  safe: it can't be replaced. Without the secrets, builds are signed with the debug key and
+  are for testing only. Note: a phone with a debug-signed build must uninstall it before
+  installing a signed one (use a backup code first to keep progress).
+- **iOS:** needs an Apple Developer account ($99/year), then signing in Xcode or a CI signing
+  setup; the CI build is unsigned.
+
+### 4. Store listings
+
+- **Privacy policy:** `docs/privacy-policy.md`. Put your contact email in place of
+  `CONTACT_EMAIL`, then turn on GitHub Pages (*Settings → Pages → Deploy from branch, folder
+  /docs*). The policy's address is then `https://<you>.github.io/gemdrake-isles/privacy-policy`.
+- **Play Console Data safety:** the game collects device/advertising ID and app interactions
+  through AdMob (advertising, analytics, fraud prevention; shared with Google), and purchase
+  history through Google Play. No account, no personal data of our own.
+- **Content rating:** simulated gambling: no; random rewards with shown odds; in-app purchases:
+  yes; ads: yes.
+- **Art and audio:** everything is procedural and synthesized; swap in final assets if you like.
 
 ## Online features
 

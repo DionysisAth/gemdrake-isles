@@ -363,7 +363,14 @@ class GameState {
     this.event,
     this.notifications = true,
     Set<String>? achievements,
+    this.vipUntil = 0,
+    this.vipClaimDay = -1,
+    Set<String>? boughtOnce,
+    List<String>? purchaseTx,
+    this.extraRows = 0,
   }) : achievements = achievements ?? {},
+       boughtOnce = boughtOnce ?? {},
+       purchaseTx = purchaseTx ?? [],
        dailyTasks = dailyTasks ?? [],
        bookClaimed = bookClaimed ?? {},
        pending = pending ?? [],
@@ -427,6 +434,11 @@ class GameState {
         : EventState.fromJson(j['event'] as Map<String, dynamic>),
     notifications: j['notif'] as bool? ?? true,
     achievements: (j['ach'] as List? ?? const []).cast<String>().toSet(),
+    vipUntil: j['vip'] as int? ?? 0,
+    vipClaimDay: j['vipDay'] as int? ?? -1,
+    boughtOnce: (j['once'] as List? ?? const []).cast<String>().toSet(),
+    purchaseTx: (j['tx'] as List? ?? const []).cast<String>(),
+    extraRows: j['rowsX'] as int? ?? 0,
   );
 
   int version;
@@ -497,6 +509,21 @@ class GameState {
   /// Achievement rewards collected.
   Set<String> achievements;
 
+  /// Epoch ms until which the Dragon Club subscription is active.
+  int vipUntil;
+
+  /// Day whose Dragon Club gems were collected.
+  int vipClaimDay;
+
+  /// One-time products already bought (starter pack).
+  Set<String> boughtOnce;
+
+  /// Recent store transaction ids, so a purchase is never granted twice.
+  List<String> purchaseTx;
+
+  /// Board rows added with the board expansion.
+  int extraRows;
+
   int newId() => nextId++;
 
   int stat(String key) => stats[key] ?? 0;
@@ -542,6 +569,11 @@ class GameState {
     'event': event?.toJson(),
     'notif': notifications,
     'ach': achievements.toList(),
+    'vip': vipUntil,
+    'vipDay': vipClaimDay,
+    'once': boughtOnce.toList(),
+    'tx': purchaseTx,
+    'rowsX': extraRows,
   };
 }
 

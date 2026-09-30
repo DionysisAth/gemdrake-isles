@@ -54,6 +54,36 @@
     "freeEnergyAmount": 30,
     "freeEnergyPerDay": 5,
     "generatorSkipPerDay": 5,
+    "freeChestPerDay": 1,
+    "freeChest": {
+      "rolls": 2,
+      "table": [
+        {
+          "item": "gem:3",
+          "weight": 25
+        },
+        {
+          "item": "plant:3",
+          "weight": 20
+        },
+        {
+          "item": "egg:1",
+          "weight": 20
+        },
+        {
+          "item": "potion:2",
+          "weight": 15
+        },
+        {
+          "coins": 100,
+          "weight": 12
+        },
+        {
+          "gems": 3,
+          "weight": 8
+        }
+      ]
+    },
     "fallbackToSimulated": true,
     "simulatedAdSeconds": 3,
     "rewardedUnitIds": {

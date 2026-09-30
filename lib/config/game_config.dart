@@ -25,6 +25,7 @@ class GameConfig {
     required this.meta,
     required this.events,
     required this.services,
+    required this.store,
   });
 
   static const files = [
@@ -39,6 +40,7 @@ class GameConfig {
     'meta',
     'events',
     'services',
+    'store',
   ];
 
   static Future<GameConfig> load(AssetBundle bundle) async =>
@@ -80,6 +82,7 @@ class GameConfig {
       meta: MetaConfig.fromJson(j['meta']!),
       events: EventsConfig.fromJson(j['events']!),
       services: ServicesConfig.fromJson(j['services']!),
+      store: StoreConfig.fromJson(j['store'] ?? const {}),
     );
   }
 
@@ -95,6 +98,7 @@ class GameConfig {
   final MetaConfig meta;
   final EventsConfig events;
   final ServicesConfig services;
+  final StoreConfig store;
 
   ChainDef chain(String id) => chains.firstWhere((c) => c.id == id);
   ItemDef item(ItemRef ref) => chain(ref.chain).items[ref.level - 1];
@@ -538,6 +542,10 @@ class EconomyConfig {
       adFreeEnergyAmount = j['ads']['freeEnergyAmount'] as int,
       adFreeEnergyPerDay = j['ads']['freeEnergyPerDay'] as int,
       adGeneratorSkipPerDay = j['ads']['generatorSkipPerDay'] as int,
+      adFreeChestPerDay = j['ads']['freeChestPerDay'] as int? ?? 0,
+      adFreeChest = j['ads']['freeChest'] == null
+          ? null
+          : LootDef.fromJson(j['ads']['freeChest'] as Map<String, dynamic>),
       adsFallbackToSimulated = j['ads']['fallbackToSimulated'] as bool,
       simulatedAdSeconds = j['ads']['simulatedAdSeconds'] as int,
       rewardedUnitIds = (j['ads']['rewardedUnitIds'] as Map)
@@ -570,6 +578,13 @@ class EconomyConfig {
   final int adFreeEnergyAmount;
   final int adFreeEnergyPerDay;
   final int adGeneratorSkipPerDay;
+  final int adFreeChestPerDay;
+
+  /// Rewards of the free chest opened by watching a video.
+  final LootDef? adFreeChest;
+
+  /// Show a placeholder video when no ad loads. Only honoured while
+  /// Google's test ad units are configured.
   final bool adsFallbackToSimulated;
   final int simulatedAdSeconds;
   final Map<String, String> rewardedUnitIds;
@@ -1000,6 +1015,10 @@ class MetaConfig {
       hoardUpgrades = [
         for (final h in j['shop']['hoardUpgrades'] as List)
           HoardUpgradeDef((h['hours'] as num).toDouble(), h['costGems'] as int),
+      ],
+      boardRowCosts = [
+        for (final r in j['shop']['boardRows'] as List? ?? const [])
+          r['costGems'] as int,
       ];
 
   factory MetaConfig.fromJson(Map<String, dynamic> j) => MetaConfig(j);
@@ -1015,6 +1034,9 @@ class MetaConfig {
   /// 7-day login calendar.
   final List<LootEntry> login;
   final List<ShopItemDef> shopItems;
+
+  /// Gem price of each extra board row, in order.
+  final List<int> boardRowCosts;
   final List<HoardUpgradeDef> hoardUpgrades;
 
   DailyTaskDef daily(String id) => dailyPool.firstWhere((d) => d.id == id);
@@ -1173,4 +1195,132 @@ class ServicesConfig {
 
   LeaderboardDef? leaderboard(String key) =>
       leaderboards.where((l) => l.key == key).firstOrNull;
+}
+
+/// Real-money products (`store.json`). Product ids are the same in Google
+/// Play Console and App Store Connect.
+class StoreConfig {
+  StoreConfig({
+    required this.enabled,
+    required this.vip,
+    required this.products,
+  });
+
+  factory StoreConfig.fromJson(Map<String, dynamic> j) => StoreConfig(
+    enabled: j['enabled'] as bool? ?? false,
+    vip: VipDef.fromJson(
+      (j['vip'] as Map?)?.cast<String, dynamic>() ?? const {},
+    ),
+    products: [
+      for (final p in j['products'] as List? ?? const [])
+        StoreProductDef.fromJson(p as Map<String, dynamic>),
+    ],
+  );
+
+  final bool enabled;
+  final VipDef vip;
+  final List<StoreProductDef> products;
+
+  StoreProductDef? product(String id) =>
+      products.where((p) => p.id == id).firstOrNull;
+}
+
+/// Perks while the Dragon Club subscription is active.
+class VipDef {
+  VipDef({this.dailyGems = 0, this.energyMax = 0, this.offlineHours = 0});
+
+  factory VipDef.fromJson(Map<String, dynamic> j) => VipDef(
+    dailyGems: j['dailyGems'] as int? ?? 0,
+    energyMax: j['energyMax'] as int? ?? 0,
+    offlineHours: (j['offlineHours'] as num? ?? 0).toDouble(),
+  );
+
+  final int dailyGems;
+  final int energyMax;
+  final double offlineHours;
+}
+
+class StoreProductDef {
+  StoreProductDef({
+    required this.id,
+    required this.kind,
+    required this.section,
+    required this.name,
+    this.desc = '',
+    required this.icon,
+    this.badge = '',
+    this.priceHint = '',
+    this.once = false,
+    this.minLevel = 1,
+    this.gems = 0,
+    this.coins = 0,
+    this.energy = 0,
+    this.items = const [],
+    this.festivalPass = false,
+    this.vipDays = 0,
+  });
+
+  factory StoreProductDef.fromJson(Map<String, dynamic> j) => StoreProductDef(
+    id: j['id'] as String,
+    kind: j['kind'] as String? ?? 'consumable',
+    section: j['section'] as String? ?? 'gems',
+    name: j['name'] as String,
+    desc: j['desc'] as String? ?? '',
+    icon: j['icon'] as String? ?? 'gems:1',
+    badge: j['badge'] as String? ?? '',
+    priceHint: j['priceHint'] as String? ?? '',
+    once: j['once'] as bool? ?? false,
+    minLevel: j['minLevel'] as int? ?? 1,
+    gems: j['gems'] as int? ?? 0,
+    coins: j['coins'] as int? ?? 0,
+    energy: j['energy'] as int? ?? 0,
+    items: [
+      for (final i in j['items'] as List? ?? const [])
+        ItemRef.parse(i as String),
+    ],
+    festivalPass: j['festivalPass'] as bool? ?? false,
+    vipDays: j['vipDays'] as int? ?? 0,
+  );
+
+  final String id;
+
+  /// consumable or subscription.
+  final String kind;
+
+  /// Where it's shown: offer, gems, bundles (shop) or festival.
+  final String section;
+  final String name;
+  final String desc;
+
+  /// Item key, `energy`, `vip`, `pass` or `gems:<size 1-5>`.
+  final String icon;
+  final String badge;
+
+  /// Shown only if the store can't be reached; the real price comes from
+  /// the store in the player's currency.
+  final String priceHint;
+
+  /// Can be bought once per player (starter pack).
+  final bool once;
+  final int minLevel;
+  final int gems;
+  final int coins;
+  final int energy;
+  final List<ItemRef> items;
+
+  /// Unlocks the current festival's premium track.
+  final bool festivalPass;
+
+  /// Days of Dragon Club per payment.
+  final int vipDays;
+
+  bool get subscription => kind == 'subscription';
+
+  /// Everything handed out, as rewards for the reward popup.
+  List<LootEntry> get rewards => [
+    if (gems > 0) LootEntry(weight: 1, gems: gems),
+    if (coins > 0) LootEntry(weight: 1, coins: coins),
+    if (energy > 0) LootEntry(weight: 1, energy: energy),
+    for (final i in items) LootEntry(weight: 1, item: i),
+  ];
 }

@@ -4,6 +4,7 @@ import '../logic/game_controller.dart';
 import '../services/ads_service.dart';
 import '../services/online_games.dart';
 import '../services/online_sync.dart';
+import '../services/purchase_service.dart';
 import 'fx_layer.dart';
 import 'game_scope.dart';
 import 'screens/home_shell.dart';
@@ -16,11 +17,13 @@ class GemdrakeApp extends StatefulWidget {
     required this.game,
     required this.ads,
     this.online,
+    this.store,
   });
 
   final GameController game;
   final AdsService ads;
   final OnlineSync? online;
+  final PurchaseService? store;
 
   @override
   State<GemdrakeApp> createState() => _GemdrakeAppState();
@@ -31,6 +34,7 @@ class _GemdrakeAppState extends State<GemdrakeApp> {
   final _targets = TargetRegistry();
   late final OnlineSync _online =
       widget.online ?? OnlineSync(widget.game, NoOnlineGames());
+  late final PurchaseService _store = widget.store ?? NoPurchaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +49,7 @@ class _GemdrakeAppState extends State<GemdrakeApp> {
         targets: _targets,
         ads: widget.ads,
         online: _online,
+        store: _store,
         child: MediaQuery.withClampedTextScaling(
           maxScaleFactor: 1.2,
           child: child!,
