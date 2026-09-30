@@ -5,11 +5,20 @@
 set -u
 PKG=com.gemdrake.gemdrake_isles
 
+# Every adb call has a time limit: if the emulator itself goes away, adb
+# would otherwise wait for it forever.
+ADB=$(command -v adb)
+adb() { timeout 60 "$ADB" "$@"; }
+
 adb install -r gemdrake-isles.apk || exit 1
 adb logcat -c
 adb logcat -b crash -c
 adb shell am start -W -n "$PKG/.MainActivity"
 sleep 30
+if ! adb get-state >/dev/null 2>&1; then
+  echo "EMULATOR LOST (the emulator stopped responding, not an app crash)"
+  exit 1
+fi
 adb logcat -d > logcat.txt
 adb logcat -d -b crash > crash.txt
 adb exec-out screencap -p > screen.png
