@@ -69,6 +69,6 @@ information from children.
 
 ## Contact
 
-Questions about this policy: **CONTACT_EMAIL**
+Questions about this policy: **chris96skan@gmail.com**
 
 We may update this policy; the date at the top shows the latest version.
