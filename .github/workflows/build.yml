@@ -108,7 +108,9 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          target: google_apis
+          # Plain Android without Google apps: their first-boot updates
+          # made the emulator itself die a few seconds after the app started.
+          target: default
           ram-size: 4096M
           # Software rendering inside the guest: the host renderer
           # (swiftshader_indirect) crashed the emulator once real ad

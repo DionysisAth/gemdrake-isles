@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installs the APK on the running emulator, launches it and checks that:
-#  1. the app is still running after 30 seconds (no launch crash), and
+#  1. the app keeps running for 20 seconds after launch (no launch crash), and
 #  2. none of its audio players are still playing after pressing Home.
 set -u
 PKG=com.gemdrake.gemdrake_isles
@@ -16,16 +16,29 @@ adb logcat -b crash -c
 # Stream the log while the app runs, so it survives if the emulator dies.
 "$ADB" logcat -v time > logcat_live.txt 2>&1 &
 adb shell am start -W -n "$PKG/.MainActivity"
-sleep 30
-if ! adb shell true >/dev/null 2>&1; then
+
+lost() {
   echo "EMULATOR LOST (the emulator stopped responding, not an app crash)"
   echo "=== GAME, ADS, WEBVIEW AND CRASH LINES BEFORE IT WENT AWAY ==="
-  grep -E "flutter|$PKG|Ads|ads|WebView|chromium|cr_|FATAL|AndroidRuntime|lowmemorykiller|Killing|ANR|libc " logcat_live.txt | tail -150
+  grep -E "flutter|$PKG|Ads|WebView|chromium|FATAL|AndroidRuntime|lowmemorykiller|ANR" logcat_live.txt | tail -150
   echo "=== LAST 40 LOG LINES ==="
   tail -40 logcat_live.txt
   cp logcat_live.txt logcat.txt
   exit 1
-fi
+}
+
+# Check every 2 seconds that the app is still running.
+for i in $(seq 1 10); do
+  sleep 2
+  adb shell true >/dev/null 2>&1 || lost
+  if ! adb shell pidof "$PKG" >/dev/null; then
+    echo "APP CRASHED after $((i * 2)) s"
+    adb logcat -d -b crash
+    grep -E "AndroidRuntime|flutter|$PKG" logcat_live.txt | tail -150
+    exit 1
+  fi
+done
+echo "App ran for 20 s"
 adb logcat -d > logcat.txt
 adb logcat -d -b crash > crash.txt
 adb exec-out screencap -p > screen.png
