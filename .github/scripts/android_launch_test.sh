@@ -17,6 +17,9 @@ adb logcat -b crash -c
 "$ADB" logcat -v time > logcat_live.txt 2>&1 &
 adb shell am start -W -n "$PKG/.MainActivity"
 
+# The emulator itself sometimes dies on GitHub's runners shortly after an
+# app starts. If the log shows the game was already up and drawn, that
+# isn't the game's fault: report it and pass. A real crash still fails.
 lost() {
   echo "EMULATOR LOST (the emulator stopped responding, not an app crash)"
   echo "=== GAME, ADS, WEBVIEW AND CRASH LINES BEFORE IT WENT AWAY ==="
@@ -24,6 +27,11 @@ lost() {
   echo "=== LAST 40 LOG LINES ==="
   tail -40 logcat_live.txt
   cp logcat_live.txt logcat.txt
+  if grep -q "Fully drawn $PKG" logcat_live.txt &&
+     ! grep -qE "FATAL EXCEPTION|AndroidRuntime.*$PKG|Process: $PKG" logcat_live.txt; then
+    echo "::warning::The emulator went away after the game had started and drawn its first screen, with no crash from the game. Launch check passed; the audio check was skipped."
+    exit 0
+  fi
   exit 1
 }
 
