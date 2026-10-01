@@ -19,8 +19,10 @@ adb shell am start -W -n "$PKG/.MainActivity"
 sleep 30
 if ! adb shell true >/dev/null 2>&1; then
   echo "EMULATOR LOST (the emulator stopped responding, not an app crash)"
-  echo "=== LAST LOG LINES BEFORE IT WENT AWAY ==="
-  tail -200 logcat_live.txt
+  echo "=== GAME, ADS, WEBVIEW AND CRASH LINES BEFORE IT WENT AWAY ==="
+  grep -E "flutter|$PKG|Ads|ads|WebView|chromium|cr_|FATAL|AndroidRuntime|lowmemorykiller|Killing|ANR|libc " logcat_live.txt | tail -150
+  echo "=== LAST 40 LOG LINES ==="
+  tail -40 logcat_live.txt
   cp logcat_live.txt logcat.txt
   exit 1
 fi
