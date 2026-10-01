@@ -151,6 +151,12 @@ Connect** (*In-App Purchases* / *Subscriptions*), with the **same IDs**:
 | `festival_pass` | consumable | $4.99 |
 | `vip_monthly` | auto-renewing subscription, 1 month | $4.99 |
 
+On Google Play this is one command (prices come from each product's `priceHint` in
+`store.json`, converted by Google for every country; run it again after changing them):
+```bash
+python3 tool/play/setup_store.py --key play-key.json --products
+```
+
 Products that aren't set up (or a store that can't be reached, as in sideloaded test builds)
 are simply hidden. What each product gives is in `assets/config/store.json`.
 
@@ -202,12 +208,17 @@ Test purchases: in Play Console add license testers; on iOS use a Sandbox accoun
   GitHub secret `PLAY_SERVICE_ACCOUNT_JSON` and CI uploads every signed build from `main`
   to the internal testing track by itself.
 
-- **Privacy policy:** `docs/privacy-policy.md`. Turn on GitHub Pages (*Settings → Pages →
-  Deploy from a branch → main, folder /docs*); the policy is then at
-  `https://dionysisath.github.io/gemdrake-isles/privacy-policy.html`.
-- **Play Console Data safety:** the game collects device/advertising ID and app interactions
-  through AdMob (advertising, analytics, fraud prevention; shared with Google), and purchase
-  history through Google Play. No account, no personal data of our own.
+- **Privacy policy and website:** `docs/` is a small GitHub Pages site (home page and
+  privacy policy). Turn on GitHub Pages once (*Settings → Pages → Deploy from a branch → main,
+  folder /docs*); the site is then at `https://dionysisath.github.io/gemdrake-isles/` and the
+  policy at `https://dionysisath.github.io/gemdrake-isles/privacy-policy.html`.
+- **Play Console Data safety:** the answers are in `tool/play/data_safety.csv`: through AdMob
+  the game collects and shares approximate location, device or other IDs, app interactions,
+  crash logs and diagnostics (advertising, analytics, fraud prevention). No account, no
+  personal data of our own. Upload with
+  `python3 tool/play/setup_store.py --key play-key.json --data-safety tool/play/data_safety.csv`.
+- **Contact details** (email and website on the store page):
+  `python3 tool/play/setup_store.py --key play-key.json --email you@example.com --website https://...`
 - **Content rating:** simulated gambling: no; random rewards with shown odds; in-app purchases:
   yes; ads: yes.
 - **Art and audio:** everything is procedural and synthesized; swap in final assets if you like.
