@@ -208,10 +208,9 @@ Test purchases: in Play Console add license testers; on iOS use a Sandbox accoun
   GitHub secret `PLAY_SERVICE_ACCOUNT_JSON` and CI uploads every signed build from `main`
   to the internal testing track by itself.
 
-- **Privacy policy and website:** `docs/` is a small GitHub Pages site (home page and
-  privacy policy). Turn on GitHub Pages once (*Settings → Pages → Deploy from a branch → main,
-  folder /docs*); the site is then at `https://dionysisath.github.io/gemdrake-isles/` and the
-  policy at `https://dionysisath.github.io/gemdrake-isles/privacy-policy.html`.
+- **Privacy policy:** `docs/privacy-policy.md`. The repo is public, so its GitHub page is the
+  policy URL for the stores:
+  `https://github.com/DionysisAth/gemdrake-isles/blob/main/docs/privacy-policy.md`.
 - **Play Console Data safety:** the answers are in `tool/play/data_safety.csv`: through AdMob
   the game collects and shares approximate location, device or other IDs, app interactions,
   crash logs and diagnostics (advertising, analytics, fraud prevention). No account, no
