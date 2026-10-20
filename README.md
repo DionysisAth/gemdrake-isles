@@ -198,6 +198,9 @@ Test purchases: in Play Console add license testers; on iOS use a Sandbox accoun
   SHOTS=build/promo flutter test test_shots/promo_test.dart
   python3 tool/promo/make_promo.py build/promo build/store   # pip install pillow imageio-ffmpeg
   ```
+  `python3 tool/promo/make_ads.py build/promo build/store build/ads` then makes a 16:9
+  trailer for YouTube (the Play listing's promo video) and advertising pictures in 9:16, 1:1
+  and 16:9, plus the game's own screens and a banner.
 - **Uploading to Play Console:** with a service account that has access to the app
   (Play Console → *Users and permissions*):
   ```bash
