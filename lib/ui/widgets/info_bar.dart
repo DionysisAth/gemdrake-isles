@@ -7,6 +7,7 @@ import '../game_scope.dart';
 import '../painters/board_painters.dart';
 import '../theme.dart';
 import 'piece_view.dart';
+import '../../l10n/strings.dart';
 
 /// Describes whatever is selected on the board: what an item merges into,
 /// a generator's charges, a locked cell... with context actions (sell,
@@ -18,7 +19,7 @@ class InfoBar extends StatelessWidget {
     final game = context.game;
     final cost = game.nextStorageSlotCost;
     if (cost == null) return;
-    if (await confirmGems(context, cost, 'Buy an extra storage slot')) {
+    if (await confirmGems(context, cost, tr('Buy an extra storage slot'))) {
       game.buyStorageSlot();
     }
   }
@@ -50,26 +51,35 @@ class InfoBar extends StatelessWidget {
             ? ItemIcon(piece!.item!, size: 46)
             : const Icon(Icons.cloud, size: 40, color: Color(0xFFB9B1D9)),
         title: visible
-            ? '${config.item(piece!.item!).name} (${lt.name})'
+            ? tr('{item} ({lock})', {
+                'item': config.item(piece!.item!).name,
+                'lock': lt.name,
+              })
             : lt.name,
         subtitle: visible
-            ? 'Merge a matching item onto it, or merge next to it to free it.'
+            ? tr(
+                'Merge a matching item onto it, or merge next to it to free it.',
+              )
             : lock.hits > 1
-            ? 'Merge next to it ${lock.hits} times to clear it.'
-            : 'Merge next to it to clear it. Something may be hiding inside!',
+            ? tr('Merge next to it {n} times to clear it.', {'n': lock.hits})
+            : tr(
+                'Merge next to it to clear it. Something may be hiding inside!',
+              ),
       );
     }
 
     if (piece == null) {
       final tips = [
-        'Tap a generator to make items. Drag matching items together to merge!',
-        'Merge 5 at once (drop onto a group of 4) for a bonus item!',
-        'Drag items into storage below to keep them safe.',
-        'Items with a green check are wanted by an order.',
+        tr(
+          'Tap a generator to make items. Drag matching items together to merge!',
+        ),
+        tr('Merge 5 at once (drop onto a group of 4) for a bonus item!'),
+        tr('Drag items into storage below to keep them safe.'),
+        tr('Items with a green check are wanted by an order.'),
       ];
       return _row(
         icon: const Icon(Icons.lightbulb, color: Palette.gold, size: 36),
-        title: 'Tip',
+        title: tr('Tip'),
         subtitle: tips[(game.state.stat('merges') ~/ 5) % tips.length],
       );
     }
@@ -85,10 +95,15 @@ class InfoBar extends StatelessWidget {
           height: 46,
           child: PieceView(piece: piece, config: config, size: 46),
         ),
-        title: '${def.name}  Lv ${piece.genLevel}',
+        title: '${def.name}  ${tr('Lv {n}', {'n': piece.genLevel})}',
         subtitle: left > 0
-            ? 'Recharging: ready in ${formatDuration(Duration(seconds: left))}'
-            : '${piece.charges}/${lvl.charges} taps left. Tap it to make items!',
+            ? tr('Recharging: ready in {time}', {
+                'time': formatDuration(Duration(seconds: left)),
+              })
+            : tr('{n}/{max} taps left. Tap it to make items!', {
+                'n': piece.charges,
+                'max': lvl.charges,
+              }),
         actions: [
           _iconButton(
             Icons.info_outline,
@@ -113,7 +128,7 @@ class InfoBar extends StatelessWidget {
                 if (await confirmGems(
                   context,
                   cost,
-                  'Recharge ${def.name} now',
+                  tr('Recharge {name} now', {'name': def.name}),
                 )) {
                   game.skipCooldownWithGems(slot!);
                 }
@@ -150,22 +165,24 @@ class InfoBar extends StatelessWidget {
     final chain = config.chain(ref.chain);
     final String next;
     if (chain.hatchOnMaxMerge && ref.level == chain.maxLevel) {
-      next = 'Merge 2 to hatch a dragon!';
+      next = tr('Merge 2 to hatch a dragon!');
     } else if (chain.loot != null && ref.level == chain.maxLevel) {
-      next = 'Open it to see what treasure is inside!';
+      next = tr('Open it to see what treasure is inside!');
     } else if (chain.event && ref.level == chain.maxLevel) {
-      next = 'Offer it to the festival for points!';
+      next = tr('Offer it to the festival for points!');
     } else if (!isMergeable(chain, ref)) {
-      next = 'Max level! Great for orders.';
+      next = tr('Max level! Great for orders.');
     } else {
       final nextRef = ref.next;
       final known = game.state.discovered.contains(nextRef.key);
-      next =
-          'Merge ${game.eco.standardConsume} to make ${known ? config.item(nextRef).name : '???'}';
+      next = tr('Merge {n} to make {item}', {
+        'n': game.eco.standardConsume,
+        'item': known ? config.item(nextRef).name : '???',
+      });
     }
     return _row(
       icon: ItemIcon(ref, size: 46),
-      title: '${def.name}  Lv ${ref.level}',
+      title: '${def.name}  ${tr('Lv {n}', {'n': ref.level})}',
       subtitle: next,
       actions: [
         _iconButton(Icons.info_outline, () => showChainInfo(context, ref)),
@@ -176,7 +193,7 @@ class InfoBar extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Drink '),
+                Text('${tr('Drink')} '),
                 const CurrencyIcon(CurrencyKind.energy, size: 14),
                 Text('+${game.drinkableEnergy(slot)}'),
               ],
@@ -190,7 +207,7 @@ class InfoBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.star_rounded, size: 16),
-                Text(' Offer +${config.events.offerPoints}'),
+                Text(' ${tr('Offer +{n}', {'n': config.events.offerPoints})}'),
               ],
             ),
           )
@@ -198,11 +215,11 @@ class InfoBar extends StatelessWidget {
           _smallButton(
             color: Palette.accent,
             onTap: () => game.openChest(slot),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.lock_open_rounded, size: 16),
-                Text(' Open!'),
+                Text(' ${tr('Open!')}'),
               ],
             ),
           )
@@ -210,7 +227,7 @@ class InfoBar extends StatelessWidget {
           _smallButton(
             color: const Color(0xFFB0A4C4),
             onTap: () => game.sell(slot),
-            child: const Text('Remove'),
+            child: Text(tr('Remove')),
           )
         else
           _smallButton(
@@ -219,7 +236,7 @@ class InfoBar extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Sell '),
+                Text('${tr('Sell')} '),
                 const CurrencyIcon(CurrencyKind.coin, size: 14),
                 Text('${def.sell}'),
               ],

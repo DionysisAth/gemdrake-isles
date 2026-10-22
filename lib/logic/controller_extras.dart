@@ -55,8 +55,8 @@ extension Extras on GameController {
         Reminder(
           1,
           now.add(full),
-          'Energy is full!',
-          'Your generators are ready. Come back and merge!',
+          tr('Energy is full!'),
+          tr('Your generators are ready. Come back and merge!'),
         ),
       );
     }
@@ -70,9 +70,11 @@ extension Extras on GameController {
           Reminder(
             2,
             now.add(Duration(seconds: (minutes * 60).round())),
-            'The dragon hoard is full',
-            'Your dragons collected ${formatCoins(idleCoinCap)} coins. '
-                'Collect them before they stop earning!',
+            tr('The dragon hoard is full'),
+            tr(
+              'Your dragons collected {n} coins. Collect them before they stop earning!',
+              {'n': formatCoins(idleCoinCap)},
+            ),
           ),
         );
       }
@@ -82,8 +84,8 @@ extension Extras on GameController {
       Reminder(
         3,
         DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 10),
-        'A new day on the isles',
-        'Your daily gift and new daily tasks are waiting.',
+        tr('A new day on the isles'),
+        tr('Your daily gift and new daily tasks are waiting.'),
       ),
     );
     final e = state.event;
@@ -94,8 +96,8 @@ extension Extras on GameController {
           Reminder(
             4,
             end,
-            '${ev.event(e.id).name} ends soon',
-            'Claim your festival rewards before tomorrow!',
+            tr('{name} ends soon', {'name': ev.event(e.id).name}),
+            tr('Claim your festival rewards before tomorrow!'),
           ),
         );
       }

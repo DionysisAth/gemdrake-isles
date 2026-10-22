@@ -8,6 +8,7 @@ import '../painters/board_painters.dart';
 import '../painters/nav_icons.dart';
 import '../theme.dart';
 import '../widgets/piece_view.dart';
+import '../../l10n/strings.dart';
 
 /// The Dragon Book: every dragon type at every level, with rewards for
 /// completing sets.
@@ -32,8 +33,8 @@ class _BookScreenState extends State<BookScreen> {
         final tabs = _PageTabs(
           index: _page,
           labels: [
-            ('Dragons', game.bookBadge),
-            ('Achievements', game.achievementBadge),
+            (tr('Dragons'), game.bookBadge),
+            (tr('Achievements'), game.achievementBadge),
           ],
           onChanged: (i) => setState(() => _page = i),
         );
@@ -58,10 +59,13 @@ class _BookScreenState extends State<BookScreen> {
               decoration: panelDecoration(color: const Color(0xFFEBDDFF)),
               child: Column(
                 children: [
-                  const OutlinedText('Dragon Book', size: 24),
+                  OutlinedText(tr('Dragon Book'), size: 24),
                   const SizedBox(height: 4),
                   Text(
-                    '${game.bookDiscovered} / ${game.bookTotal} discovered',
+                    tr('{n} / {total} discovered', {
+                      'n': game.bookDiscovered,
+                      'total': game.bookTotal,
+                    }),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 6),
@@ -148,8 +152,8 @@ class _TypeCard extends StatelessWidget {
                     color: Palette.pink,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    'Festival',
+                  child: Text(
+                    tr('Festival'),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 11,
@@ -160,7 +164,7 @@ class _TypeCard extends StatelessWidget {
               ],
               const Spacer(),
               Text(
-                'Owned: $owned',
+                tr('Owned: {n}', {'n': owned}),
                 style: const TextStyle(fontSize: 12, color: Palette.inkSoft),
               ),
             ],
@@ -204,9 +208,13 @@ class _DragonCell extends StatelessWidget {
       onTap: () => showToast(
         context,
         seen
-            ? '${lv.name} ${type.name}: ${type.desc}'
-            : 'Not discovered yet. '
-                  '${level == 1 ? 'Hatch one from an egg.' : 'Merge two ${type.name} dragons of the level below.'}',
+            ? '${dragonName(lv.name, type.name)}: ${type.desc}'
+            : level == 1
+            ? tr('Not discovered yet. Hatch one from an egg.')
+            : tr(
+                'Not discovered yet. Merge two {type} dragons of the level below.',
+                {'type': type.name},
+              ),
       ),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -269,7 +277,7 @@ class _GoalRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Claim ${goal.gems} ',
+                  '${tr('Claim {n}', {'n': goal.gems})} ',
                   style: const TextStyle(fontSize: 13),
                 ),
                 const CurrencyIcon(CurrencyKind.gem, size: 15),

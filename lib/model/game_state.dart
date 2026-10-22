@@ -228,6 +228,7 @@ class Settings {
     this.sfxVolume = 0.9,
     this.muted = false,
     this.haptics = true,
+    this.language,
   });
 
   factory Settings.fromJson(Map<String, dynamic> j) => Settings(
@@ -235,6 +236,7 @@ class Settings {
     sfxVolume: (j['sv'] as num? ?? 0.9).toDouble(),
     muted: j['m'] as bool? ?? false,
     haptics: j['h'] as bool? ?? true,
+    language: j['lang'] as String?,
   );
 
   double musicVolume;
@@ -242,11 +244,15 @@ class Settings {
   bool muted;
   bool haptics;
 
+  /// Chosen language code, or null to follow the phone's language.
+  String? language;
+
   Map<String, dynamic> toJson() => {
     'mv': musicVolume,
     'sv': sfxVolume,
     'm': muted,
     'h': haptics,
+    if (language != null) 'lang': language,
   };
 }
 

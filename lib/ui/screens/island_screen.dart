@@ -17,6 +17,7 @@ import '../painters/dragon_painter.dart';
 import '../painters/island_painter.dart';
 import '../theme.dart';
 import '../widgets/piece_view.dart';
+import '../../l10n/strings.dart';
 
 /// The floating island: restoration tasks, the dragons living there and
 /// their treasure hoard (idle earnings).
@@ -58,8 +59,10 @@ class _IslandScreenState extends State<IslandScreen> {
                 _Tabs(
                   index: _tab,
                   labels: [
-                    'Restore',
-                    'Dragons (${context.game.state.dragons.length})',
+                    tr('Restore'),
+                    tr('Dragons ({n})', {
+                      'n': context.game.state.dragons.length,
+                    }),
                   ],
                   onChanged: (i) => setState(() => _tab = i),
                 ),
@@ -337,7 +340,7 @@ class _ShareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: 'Share',
+      message: tr('Share'),
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -389,7 +392,7 @@ class _RestoreProgress extends StatelessWidget {
         ),
         Center(
           child: Text(
-            '$done / $total restored',
+            tr('{n} / {total} restored', {'n': done, 'total': total}),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 11,
@@ -568,7 +571,7 @@ class _Pokeable extends StatelessWidget {
       );
       context.fx.floatText(
         d.globalPosition,
-        dragon.level >= 3 ? 'ROAR!' : 'chirp!',
+        dragon.level >= 3 ? tr('ROAR!') : tr('chirp!'),
         color: const Color(0xFFFFD1EC),
       );
     },
@@ -667,10 +670,13 @@ class _HoardButton extends StatelessWidget {
             } else if (rate == 0) {
               showToast(
                 context,
-                'Hatch dragons to fill the hoard! Merge two Cracking Eggs.',
+                tr('Hatch dragons to fill the hoard! Merge two Cracking Eggs.'),
               );
             } else {
-              showToast(context, 'Your dragons are still gathering coins...');
+              showToast(
+                context,
+                tr('Your dragons are still gathering coins...'),
+              );
             }
           },
           child: Container(
@@ -736,8 +742,8 @@ class _HoardButton extends StatelessWidget {
                       ),
                       Text(
                         full
-                            ? 'Full! Tap to collect'
-                            : '${rate.toStringAsFixed(1)}/min',
+                            ? tr('Full! Tap to collect')
+                            : tr('{n}/min', {'n': rate.toStringAsFixed(1)}),
                         style: const TextStyle(
                           fontSize: 10.5,
                           color: Palette.inkSoft,
@@ -841,7 +847,7 @@ class _TravelCard extends StatelessWidget {
               children: [
                 const Icon(Icons.sailing_rounded),
                 const SizedBox(width: 6),
-                Text('Travel to ${next.name}'),
+                Text(tr('Travel to {island}', {'island': next.name})),
               ],
             ),
           ),
@@ -915,19 +921,21 @@ class _TaskTile extends StatelessWidget {
     String? lockText;
     if (!done && !available) {
       if (game.state.level < task.requiresLevel) {
-        lockText = 'Reach level ${task.requiresLevel}';
+        lockText = tr('Reach level {n}', {'n': task.requiresLevel});
       } else {
         final missing = task.requires
             .where((r) => !game.taskDone(r))
             .map((r) => game.config.task(r)?.name ?? r);
-        lockText = 'First: ${missing.join(', ')}';
+        lockText = tr('First: {tasks}', {'tasks': missing.join(', ')});
       }
     }
     void complete() {
       if (!game.completeTask(task.id)) {
         showToast(
           context,
-          'You need ${task.cost - game.state.coins} more coins. Complete orders to earn more!',
+          tr('You need {n} more coins. Complete orders to earn more!', {
+            'n': task.cost - game.state.coins,
+          }),
         );
       }
     }
@@ -1078,7 +1086,7 @@ class _DragonListState extends State<_DragonList> {
                 const CurrencyIcon(CurrencyKind.coin, size: 16),
                 Expanded(
                   child: Text(
-                    ' ${game.coinsPerMinute.toStringAsFixed(1)} coins/min  -  hoard holds ${game.offlineCapHours.toStringAsFixed(0)}h',
+                    ' ${tr('{n} coins/min  -  hoard holds {hours}h', {'n': game.coinsPerMinute.toStringAsFixed(1), 'hours': game.offlineCapHours.toStringAsFixed(0)})}',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -1087,10 +1095,19 @@ class _DragonListState extends State<_DragonList> {
             const SizedBox(height: 4),
             Text(
               dragons.isEmpty
-                  ? 'No dragons yet! Merge Dragon Eggs on the board: two Cracking Eggs hatch a dragon.'
+                  ? tr(
+                      'No dragons yet! Merge Dragon Eggs on the board: two Cracking Eggs hatch a dragon.',
+                    )
                   : selected != null
-                  ? 'Now tap another ${game.config.dragons.level(selected.level).name} ${game.config.dragonType(selected.type).name} dragon to merge!'
-                  : 'Tap two matching dragons (or drag one onto another) to grow them.',
+                  ? tr('Now tap another {dragon} to merge!', {
+                      'dragon': dragonName(
+                        game.config.dragons.level(selected.level).name,
+                        game.config.dragonType(selected.type).name,
+                      ),
+                    })
+                  : tr(
+                      'Tap two matching dragons (or drag one onto another) to grow them.',
+                    ),
               style: const TextStyle(fontSize: 12.5, color: Palette.inkSoft),
             ),
             const SizedBox(height: 8),
@@ -1112,7 +1129,10 @@ class _DragonListState extends State<_DragonList> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Collection  ${discovered.length}/${game.config.dragons.types.length}',
+              tr('Collection  {n}/{total}', {
+                'n': discovered.length,
+                'total': game.config.dragons.types.length,
+              }),
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
@@ -1223,7 +1243,9 @@ class _DragonCard extends StatelessWidget {
             ),
           ),
           Text(
-            '${game.dragonCoinsPerMinute(dragon).toStringAsFixed(1)}/min',
+            tr('{n}/min', {
+              'n': game.dragonCoinsPerMinute(dragon).toStringAsFixed(1),
+            }),
             style: const TextStyle(fontSize: 10, color: Palette.inkSoft),
           ),
         ],

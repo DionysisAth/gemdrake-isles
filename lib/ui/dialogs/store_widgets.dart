@@ -11,6 +11,7 @@ import '../painters/board_painters.dart';
 import '../theme.dart';
 import '../widgets/piece_view.dart';
 import 'dialogs.dart';
+import '../../l10n/strings.dart';
 
 /// Real-money part of the shop: special offers, the Dragon Club, gem packs
 /// and bundles. Hidden entirely when the store can't be reached.
@@ -34,10 +35,10 @@ class StoreSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (showVip) VipCard(product: vip),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 6),
                 child: Text(
-                  'Gem packs appear here when the store can be reached.',
+                  tr('Gem packs appear here when the store can be reached.'),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 11.5, color: Palette.inkSoft),
                 ),
@@ -58,7 +59,7 @@ class StoreSection extends StatelessWidget {
             for (final p in offers) _OfferCard(product: p),
             if (showVip) VipCard(product: vip),
             if (gems.isNotEmpty) ...[
-              const _SectionTitle('Gems'),
+              _SectionTitle(tr('Gems')),
               GridView.count(
                 crossAxisCount: 3,
                 shrinkWrap: true,
@@ -70,7 +71,7 @@ class StoreSection extends StatelessWidget {
               ),
             ],
             if (bundles.isNotEmpty) ...[
-              const _SectionTitle('Bundles'),
+              _SectionTitle(tr('Bundles')),
               for (final p in bundles) _OfferCard(product: p, compact: true),
             ],
             Row(
@@ -78,21 +79,23 @@ class StoreSection extends StatelessWidget {
               children: [
                 TextButton(
                   onPressed: store.restore,
-                  child: const Text(
-                    'Restore purchases',
+                  child: Text(
+                    tr('Restore purchases'),
                     style: TextStyle(fontSize: 12.5),
                   ),
                 ),
               ],
             ),
             Text(
-              'Payments go through ${_storeName()}. Everything in the game '
-              'can also be earned by playing.',
+              tr(
+                'Payments go through {store}. Everything in the game can also be earned by playing.',
+                {'store': _storeName()},
+              ),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 11, color: Palette.inkSoft),
             ),
             const SizedBox(height: 4),
-            const _SectionTitle('Spend gems'),
+            _SectionTitle(tr('Spend gems')),
           ],
         );
       },
@@ -100,8 +103,8 @@ class StoreSection extends StatelessWidget {
   }
 
   static String _storeName() {
-    if (kIsWeb) return 'the store';
-    return Platform.isIOS ? 'the App Store' : 'Google Play';
+    if (kIsWeb) return tr('the store');
+    return Platform.isIOS ? 'App Store' : 'Google Play';
   }
 }
 
@@ -217,7 +220,7 @@ class PriceButton extends StatelessWidget {
           ),
           onTap: waiting ? () {} : () => store.buy(product.id),
           child: Text(
-            waiting ? 'Pending...' : price,
+            waiting ? tr('Pending...') : price,
             maxLines: 1,
             style: TextStyle(fontSize: compact ? 13 : 15),
           ),
@@ -409,30 +412,41 @@ class VipCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    active ? '${product.name} (active)' : product.name,
+                    active
+                        ? tr('{name} (active)', {'name': product.name})
+                        : product.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 15.5,
                     ),
                   ),
                   Text(
-                    '${vip.dailyGems} gems every day, +${vip.energyMax} max '
-                    'energy, +${vip.offlineHours.toStringAsFixed(0)}h hoard.',
+                    tr(
+                      '{gems} gems every day, +{energy} max energy, +{hours}h hoard.',
+                      {
+                        'gems': vip.dailyGems,
+                        'energy': vip.energyMax,
+                        'hours': vip.offlineHours.toStringAsFixed(0),
+                      },
+                    ),
                     style: const TextStyle(fontSize: 12),
                   ),
                   if (active)
                     Text(
-                      'Until ${ends.day}/${ends.month}/${ends.year}. '
-                      'Renews unless cancelled in your store account.',
+                      tr(
+                        'Until {date}. Renews unless cancelled in your store account.',
+                        {'date': '${ends.day}/${ends.month}/${ends.year}'},
+                      ),
                       style: const TextStyle(
                         fontSize: 11,
                         color: Colors.white70,
                       ),
                     )
                   else
-                    const Text(
-                      'Monthly, renews automatically. Cancel anytime in your '
-                      'store account.',
+                    Text(
+                      tr(
+                        'Monthly, renews automatically. Cancel anytime in your store account.',
+                      ),
                       style: TextStyle(fontSize: 11, color: Colors.white70),
                     ),
                 ],
@@ -501,23 +515,25 @@ Future<void> showPurchaseThanks(
 ) {
   final game = context.game;
   if (rewards.isNotEmpty) {
-    return showChestRewards(context, 'Thank you!', rewards);
+    return showChestRewards(context, tr('Thank you!'), rewards);
   }
   final message = product.festivalPass
-      ? 'The premium reward track is unlocked. Enjoy the festival!'
+      ? tr('The premium reward track is unlocked. Enjoy the festival!')
       : product.vipDays > 0
-      ? 'Welcome to the ${product.name}! Collect your daily gems in the shop.'
-      : 'Your purchase is complete.';
+      ? tr('Welcome to the {name}! Collect your daily gems in the shop.', {
+          'name': product.name,
+        })
+      : tr('Your purchase is complete.');
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
       celebrate: true,
-      title: 'Thank you!',
+      title: tr('Thank you!'),
       titleColor: const Color(0xFFE0A21A),
       actions: [
         GameButton(
           onTap: () => Navigator.pop(ctx),
-          child: const Text('Awesome!'),
+          child: Text(tr('Awesome!')),
         ),
       ],
       child: Column(
@@ -533,7 +549,9 @@ Future<void> showPurchaseThanks(
                 game.claimVipGems();
                 Navigator.pop(ctx);
               },
-              child: Text('Collect ${game.storeConfig.vip.dailyGems} gems'),
+              child: Text(
+                tr('Collect {n} gems', {'n': game.storeConfig.vip.dailyGems}),
+              ),
             ),
           ],
         ],

@@ -15,6 +15,7 @@ import 'game_events.dart';
 import 'merge_logic.dart';
 import 'new_game.dart';
 import 'order_generator.dart';
+import '../l10n/strings.dart';
 
 part 'controller_islands.dart';
 part 'controller_meta.dart';
@@ -422,7 +423,9 @@ class GameController extends ChangeNotifier {
     final def = config.generator(gen.generatorId!);
     if (gen.cooldownUntil != 0) {
       feedback.play(Sfx.error);
-      _emit(ToastEvent('${def.name} is recharging', cell: cell));
+      _emit(
+        ToastEvent(tr('{name} is recharging', {'name': def.name}), cell: cell),
+      );
       notifyListeners();
       return ProduceResult.recharging;
     }
@@ -430,7 +433,10 @@ class GameController extends ChangeNotifier {
     if (target == null) {
       feedback.play(Sfx.error);
       _emit(
-        ToastEvent('Board is full! Merge, sell or store items.', cell: cell),
+        ToastEvent(
+          tr('Board is full! Merge, sell or store items.'),
+          cell: cell,
+        ),
       );
       notifyListeners();
       return ProduceResult.boardFull;
@@ -508,14 +514,14 @@ class GameController extends ChangeNotifier {
     if (!from.storage && board.isLocked(from.index)) return false;
 
     if ((to.storage || from.storage) && eventMode) {
-      _emit(ToastEvent('Storage is for the island board'));
+      _emit(ToastEvent(tr('Storage is for the island board')));
       feedback.play(Sfx.error);
       return false;
     }
     if (to.storage) {
       if (to.index >= state.storage.length) return false;
       if (src.isGenerator) {
-        _emit(ToastEvent("Generators can't go in storage"));
+        _emit(ToastEvent(tr("Generators can't go in storage")));
         feedback.play(Sfx.error);
         return false;
       }
@@ -540,7 +546,7 @@ class GameController extends ChangeNotifier {
       if (!isMergeable(config.chain(src.item!.chain), src.item!)) {
         _emit(
           ToastEvent(
-            '${config.item(src.item!).name} is max level!',
+            tr('{item} is max level!', {'item': config.item(src.item!).name}),
             cell: to.index,
           ),
         );
@@ -768,7 +774,7 @@ class GameController extends ChangeNotifier {
     );
     if (cell == null) {
       feedback.play(Sfx.error);
-      _emit(ToastEvent('No free space on the board'));
+      _emit(ToastEvent(tr('No free space on the board')));
       return false;
     }
     final piece = _pieceForKey(state.pending.removeAt(0));
@@ -897,7 +903,7 @@ class GameController extends ChangeNotifier {
         if (c.unlockLevel == state.level &&
             c.unlockLevel > 1 &&
             chainUnlocked(c.id)) {
-          unlocks.add('${c.name} in orders');
+          unlocks.add(tr('{name} in orders', {'name': c.name}));
         }
       }
       for (final c in config.orders.characters) {
@@ -1073,7 +1079,7 @@ class GameController extends ChangeNotifier {
           grantLoot(rewards);
           state.addStat('chests');
           feedback.play(Sfx.collect);
-          _emit(ChestOpenedEvent('Free Chest', rewards));
+          _emit(ChestOpenedEvent(tr('Free Chest'), rewards));
         }
     }
     _commit();

@@ -26,7 +26,9 @@ Future<void> loadFonts() async {
   }
   await loader.load();
   final icons = FontLoader('MaterialIcons');
-  final f = File('${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf');
+  final f = File(
+    '${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+  );
   if (f.existsSync()) {
     icons.addFont(Future.value(ByteData.sublistView(f.readAsBytesSync())));
     await icons.load();
@@ -52,20 +54,33 @@ void main() {
     final game = newController();
     game.state.loginClaimedDay = game.today;
     final b = game.state.board;
-    for (final (i, item) in [(39, 'gem:6'), (40, 'gem:6'), (45, 'plant:2'), (46, 'plant:2')]) {
+    for (final (i, item) in [
+      (39, 'gem:6'),
+      (40, 'gem:6'),
+      (45, 'plant:2'),
+      (46, 'plant:2'),
+    ]) {
       b.cells[i] = Piece.item(90000 + i, ItemRef.parse(item));
       b.locks[i] = null;
     }
     final key = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: key,
-      child: GemdrakeApp(game: game, ads: SimulatedAdsService(seconds: 0)),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: key,
+        child: GemdrakeApp(game: game, ads: SimulatedAdsService(seconds: 0)),
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 600));
     await snap(tester, key, 'fx_0');
     game.drop(const Slot.board(40), const Slot.board(39));
     for (final ms in [60, 140, 250, 450]) {
-      await tester.pump(Duration(milliseconds: ms == 60 ? 60 : ms - [60, 140, 250, 450][[60, 140, 250, 450].indexOf(ms) - 1]));
+      await tester.pump(
+        Duration(
+          milliseconds: ms == 60
+              ? 60
+              : ms - [60, 140, 250, 450][[60, 140, 250, 450].indexOf(ms) - 1],
+        ),
+      );
       await snap(tester, key, 'fx_$ms');
     }
     await tester.pump(const Duration(seconds: 2));
@@ -100,24 +115,26 @@ void main() {
           .writeAsBytesSync(data!.buffer.asUint8List());
     });
     final pk = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: pk,
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: ColoredBox(
-          color: const Color(0xFFE6F3D8),
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var l = 1; l <= 4; l++)
-                  ItemIcon(ItemRef('potion', l), size: 90),
-              ],
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: pk,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: ColoredBox(
+            color: const Color(0xFFE6F3D8),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var l = 1; l <= 4; l++)
+                    ItemIcon(ItemRef('potion', l), size: 90),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pump();
     await snap(tester, pk, 'potions');
     await tester.pumpWidget(const SizedBox());

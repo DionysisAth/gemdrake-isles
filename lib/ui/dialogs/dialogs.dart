@@ -14,6 +14,7 @@ import '../widgets/fancy.dart';
 import '../widgets/online_widgets.dart';
 import '../widgets/piece_view.dart';
 import 'meta_dialogs.dart';
+import '../../l10n/strings.dart';
 
 /// Shared cozy dialog frame: pops in with a bounce, gem-studded border,
 /// a ribbon title with a light sweep, and optional celebration rays.
@@ -180,7 +181,7 @@ class _CloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Tooltip(
-    message: 'Close',
+    message: tr('Close'),
     child: GestureDetector(
       onTap: onTap,
       child: Container(
@@ -250,7 +251,7 @@ Future<bool> watchAdFor(
 }) async {
   final game = context.game;
   if (game.adsLeftToday(reward) <= 0) {
-    showToast(context, 'No more of those today. Come back tomorrow!');
+    showToast(context, tr('No more of those today. Come back tomorrow!'));
     return false;
   }
   final ok = await showRewardedAd(context, reward.name);
@@ -262,19 +263,19 @@ Future<bool> watchAdFor(
 Future<bool> confirmGems(BuildContext context, int cost, String what) async {
   final game = context.game;
   if (game.state.gems < cost) {
-    showToast(context, 'Not enough gems');
+    showToast(context, tr('Not enough gems'));
     return false;
   }
   if (cost <= game.eco.confirmGemsAbove) return true;
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => GameDialog(
-      title: 'Spend gems?',
+      title: tr('Spend gems?'),
       actions: [
         GameButton(
           color: Colors.grey,
           onTap: () => Navigator.pop(ctx, false),
-          child: const Text('Cancel'),
+          child: Text(tr('Cancel')),
         ),
         GameButton(
           color: Palette.pink,
@@ -282,14 +283,14 @@ Future<bool> confirmGems(BuildContext context, int cost, String what) async {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Spend $cost '),
+              Text('${tr('Spend {cost}', {'cost': cost})} '),
               const CurrencyIcon(CurrencyKind.gem, size: 18),
             ],
           ),
         ),
       ],
       child: Text(
-        '$what for $cost gems?',
+        tr('{what} for {cost} gems?', {'what': what, 'cost': cost}),
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 17),
       ),
@@ -419,7 +420,7 @@ Future<void> showWelcomeBack(BuildContext context, WelcomeBack wb) {
     barrierDismissible: false,
     builder: (ctx) => GameDialog(
       celebrate: true,
-      title: 'Welcome back!',
+      title: tr('Welcome back!'),
       actions: [
         GameButton(
           shine: true,
@@ -428,7 +429,7 @@ Future<void> showWelcomeBack(BuildContext context, WelcomeBack wb) {
             Navigator.pop(ctx);
             game.collectIdle();
           },
-          child: const Text('Collect'),
+          child: Text(tr('Collect')),
         ),
         GameButton(
           color: Palette.accent,
@@ -442,12 +443,12 @@ Future<void> showWelcomeBack(BuildContext context, WelcomeBack wb) {
               game.collectIdle();
             }
           },
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.play_circle_fill),
-              SizedBox(width: 6),
-              Text('Collect x2'),
+              const Icon(Icons.play_circle_fill),
+              const SizedBox(width: 6),
+              Text(tr('Collect x2')),
             ],
           ),
         ),
@@ -455,7 +456,9 @@ Future<void> showWelcomeBack(BuildContext context, WelcomeBack wb) {
       child: Column(
         children: [
           Text(
-            'Your dragons kept busy for ${formatDuration(wb.away)}.',
+            tr('Your dragons kept busy for {time}.', {
+              'time': formatDuration(wb.away),
+            }),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16),
           ),
@@ -472,7 +475,9 @@ Future<void> showWelcomeBack(BuildContext context, WelcomeBack wb) {
           if (game.idleFull) ...[
             const SizedBox(height: 8),
             Text(
-              'The hoard was full! It holds ${game.offlineCapHours.toStringAsFixed(0)}h of earnings.',
+              tr('The hoard was full! It holds {hours}h of earnings.', {
+                'hours': game.offlineCapHours.toStringAsFixed(0),
+              }),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Palette.inkSoft, fontSize: 13),
             ),
@@ -518,13 +523,10 @@ Future<void> showLevelUp(
     context: context,
     builder: (ctx) => GameDialog(
       celebrate: true,
-      title: 'Level $level!',
+      title: tr('Level {n}!', {'n': level}),
       titleColor: const Color(0xFF9C6BFF),
       actions: [
-        GameButton(
-          onTap: () => Navigator.pop(ctx),
-          child: const Text('Hooray!'),
-        ),
+        GameButton(onTap: () => Navigator.pop(ctx), child: Text(tr('Hooray!'))),
       ],
       child: Column(
         children: [
@@ -555,14 +557,14 @@ Future<void> showLevelUp(
             alignment: WrapAlignment.center,
             children: [
               rewardChip(CurrencyKind.gem, '+$gems'),
-              rewardChip(CurrencyKind.energy, 'Refilled!'),
+              rewardChip(CurrencyKind.energy, tr('Refilled!')),
             ],
           ),
           if (unlocks.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Text(
-              'New!',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            Text(
+              tr('New!'),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
             ),
             for (final u in unlocks)
               Text(u, style: const TextStyle(fontSize: 15)),
@@ -592,10 +594,10 @@ Future<void> showHatch(
     context: context,
     builder: (ctx) => GameDialog(
       title: grown
-          ? 'Your dragon grew!'
+          ? tr('Your dragon grew!')
           : (dragons.length > 1
-                ? '${dragons.length} dragons hatched!'
-                : 'A dragon hatched!'),
+                ? tr('{n} dragons hatched!', {'n': dragons.length})
+                : tr('A dragon hatched!')),
       titleColor: rarity.color,
       celebrate: rank >= 1,
       actions: [
@@ -604,11 +606,11 @@ Future<void> showHatch(
             builder: (bctx) => GameButton(
               color: Palette.accent,
               onTap: () => shareDragonCard(bctx, best, grown: grown),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.ios_share_rounded, size: 18),
-                  Text(' Share'),
+                  const Icon(Icons.ios_share_rounded, size: 18),
+                  Text(' ${tr('Share')}'),
                 ],
               ),
             ),
@@ -616,7 +618,7 @@ Future<void> showHatch(
         GameButton(
           shine: true,
           onTap: () => Navigator.pop(ctx),
-          child: const Text('Welcome home!'),
+          child: Text(tr('Welcome home!')),
         ),
       ],
       child: Column(
@@ -640,7 +642,7 @@ Future<void> showHatch(
           ),
           const SizedBox(height: 6),
           Text(
-            '${game.config.dragons.level(best.level).name} ${type.name} Dragon',
+            dragonName(game.config.dragons.level(best.level).name, type.name),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
           ),
           Text(
@@ -654,7 +656,7 @@ Future<void> showHatch(
             children: [
               const CurrencyIcon(CurrencyKind.coin, size: 18),
               Text(
-                ' ${game.dragonCoinsPerMinute(best).toStringAsFixed(1)} / min',
+                ' ${tr('{n} / min', {'n': game.dragonCoinsPerMinute(best).toStringAsFixed(1)})}',
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
@@ -780,7 +782,7 @@ Future<void> showOutOfEnergy(BuildContext context) {
         final next = game.nextEnergyIn;
         final adsLeft = game.adsLeftToday(AdReward.freeEnergy);
         return GameDialog(
-          title: 'Out of energy',
+          title: tr('Out of energy'),
           onClose: () => Navigator.pop(ctx),
           actions: [
             GameButton(
@@ -796,7 +798,12 @@ Future<void> showOutOfEnergy(BuildContext context) {
                 children: [
                   const Icon(Icons.play_circle_fill),
                   const SizedBox(width: 6),
-                  Text('+${game.eco.adFreeEnergyAmount} free ($adsLeft left)'),
+                  Text(
+                    tr('+{n} free ({left} left)', {
+                      'n': game.eco.adFreeEnergyAmount,
+                      'left': adsLeft,
+                    }),
+                  ),
                 ],
               ),
             ),
@@ -806,7 +813,7 @@ Future<void> showOutOfEnergy(BuildContext context) {
                 if (await confirmGems(
                       ctx,
                       game.eco.energyRefillGemCost,
-                      'Refill your energy',
+                      tr('Refill your energy'),
                     ) &&
                     game.buyEnergyRefill() &&
                     ctx.mounted) {
@@ -816,7 +823,7 @@ Future<void> showOutOfEnergy(BuildContext context) {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Refill '),
+                  Text('${tr('Refill')} '),
                   const CurrencyIcon(CurrencyKind.gem, size: 18),
                   Text(' ${game.eco.energyRefillGemCost}'),
                 ],
@@ -829,14 +836,19 @@ Future<void> showOutOfEnergy(BuildContext context) {
               const SizedBox(height: 8),
               Text(
                 next == null
-                    ? 'Energy is full!'
-                    : 'Next energy in ${formatDuration(next)}.\nFull in ${formatDuration(game.fullEnergyIn!)}.',
+                    ? tr('Energy is full!')
+                    : tr('Next energy in {next}.\nFull in {full}.', {
+                        'next': formatDuration(next),
+                        'full': formatDuration(game.fullEnergyIn!),
+                      }),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Tip: level ups refill your energy, and some orders give energy too.',
+              Text(
+                tr(
+                  'Tip: level ups refill your energy, and some orders give energy too.',
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Palette.inkSoft, fontSize: 13),
               ),
@@ -884,8 +896,8 @@ Future<void> showChainInfo(BuildContext context, ItemRef ref) {
           ),
           if (chain.hatchOnMaxMerge) ...[
             const SizedBox(height: 12),
-            const Text(
-              'Hatch odds',
+            Text(
+              tr('Hatch odds'),
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
             ),
             const SizedBox(height: 4),
@@ -897,7 +909,7 @@ Future<void> showChainInfo(BuildContext context, ItemRef ref) {
           if (chain.loot != null) ...[
             const SizedBox(height: 12),
             Text(
-              'Chest contents (${chain.loot!.rolls} rewards)',
+              tr('Chest contents ({n} rewards)', {'n': chain.loot!.rolls}),
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
             ),
             const SizedBox(height: 4),
@@ -966,10 +978,12 @@ String lootLabel(GameConfig config, LootEntry e) {
   final item = e.item;
   if (item != null) return config.item(item).name;
   final dragon = e.dragon;
-  if (dragon != null) return '${config.dragonType(dragon).name} Dragon';
-  if (e.gems > 0) return '${e.gems} gems';
-  if (e.energy > 0) return '${e.energy} energy';
-  return '${e.coins} coins';
+  if (dragon != null) {
+    return tr('{type} Dragon', {'type': config.dragonType(dragon).name});
+  }
+  if (e.gems > 0) return tr('{n} gems', {'n': e.gems});
+  if (e.energy > 0) return tr('{n} energy', {'n': e.energy});
+  return tr('{n} coins', {'n': e.coins});
 }
 
 /// Shows what came out of a chest.
@@ -988,7 +1002,7 @@ Future<void> showChestRewards(
       actions: [
         GameButton(
           onTap: () => Navigator.pop(ctx),
-          child: const Text('Awesome!'),
+          child: Text(tr('Awesome!')),
         ),
       ],
       child: Wrap(
@@ -1044,20 +1058,23 @@ Future<void> showIslandArrival(
       actions: [
         GameButton(
           onTap: () => Navigator.pop(ctx),
-          child: const Text("Let's go!"),
+          child: Text(tr("Let's go!")),
         ),
       ],
       child: Column(
         children: [
           const Icon(Icons.sailing_rounded, size: 56, color: Palette.accent),
           const SizedBox(height: 6),
-          const Text(
-            'A new island to restore!',
+          Text(
+            tr('A new island to restore!'),
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
           ),
           if (unlocks.isNotEmpty) ...[
             const SizedBox(height: 10),
-            const Text('New!', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(
+              tr('New!'),
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
             for (final u in unlocks) Text(u, textAlign: TextAlign.center),
           ],
         ],
@@ -1088,7 +1105,14 @@ class HatchOddsTable extends StatelessWidget {
                   children: [
                     DragonIcon(type: type, level: 1, size: 28),
                     const SizedBox(width: 6),
-                    Expanded(child: Text('${type.name} (${rarity.name})')),
+                    Expanded(
+                      child: Text(
+                        tr('{type} ({rarity})', {
+                          'type': type.name,
+                          'rarity': rarity.name,
+                        }),
+                      ),
+                    ),
                     Text(
                       '${(e.weight * 100 / total).toStringAsFixed(1)}%',
                       style: const TextStyle(fontWeight: FontWeight.w700),
@@ -1142,7 +1166,7 @@ class _ChainTile extends StatelessWidget {
           ),
         ),
         Text(
-          'Lv ${ref.level}',
+          tr('Lv {n}', {'n': ref.level}),
           style: const TextStyle(fontSize: 10, color: Palette.inkSoft),
         ),
       ],
@@ -1168,13 +1192,18 @@ Future<void> showGeneratorInfo(BuildContext context, Slot slot) {
           Text(def.desc, textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Text(
-            'Level ${piece.genLevel}/${def.maxLevel} - ${lvl.charges} taps, then recharges for ${formatDuration(Duration(seconds: lvl.cooldownSeconds))}',
+            tr('Level {level}/{max} - {taps} taps, then recharges for {time}', {
+              'level': piece.genLevel,
+              'max': def.maxLevel,
+              'taps': lvl.charges,
+              'time': formatDuration(Duration(seconds: lvl.cooldownSeconds)),
+            }),
             textAlign: TextAlign.center,
             style: const TextStyle(color: Palette.inkSoft, fontSize: 13),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Drop odds',
+          Text(
+            tr('Drop odds'),
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
           ),
           for (final d in drops)
@@ -1205,13 +1234,10 @@ Future<void> showTaskComplete(
     context: context,
     builder: (ctx) => GameDialog(
       celebrate: true,
-      title: islandComplete ? 'Island restored!' : 'Restored!',
+      title: islandComplete ? tr('Island restored!') : tr('Restored!'),
       titleColor: Palette.green,
       actions: [
-        GameButton(
-          onTap: () => Navigator.pop(ctx),
-          child: const Text('Lovely!'),
-        ),
+        GameButton(onTap: () => Navigator.pop(ctx), child: Text(tr('Lovely!'))),
       ],
       child: Column(
         children: [
@@ -1228,7 +1254,7 @@ Future<void> showTaskComplete(
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'Bonus: ${task.perk!.text}',
+                tr('Bonus: {perk}', {'perk': task.perk!.text}),
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: Palette.greenDark,
@@ -1255,63 +1281,77 @@ Future<void> showSettings(BuildContext context) {
       builder: (ctx, _) {
         final s = game.state.settings;
         return GameDialog(
-          title: 'Settings',
+          title: tr('Settings'),
           onClose: () => Navigator.pop(ctx),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Sound'),
+                title: Text(tr('Sound')),
                 value: !s.muted,
                 onChanged: (v) => game.updateSettings((s) => s.muted = !v),
               ),
-              const Text('Music'),
+              Text(tr('Music')),
               Slider(
                 value: s.musicVolume,
                 onChanged: (v) => game.updateSettings((s) => s.musicVolume = v),
               ),
-              const Text('Effects'),
+              Text(tr('Effects')),
               Slider(
                 value: s.sfxVolume,
                 onChanged: (v) => game.updateSettings((s) => s.sfxVolume = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Vibration'),
+                title: Text(tr('Vibration')),
                 value: s.haptics,
                 onChanged: (v) => game.updateSettings((s) => s.haptics = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Reminders'),
-                subtitle: const Text(
-                  'Energy full, hoard full, daily gift',
-                  style: TextStyle(fontSize: 12),
+                title: Text(tr('Reminders')),
+                subtitle: Text(
+                  tr('Energy full, hoard full, daily gift'),
+                  style: const TextStyle(fontSize: 12),
                 ),
                 value: game.state.notifications,
                 onChanged: (v) => game.setReminders(v),
               ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.translate_rounded),
+                title: Text(tr('Language')),
+                trailing: Text(
+                  s.language == null
+                      ? tr('Phone language')
+                      : languages[s.language] ?? '',
+                  style: const TextStyle(color: Palette.inkSoft),
+                ),
+                onTap: () => showLanguages(ctx),
+              ),
               const OnlineSettings(),
               TextButton(
                 onPressed: () => showBackup(ctx),
-                child: const Text('Backup & restore'),
+                child: Text(tr('Backup & restore')),
               ),
               if (context.ads.privacyOptionsRequired)
                 TextButton(
                   onPressed: () => context.ads.showPrivacyOptions(),
-                  child: const Text('Privacy options'),
+                  child: Text(tr('Privacy options')),
                 ),
               TextButton(
                 onPressed: () => showDialog(
                   context: ctx,
                   builder: (c) => GameDialog(
-                    title: 'Odds',
+                    title: tr('Odds'),
                     onClose: () => Navigator.pop(c),
                     child: Column(
                       children: [
                         Text(
-                          'Dragon eggs on ${game.currentIsland.name} hatch into:',
+                          tr('Dragon eggs on {island} hatch into:', {
+                            'island': game.currentIsland.name,
+                          }),
                         ),
                         const SizedBox(height: 6),
                         HatchOddsTable(
@@ -1319,7 +1359,7 @@ Future<void> showSettings(BuildContext context) {
                           table: game.hatchTableFor(game.config.chain('egg')),
                         ),
                         const SizedBox(height: 8),
-                        const Text('Legendary eggs hatch into:'),
+                        Text(tr('Legendary eggs hatch into:')),
                         const SizedBox(height: 6),
                         HatchOddsTable(
                           config: game.config,
@@ -1328,22 +1368,22 @@ Future<void> showSettings(BuildContext context) {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text('Treasure chests contain:'),
+                        Text(tr('Treasure chests contain:')),
                         const SizedBox(height: 6),
                         LootOddsTable(
                           loot: game.config.chain('treasure').loot!,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Tap any generator to see its exact drop odds.',
+                        Text(
+                          tr('Tap any generator to see its exact drop odds.'),
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Palette.inkSoft),
+                          style: const TextStyle(color: Palette.inkSoft),
                         ),
                       ],
                     ),
                   ),
                 ),
-                child: const Text('Reward odds'),
+                child: Text(tr('Reward odds')),
               ),
               if (game.tutorialActive)
                 TextButton(
@@ -1351,7 +1391,7 @@ Future<void> showSettings(BuildContext context) {
                     game.skipTutorial();
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Skip tutorial'),
+                  child: Text(tr('Skip tutorial')),
                 ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Palette.danger),
@@ -1359,21 +1399,21 @@ Future<void> showSettings(BuildContext context) {
                   final ok = await showDialog<bool>(
                     context: ctx,
                     builder: (c) => GameDialog(
-                      title: 'Start over?',
+                      title: tr('Start over?'),
                       actions: [
                         GameButton(
                           color: Colors.grey,
                           onTap: () => Navigator.pop(c, false),
-                          child: const Text('Keep playing'),
+                          child: Text(tr('Keep playing')),
                         ),
                         GameButton(
                           color: Palette.danger,
                           onTap: () => Navigator.pop(c, true),
-                          child: const Text('Reset'),
+                          child: Text(tr('Reset')),
                         ),
                       ],
-                      child: const Text(
-                        'This erases all progress on this device.',
+                      child: Text(
+                        tr('This erases all progress on this device.'),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -1383,11 +1423,14 @@ Future<void> showSettings(BuildContext context) {
                     if (ctx.mounted) Navigator.pop(ctx);
                   }
                 },
-                child: const Text('Reset progress'),
+                child: Text(tr('Reset progress')),
               ),
               const SizedBox(height: 4),
               Text(
-                'Gemdrake Isles - Level ${game.state.level} - ${game.state.stat('merges')} merges',
+                tr('Gemdrake Isles - Level {level} - {merges} merges', {
+                  'level': game.state.level,
+                  'merges': game.state.stat('merges'),
+                }),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Palette.inkSoft, fontSize: 12),
               ),
@@ -1395,6 +1438,48 @@ Future<void> showSettings(BuildContext context) {
           ),
         );
       },
+    ),
+  );
+}
+
+/// Picks the game's language. Changing it redraws the whole game.
+Future<void> showLanguages(BuildContext context) {
+  final game = context.game;
+  final chosen = game.state.settings.language;
+  void pick(BuildContext ctx, String? code) {
+    Navigator.pop(ctx);
+    game.updateSettings((s) => s.language = code);
+    L10n.use(code);
+  }
+
+  Widget option(BuildContext ctx, String? code, String label) => ListTile(
+    dense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+    title: Text(label, style: const TextStyle(fontSize: 16)),
+    trailing: chosen == code
+        ? const Icon(Icons.check_circle_rounded, color: Palette.green)
+        : null,
+    onTap: () => pick(ctx, code),
+  );
+
+  return showDialog(
+    context: context,
+    builder: (ctx) => GameDialog(
+      title: tr('Language'),
+      onClose: () => Navigator.pop(ctx),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          option(
+            ctx,
+            null,
+            '${tr('Phone language')} (${languages[L10n.systemLanguage()]})',
+          ),
+          const Divider(height: 8),
+          for (final MapEntry(:key, :value) in languages.entries)
+            option(ctx, key, value),
+        ],
+      ),
     ),
   );
 }

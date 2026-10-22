@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'widgets/fancy.dart';
+import '../l10n/strings.dart';
 
 class Palette {
   static const ink = Color(0xFF3B2A5A);
@@ -19,10 +20,15 @@ class Palette {
   static const danger = Color(0xFFE5484D);
 }
 
+/// Fonts for letters Fredoka doesn't have (Greek, Cyrillic...). Chinese,
+/// Japanese and Korean use the phone's own font.
+const fontFallback = ['MPlusRounded'];
+
 ThemeData buildTheme() {
   final base = ThemeData(
     useMaterial3: true,
     fontFamily: 'Fredoka',
+    fontFamilyFallback: fontFallback,
     colorScheme: ColorScheme.fromSeed(
       seedColor: Palette.accent,
       brightness: Brightness.light,
@@ -33,6 +39,7 @@ ThemeData buildTheme() {
       bodyColor: Palette.ink,
       displayColor: Palette.ink,
       fontFamily: 'Fredoka',
+      fontFamilyFallback: fontFallback,
     ),
     sliderTheme: base.sliderTheme.copyWith(activeTrackColor: Palette.accent),
   );
@@ -212,9 +219,14 @@ class _GameButtonState extends State<GameButton> {
 }
 
 String formatDuration(Duration d) {
-  if (d.inDays >= 1) return '${d.inDays}d ${d.inHours % 24}h';
+  if (d.inDays >= 1) {
+    return tr('{d}d {h}h', {'d': d.inDays, 'h': d.inHours % 24});
+  }
   if (d.inHours >= 1) {
-    return '${d.inHours}h ${(d.inMinutes % 60).toString().padLeft(2, '0')}m';
+    return tr('{h}h {m}m', {
+      'h': d.inHours,
+      'm': (d.inMinutes % 60).toString().padLeft(2, '0'),
+    });
   }
   final m = d.inMinutes;
   final s = (d.inSeconds % 60).toString().padLeft(2, '0');

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../l10n/strings.dart';
 import '../logic/game_controller.dart';
 import '../services/ads_service.dart';
 import '../services/online_games.dart';
@@ -29,7 +31,7 @@ class GemdrakeApp extends StatefulWidget {
   State<GemdrakeApp> createState() => _GemdrakeAppState();
 }
 
-class _GemdrakeAppState extends State<GemdrakeApp> {
+class _GemdrakeAppState extends State<GemdrakeApp> with WidgetsBindingObserver {
   final _fx = FxController();
   final _targets = TargetRegistry();
   late final OnlineSync _online =
@@ -37,9 +39,39 @@ class _GemdrakeAppState extends State<GemdrakeApp> {
   late final PurchaseService _store = widget.store ?? NoPurchaseService();
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// The phone's language changed while the game was open.
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (widget.game.state.settings.language == null) {
+      L10n.use(L10n.systemLanguage(locales));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: L10n.current,
+    builder: (context, code, _) => _app(code),
+  );
+
+  Widget _app(String code) {
     return MaterialApp(
+      // A new language rebuilds every screen.
+      key: ValueKey(code),
       title: 'Gemdrake Isles',
+      locale: Locale(code),
+      supportedLocales: [for (final c in languages.keys) Locale(c)],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
       // GameScope wraps the Navigator so dialogs can reach the game too.

@@ -7,6 +7,7 @@ import '../dialogs/dialogs.dart';
 import '../game_scope.dart';
 import '../painters/nav_icons.dart';
 import '../theme.dart';
+import '../../l10n/strings.dart';
 
 /// This week's real festival leaderboard (Google Play Games / Game Center).
 /// Hidden when the services aren't set up for this build.
@@ -58,9 +59,9 @@ class _FestivalLeaderboardCardState extends State<FestivalLeaderboardCard> {
                 children: [
                   const NavIcon(NavIconKind.trophy, size: 28),
                   const SizedBox(width: 6),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Weekly leaderboard',
+                      tr('Weekly leaderboard'),
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -69,7 +70,7 @@ class _FestivalLeaderboardCardState extends State<FestivalLeaderboardCard> {
                   ),
                   if (signedIn)
                     IconButton(
-                      tooltip: 'Refresh',
+                      tooltip: tr('Refresh'),
                       visualDensity: VisualDensity.compact,
                       onPressed: _load,
                       icon: const Icon(Icons.refresh_rounded),
@@ -77,8 +78,10 @@ class _FestivalLeaderboardCardState extends State<FestivalLeaderboardCard> {
                 ],
               ),
               Text(
-                'Festival points against players everywhere, '
-                'on ${sync.online.serviceName}.',
+                tr(
+                  'Festival points against players everywhere, on {service}.',
+                  {'service': sync.online.serviceName},
+                ),
                 style: const TextStyle(fontSize: 12, color: Palette.inkSoft),
               ),
               const SizedBox(height: 8),
@@ -88,10 +91,14 @@ class _FestivalLeaderboardCardState extends State<FestivalLeaderboardCard> {
                     color: const Color(0xFF34A853),
                     onTap: () async {
                       if (!await sync.signIn() && context.mounted) {
-                        showToast(context, "Couldn't sign in right now");
+                        showToast(context, tr("Couldn't sign in right now"));
                       }
                     },
-                    child: Text('Sign in to ${sync.online.serviceName}'),
+                    child: Text(
+                      tr('Sign in to {service}', {
+                        'service': sync.online.serviceName,
+                      }),
+                    ),
                   ),
                 )
               else
@@ -106,10 +113,12 @@ class _FestivalLeaderboardCardState extends State<FestivalLeaderboardCard> {
                     }
                     final rows = snap.data;
                     if (rows == null || rows.isEmpty) {
-                      return const Padding(
+                      return Padding(
                         padding: EdgeInsets.all(8),
                         child: Text(
-                          'No scores yet this week. Earn festival points to be first!',
+                          tr(
+                            'No scores yet this week. Earn festival points to be first!',
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       );
@@ -124,7 +133,7 @@ class _FestivalLeaderboardCardState extends State<FestivalLeaderboardCard> {
                 Center(
                   child: TextButton(
                     onPressed: () => sync.online.showLeaderboard(board),
-                    child: const Text('See full leaderboard'),
+                    child: Text(tr('See full leaderboard')),
                   ),
                 ),
               ],
@@ -179,7 +188,7 @@ class _Row extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              row.you ? '${row.name} (you)' : row.name,
+              row.you ? tr('{name} (you)', {'name': row.name}) : row.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -230,7 +239,7 @@ class OnlineSettings extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  signedIn ? 'Signed in' : 'Signed out',
+                  signedIn ? tr('Signed in') : tr('Signed out'),
                   style: TextStyle(
                     fontSize: 12,
                     color: signedIn ? Palette.greenDark : Palette.inkSoft,
@@ -243,7 +252,7 @@ class OnlineSettings extends StatelessWidget {
               GameButton(
                 color: const Color(0xFF34A853),
                 onTap: () => sync.signIn(),
-                child: const Text('Sign in'),
+                child: Text(tr('Sign in')),
               )
             else
               Wrap(
@@ -258,7 +267,7 @@ class OnlineSettings extends StatelessWidget {
                       vertical: 8,
                     ),
                     onTap: () => _pickLeaderboard(context),
-                    child: const Text('Leaderboards'),
+                    child: Text(tr('Leaderboards')),
                   ),
                   GameButton(
                     color: const Color(0xFFE0A21A),
@@ -267,16 +276,17 @@ class OnlineSettings extends StatelessWidget {
                       vertical: 8,
                     ),
                     onTap: online.showAchievements,
-                    child: const Text('Achievements'),
+                    child: Text(tr('Achievements')),
                   ),
                 ],
               ),
             if (sync.game.config.services.cloudSave)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text(
-                  'Your game is also saved to your account when you leave '
-                  'the app.',
+                  tr(
+                    'Your game is also saved to your account when you leave the app.',
+                  ),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 11.5, color: Palette.inkSoft),
                 ),
@@ -292,7 +302,7 @@ class OnlineSettings extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => GameDialog(
-        title: 'Leaderboards',
+        title: tr('Leaderboards'),
         onClose: () => Navigator.pop(ctx),
         child: Column(
           children: [
@@ -327,30 +337,36 @@ Future<void> showCloudOffer(BuildContext context) async {
     context: context,
     barrierDismissible: false,
     builder: (ctx) => GameDialog(
-      title: 'Cloud save found',
+      title: tr('Cloud save found'),
       actions: [
         GameButton(
           color: Colors.grey,
           onTap: () => Navigator.pop(ctx, false),
-          child: const Text('Keep this one'),
+          child: Text(tr('Keep this one')),
         ),
         GameButton(
           shine: true,
           onTap: () => Navigator.pop(ctx, true),
-          child: const Text('Load cloud save'),
+          child: Text(tr('Load cloud save')),
         ),
       ],
       child: Text(
-        'Your ${sync.online.serviceName} account has a game at level '
-        '${cloud.level} on island ${cloud.island + 1}. This device is at '
-        'level ${sync.game.state.level}. Load the cloud save?',
+        tr(
+          'Your {service} account has a game at level {level} on island {island}. This device is at level {current}. Load the cloud save?',
+          {
+            'service': sync.online.serviceName,
+            'level': cloud.level,
+            'island': cloud.island + 1,
+            'current': sync.game.state.level,
+          },
+        ),
         textAlign: TextAlign.center,
       ),
     ),
   );
   if (ok == true) {
     await sync.acceptCloud();
-    if (context.mounted) showToast(context, 'Cloud save loaded!');
+    if (context.mounted) showToast(context, tr('Cloud save loaded!'));
   } else {
     sync.declineCloud();
   }

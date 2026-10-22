@@ -4,6 +4,7 @@ import '../../logic/game_controller.dart';
 import '../dialogs/meta_dialogs.dart';
 import '../game_scope.dart';
 import '../theme.dart';
+import '../../l10n/strings.dart';
 
 /// Toggle between the island board and this week's festival board.
 class BoardModeSwitch extends StatelessWidget {
@@ -54,7 +55,7 @@ class BoardModeSwitch extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
       child: Row(
         children: [
-          pill('Island board', Icons.landscape_rounded, !festival, false),
+          pill(tr('Island board'), Icons.landscape_rounded, !festival, false),
           const SizedBox(width: 8),
           pill(def.name, Icons.celebration_rounded, festival, true),
         ],
@@ -104,7 +105,7 @@ class EventBar extends StatelessWidget {
                       size: 22,
                     ),
                     Text(
-                      ' ${e.points} pts',
+                      ' ${tr('{n} pts', {'n': e.points})}',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -112,7 +113,9 @@ class EventBar extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      'Ends in ${formatDuration(game.eventTimeLeft)}',
+                      tr('Ends in {time}', {
+                        'time': formatDuration(game.eventTimeLeft),
+                      }),
                       style: const TextStyle(fontSize: 12),
                     ),
                   ],
@@ -133,9 +136,11 @@ class EventBar extends StatelessWidget {
                     Expanded(
                       child: Text(
                         next == null
-                            ? 'Every reward reached!'
-                            : 'Next reward at $next pts.\n'
-                                  'Merge festival items and offer the top one!',
+                            ? tr('Every reward reached!')
+                            : tr(
+                                'Next reward at {n} pts.\nMerge festival items and offer the top one!',
+                                {'n': next},
+                              ),
                         style: const TextStyle(fontSize: 11, height: 1.2),
                       ),
                     ),
@@ -161,11 +166,11 @@ class EventBar extends StatelessWidget {
                   vertical: 8,
                 ),
                 onTap: onOpenTrack,
-                child: const Column(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.card_giftcard_rounded, size: 22),
-                    Text('Rewards', style: TextStyle(fontSize: 12)),
+                    Text(tr('Rewards'), style: TextStyle(fontSize: 12)),
                   ],
                 ),
               ),

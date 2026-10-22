@@ -127,7 +127,7 @@ extension MetaSystems on GameController {
     feedback.play(Sfx.levelUp);
     feedback.haptic(heavy: true);
     analytics.log('daily_bonus', {'streak': state.loginStreak});
-    _emit(ChestOpenedEvent('Daily bonus', rewards));
+    _emit(ChestOpenedEvent(tr('Daily bonus'), rewards));
     _commit();
     return true;
   }
@@ -174,8 +174,11 @@ extension MetaSystems on GameController {
       if (dc.allBabiesGems > 0)
         BookGoal(
           'babies',
-          'Hatch one of each: '
-              '${dc.allBabiesTypes.map((t) => config.dragonType(t).name).join(', ')}',
+          tr('Hatch one of each: {types}', {
+            'types': dc.allBabiesTypes
+                .map((t) => config.dragonType(t).name)
+                .join(', '),
+          }),
           dc.allBabiesGems,
           dc.allBabiesTypes.every((t) => dragonSeen(t, 1)),
           state.bookClaimed.contains('babies'),
@@ -183,7 +186,7 @@ extension MetaSystems on GameController {
       for (final t in dc.types)
         BookGoal(
           'type:${t.id}',
-          'Raise ${t.name} dragons to every level',
+          tr('Raise {type} dragons to every level', {'type': t.name}),
           dc.typeCompleteGems[t.rarity] ?? 0,
           [for (var l = 1; l <= dc.maxLevel; l++) l]
               .every((l) => dragonSeen(t.id, l)),

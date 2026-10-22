@@ -6,6 +6,7 @@ import '../dialogs/meta_dialogs.dart';
 import '../game_scope.dart';
 import '../painters/board_painters.dart';
 import '../theme.dart';
+import '../../l10n/strings.dart';
 
 /// Level/XP, energy, coins and gems.
 class TopBar extends StatelessWidget {
@@ -61,13 +62,13 @@ class TopBar extends StatelessWidget {
               const SizedBox(width: 4),
               _RoundButton(
                 icon: Icons.event_available_rounded,
-                tooltip: 'Daily',
+                tooltip: tr('Daily'),
                 badge: game.dailyBadge,
                 onTap: () => showDaily(context),
               ),
               _RoundButton(
                 icon: Icons.settings_rounded,
-                tooltip: 'Settings',
+                tooltip: tr('Settings'),
                 onTap: () => showSettings(context),
               ),
             ],

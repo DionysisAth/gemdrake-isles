@@ -18,6 +18,7 @@ import '../theme.dart';
 import '../widgets/piece_view.dart';
 import 'dialogs.dart';
 import 'store_widgets.dart';
+import '../../l10n/strings.dart';
 
 /// A small reward tile: icon plus label.
 class RewardTile extends StatelessWidget {
@@ -57,7 +58,7 @@ class RewardTile extends StatelessWidget {
   }
 
   static String _short(GameConfig c, LootEntry e) {
-    if (e.dragon != null) return 'Dragon';
+    if (e.dragon != null) return tr('Dragon');
     if (e.item != null) return 'x1';
     if (e.gems > 0) return '${e.gems}';
     if (e.energy > 0) return '${e.energy}';
@@ -83,7 +84,7 @@ Future<void> showDaily(BuildContext context) {
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
-      title: 'Daily',
+      title: tr('Daily'),
       titleColor: const Color(0xFF3FA7E0),
       onClose: () => Navigator.pop(ctx),
       child: const _DailyBody(),
@@ -114,12 +115,14 @@ class _DailyBody extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Streak: ${s.loginStreak} day${s.loginStreak == 1 ? '' : 's'}',
+                  s.loginStreak == 1
+                      ? tr('Streak: 1 day')
+                      : tr('Streak: {n} days', {'n': s.loginStreak}),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
                 Text(
-                  'New day in ${formatDuration(left)}',
+                  tr('New day in {time}', {'time': formatDuration(left)}),
                   style: const TextStyle(fontSize: 12, color: Palette.inkSoft),
                 ),
               ],
@@ -151,19 +154,21 @@ class _DailyBody extends StatelessWidget {
                   shine: true,
                   color: Palette.pink,
                   onTap: game.claimLogin,
-                  child: const Text("Collect today's gift"),
+                  child: Text(tr("Collect today's gift")),
                 ),
               ),
             ],
             const SizedBox(height: 14),
-            const Text(
-              'Daily tasks',
+            Text(
+              tr('Daily tasks'),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             if (!game.dailyUnlocked)
               Text(
-                'Daily tasks unlock at level ${meta.dailyUnlockLevel}.',
+                tr('Daily tasks unlock at level {n}.', {
+                  'n': meta.dailyUnlockLevel,
+                }),
                 style: const TextStyle(color: Palette.inkSoft),
               )
             else ...[
@@ -215,7 +220,7 @@ class _CalendarDay extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Day $day',
+            tr('Day {n}', {'n': day}),
             style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
           ),
           Stack(
@@ -296,7 +301,7 @@ class _DailyTaskRow extends StatelessWidget {
               color: done ? Palette.green : const Color(0xFFBDB3CC),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               onTap: done ? () => game.claimDaily(index) : null,
-              child: const Text('Claim', style: TextStyle(fontSize: 14)),
+              child: Text(tr('Claim'), style: TextStyle(fontSize: 14)),
             ),
         ],
       ),
@@ -328,15 +333,21 @@ class _DailyBonusCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'All-done bonus',
+                Text(
+                  tr('All-done bonus'),
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 Text(
                   s.dailyBonusClaimed
-                      ? 'Collected! New tasks tomorrow.'
-                      : 'Claim all $done/${s.dailyTasks.length} tasks. '
-                            'Streak bonus: +${game.streakBonusGems} gems',
+                      ? tr('Collected! New tasks tomorrow.')
+                      : tr(
+                          'Claim all {done}/{total} tasks. Streak bonus: +{gems} gems',
+                          {
+                            'done': done,
+                            'total': s.dailyTasks.length,
+                            'gems': game.streakBonusGems,
+                          },
+                        ),
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -352,7 +363,7 @@ class _DailyBonusCard extends StatelessWidget {
               color: Palette.pink,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               onTap: game.claimDailyBonus,
-              child: const Text('Claim', style: TextStyle(fontSize: 14)),
+              child: Text(tr('Claim'), style: TextStyle(fontSize: 14)),
             ),
         ],
       ),
@@ -368,7 +379,7 @@ Future<void> showShop(BuildContext context) {
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
-      title: 'Gem Shop',
+      title: tr('Gem Shop'),
       titleColor: Palette.pink,
       onClose: () => Navigator.pop(ctx),
       child: const _ShopBody(),
@@ -392,7 +403,7 @@ class _ShopBody extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('You have '),
+                Text('${tr('You have')} '),
                 const CurrencyIcon(CurrencyKind.gem, size: 18),
                 Text(
                   ' ${game.state.gems}',
@@ -400,9 +411,10 @@ class _ShopBody extends StatelessWidget {
                 ),
               ],
             ),
-            const Text(
-              'Gems come from orders, level-ups, daily tasks, chests and '
-              'dragons.',
+            Text(
+              tr(
+                'Gems come from orders, level-ups, daily tasks, chests and dragons.',
+              ),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11.5, color: Palette.inkSoft),
             ),
@@ -440,17 +452,29 @@ class _ShopBody extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Bigger dragon hoard',
+                        Text(
+                          tr('Bigger dragon hoard'),
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                         Text(
                           hoard == null
-                              ? 'Maxed! Holds '
-                                    '${game.offlineCapHours.toStringAsFixed(0)}h of earnings.'
-                              : 'Holds ${game.offlineCapHours.toStringAsFixed(0)}h of '
-                                    'earnings. Upgrade to hold '
-                                    '${(game.offlineCapHours - game.hoardBaseHours + hoard.hours).toStringAsFixed(0)}h.',
+                              ? tr('Maxed! Holds {hours}h of earnings.', {
+                                  'hours': game.offlineCapHours.toStringAsFixed(
+                                    0,
+                                  ),
+                                })
+                              : tr(
+                                  'Holds {hours}h of earnings. Upgrade to hold {next}h.',
+                                  {
+                                    'hours': game.offlineCapHours
+                                        .toStringAsFixed(0),
+                                    'next':
+                                        (game.offlineCapHours -
+                                                game.hoardBaseHours +
+                                                hoard.hours)
+                                            .toStringAsFixed(0),
+                                  },
+                                ),
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],
@@ -463,7 +487,7 @@ class _ShopBody extends StatelessWidget {
                         if (await confirmGems(
                               context,
                               hoard.costGems,
-                              'Upgrade the dragon hoard',
+                              tr('Upgrade the dragon hoard'),
                             ) &&
                             context.mounted) {
                           game.buyHoardUpgrade();
@@ -505,15 +529,20 @@ class _BoardRowCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Bigger board',
+                Text(
+                  tr('Bigger board'),
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 Text(
                   cost == null
-                      ? 'Maxed! Your board is ${b.cols} x ${b.rows}.'
-                      : 'Add a row of ${b.cols} free cells '
-                            '(${b.cols} x ${b.rows} to ${b.cols} x ${b.rows + 1}).',
+                      ? tr('Maxed! Your board is {cols} x {rows}.', {
+                          'cols': b.cols,
+                          'rows': b.rows,
+                        })
+                      : tr(
+                          'Add a row of {cols} free cells ({cols} x {rows} to {cols} x {next}).',
+                          {'cols': b.cols, 'rows': b.rows, 'next': b.rows + 1},
+                        ),
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -523,7 +552,7 @@ class _BoardRowCard extends StatelessWidget {
             _GemButton(
               cost: cost,
               onTap: () async {
-                if (await confirmGems(context, cost, 'Add a board row') &&
+                if (await confirmGems(context, cost, tr('Add a board row')) &&
                     context.mounted) {
                   game.buyBoardRow();
                 }
@@ -559,15 +588,16 @@ class _FreeChestCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Free Chest',
+                Text(
+                  tr('Free Chest'),
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
                 ),
                 Text(
                   left > 0
-                      ? 'Watch a short video for '
-                            '${game.eco.adFreeChest!.rolls} random rewards.'
-                      : 'Come back tomorrow for another one.',
+                      ? tr('Watch a short video for {n} random rewards.', {
+                          'n': game.eco.adFreeChest!.rolls,
+                        })
+                      : tr('Come back tomorrow for another one.'),
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -578,11 +608,11 @@ class _FreeChestCard extends StatelessWidget {
               color: Palette.green,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               onTap: () => watchAdFor(context, AdReward.freeChest),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.play_circle_fill_rounded, size: 18),
-                  Text(' Free', style: TextStyle(fontSize: 14)),
+                  Text(' ${tr('Free')}', style: TextStyle(fontSize: 14)),
                 ],
               ),
             )
@@ -661,7 +691,7 @@ class _ShopCard extends StatelessWidget {
                 if (await confirmGems(
                       context,
                       item.costGems,
-                      'Buy ${item.name}',
+                      tr('Buy {item}', {'item': item.name}),
                     ) &&
                     context.mounted) {
                   Navigator.pop(context);
@@ -671,7 +701,7 @@ class _ShopCard extends StatelessWidget {
             )
           else
             Text(
-              'Unlocks on island ${item.unlockIsland}',
+              tr('Unlocks on island {n}', {'n': item.unlockIsland}),
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -693,8 +723,10 @@ class _ShopCard extends StatelessWidget {
           children: [
             Text(
               item.loot.rolls == 1
-                  ? 'You get 1 reward. Odds:'
-                  : 'You get ${item.loot.rolls} rewards, each rolled with these odds:',
+                  ? tr('You get 1 reward. Odds:')
+                  : tr('You get {n} rewards, each rolled with these odds:', {
+                      'n': item.loot.rolls,
+                    }),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -779,14 +811,17 @@ Future<void> shareIslandPicture(
       text: TextSpan(
         style: const TextStyle(
           fontFamily: 'Fredoka',
+          fontFamilyFallback: fontFallback,
           color: Palette.ink,
           fontSize: 17 * scale,
           fontWeight: FontWeight.w700,
         ),
-        text: '$islandName - Level ${game.state.level}\n',
+        text:
+            '${tr('{island} - Level {n}', {'island': islandName, 'n': game.state.level})}\n',
         children: [
           TextSpan(
-            text: '$dragons dragon${dragons == 1 ? '' : 's'} - Gemdrake Isles',
+            text:
+                '${dragons == 1 ? tr('1 dragon') : tr('{n} dragons', {'n': dragons})} - Gemdrake Isles',
             style: const TextStyle(
               fontSize: 13 * scale,
               fontWeight: FontWeight.w500,
@@ -814,13 +849,15 @@ Future<void> shareIslandPicture(
             name: 'gemdrake-isles.png',
           ),
         ],
-        text: 'Look at my $islandName in Gemdrake Isles!',
+        text: tr('Look at my {island} in Gemdrake Isles!', {
+          'island': islandName,
+        }),
         sharePositionOrigin: origin,
       ),
     );
     game.analytics.log('share', {'what': 'island'});
   } catch (e) {
-    if (context.mounted) showToast(context, "Couldn't share right now");
+    if (context.mounted) showToast(context, tr("Couldn't share right now"));
   }
 }
 
@@ -847,14 +884,21 @@ Future<void> shareDragonCard(
             name: 'gemdrake-${type.id}.png',
           ),
         ],
-        text:
-            'I ${grown ? 'raised' : 'hatched'} a ${rarity.name} ${type.name} Dragon in Gemdrake Isles!',
+        text: (grown
+            ? tr('I raised a {rarity} {type} Dragon in Gemdrake Isles!', {
+                'rarity': rarity.name,
+                'type': type.name,
+              })
+            : tr('I hatched a {rarity} {type} Dragon in Gemdrake Isles!', {
+                'rarity': rarity.name,
+                'type': type.name,
+              })),
         sharePositionOrigin: origin,
       ),
     );
     game.analytics.log('share', {'what': 'dragon', 'type': type.id});
   } catch (e) {
-    if (context.mounted) showToast(context, "Couldn't share right now");
+    if (context.mounted) showToast(context, tr("Couldn't share right now"));
   }
 }
 
@@ -944,6 +988,7 @@ Future<ui.Image> renderDragonCard(
           text: t,
           style: TextStyle(
             fontFamily: 'Fredoka',
+            fontFamilyFallback: fontFallback,
             fontSize: size,
             fontWeight: weight,
             foreground: Paint()
@@ -961,6 +1006,7 @@ Future<ui.Image> renderDragonCard(
           text: t,
           style: TextStyle(
             fontFamily: 'Fredoka',
+            fontFamilyFallback: fontFallback,
             fontSize: size,
             fontWeight: weight,
             color: color,
@@ -972,14 +1018,14 @@ Future<ui.Image> renderDragonCard(
       fill.paint(canvas, o);
     }
 
-    text(grown ? 'My dragon grew into a' : 'I hatched a', h * .08, 64);
+    text(grown ? tr('My dragon grew into a') : tr('I hatched a'), h * .08, 64);
     text(
       rarity.name.toUpperCase(),
       h * .72,
       84,
       color: const Color(0xFFFFF1A8),
     );
-    text('$level ${type.name} Dragon!', h * .78, 76);
+    text('${dragonName(level, type.name)}!', h * .78, 76);
     text('Gemdrake Isles', h * .9, 70, color: const Color(0xFFFFD1EC));
     return recorder.endRecording().toImage(w.toInt(), h.toInt());
   }
@@ -994,28 +1040,28 @@ Future<void> showBackup(BuildContext context) {
   return showDialog(
     context: context,
     builder: (ctx) => GameDialog(
-      title: 'Backup',
+      title: tr('Backup'),
       onClose: () => Navigator.pop(ctx),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Your progress is saved on this device only. Keep a backup code '
-            'somewhere safe (notes, email to yourself) to move your game to '
-            'a new phone or recover it.',
+          Text(
+            tr(
+              'Your progress is saved on this device only. Keep a backup code somewhere safe (notes, email to yourself) to move your game to a new phone or recover it.',
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           GameButton(
             onTap: () async {
               await Clipboard.setData(ClipboardData(text: game.exportBackup()));
-              if (ctx.mounted) showToast(ctx, 'Backup code copied');
+              if (ctx.mounted) showToast(ctx, tr('Backup code copied'));
             },
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.copy_rounded, size: 20),
-                Text(' Copy backup code'),
+                Text(' ${tr('Copy backup code')}'),
               ],
             ),
           ),
@@ -1028,19 +1074,21 @@ Future<void> showBackup(BuildContext context) {
                   await SharePlus.instance.share(
                     ShareParams(
                       text: game.exportBackup(),
-                      subject: 'Gemdrake Isles backup code',
+                      subject: tr('Gemdrake Isles backup code'),
                       sharePositionOrigin: _originOf(bctx),
                     ),
                   );
                 } catch (_) {
-                  if (bctx.mounted) showToast(bctx, "Couldn't share right now");
+                  if (bctx.mounted) {
+                    showToast(bctx, tr("Couldn't share right now"));
+                  }
                 }
               },
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.ios_share_rounded, size: 20),
-                  Text(' Save code elsewhere'),
+                  Text(' ${tr('Save code elsewhere')}'),
                 ],
               ),
             ),
@@ -1049,11 +1097,11 @@ Future<void> showBackup(BuildContext context) {
           GameButton(
             color: const Color(0xFFE0A21A),
             onTap: () => _restoreBackup(ctx),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.restore_rounded, size: 20),
-                Text(' Restore from a code'),
+                Text(' ${tr('Restore from a code')}'),
               ],
             ),
           ),
@@ -1074,22 +1122,22 @@ Future<void> _restoreBackup(BuildContext context) async {
   final code = await showDialog<String>(
     context: context,
     builder: (ctx) => GameDialog(
-      title: 'Restore',
+      title: tr('Restore'),
       actions: [
         GameButton(
           color: Colors.grey,
           onTap: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+          child: Text(tr('Cancel')),
         ),
         GameButton(
           color: const Color(0xFFE0A21A),
           onTap: () => Navigator.pop(ctx, controller.text),
-          child: const Text('Restore'),
+          child: Text(tr('Restore')),
         ),
       ],
       child: Column(
         children: [
-          const Text('Paste your backup code:'),
+          Text(tr('Paste your backup code:')),
           const SizedBox(height: 8),
           TextField(
             controller: controller,
@@ -1110,29 +1158,35 @@ Future<void> _restoreBackup(BuildContext context) async {
   if (code == null || !context.mounted) return;
   final backup = game.parseBackup(code);
   if (backup == null) {
-    showToast(context, "That code doesn't look right");
+    showToast(context, tr("That code doesn't look right"));
     return;
   }
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => GameDialog(
-      title: 'Replace this game?',
+      title: tr('Replace this game?'),
       actions: [
         GameButton(
           color: Colors.grey,
           onTap: () => Navigator.pop(ctx, false),
-          child: const Text('Cancel'),
+          child: Text(tr('Cancel')),
         ),
         GameButton(
           color: Palette.danger,
           onTap: () => Navigator.pop(ctx, true),
-          child: const Text('Replace'),
+          child: Text(tr('Replace')),
         ),
       ],
       child: Text(
-        'The backup is level ${backup.level} on island ${backup.island + 1} '
-        'with ${backup.dragons.length} dragons. Your current game on this '
-        'device (level ${game.state.level}) will be replaced.',
+        tr(
+          'The backup is level {level} on island {island} with {dragons} dragons. Your current game on this device (level {current}) will be replaced.',
+          {
+            'level': backup.level,
+            'island': backup.island + 1,
+            'dragons': backup.dragons.length,
+            'current': game.state.level,
+          },
+        ),
         textAlign: TextAlign.center,
       ),
     ),
@@ -1141,6 +1195,6 @@ Future<void> _restoreBackup(BuildContext context) async {
   await game.importBackup(code);
   if (context.mounted) {
     Navigator.of(context).popUntil((r) => r.isFirst);
-    showToast(context, 'Game restored!');
+    showToast(context, tr('Game restored!'));
   }
 }

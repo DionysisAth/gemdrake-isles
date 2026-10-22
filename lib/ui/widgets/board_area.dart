@@ -15,6 +15,7 @@ import '../painters/item_painter.dart';
 import '../theme.dart';
 import 'info_bar.dart';
 import 'piece_view.dart';
+import '../../l10n/strings.dart';
 
 /// The merge board, the info bar and the storage row. One gesture
 /// detector covers all of it so pieces can be dragged between the board
@@ -166,10 +167,14 @@ class _BoardAreaState extends State<BoardArea> {
         fx.shake(6, ms: 380);
       case EventPointsEvent(:final points, :final cell?, :final milestone):
         final g = _global(l.cellRect(cols, cell)).center;
-        fx.floatText(g, '+$points pts', color: const Color(0xFFFFB300));
+        fx.floatText(
+          g,
+          tr('+{n} pts', {'n': points}),
+          color: const Color(0xFFFFB300),
+        );
         if (milestone) {
           fx.burst(g, color: const Color(0xFFFFB300), count: 22, spread: 90);
-          showToast(context, 'Festival reward unlocked!');
+          showToast(context, tr('Festival reward unlocked!'));
         }
       case EnergyDrunkEvent(:final amount, :final slot):
         final r = _slotRect(slot);
@@ -251,16 +256,16 @@ class _BoardAreaState extends State<BoardArea> {
     }
     final word = switch (power) {
       < 5 => null,
-      5 => 'Nice!',
-      6 => 'Great!',
-      7 => 'Awesome!',
-      < 10 => 'Amazing!',
-      _ => 'LEGENDARY!',
+      5 => tr('Nice!'),
+      6 => tr('Great!'),
+      7 => tr('Awesome!'),
+      < 10 => tr('Amazing!'),
+      _ => tr('LEGENDARY!'),
     };
     if (e.bonus) {
       fx.combo(
         target,
-        'BONUS x${e.cells.length}!',
+        tr('BONUS x{n}!', {'n': e.cells.length}),
         colors: const [Color(0xFFFFD1EC), Color(0xFFFF4F9A)],
         size: 30 + min(power, 10) * 1.5,
       );
@@ -658,9 +663,9 @@ class _BoardAreaState extends State<BoardArea> {
                 color: Colors.white.withValues(alpha: .65),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'Storage is for the island board',
+                  tr('Storage is for the island board'),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: Palette.inkSoft,

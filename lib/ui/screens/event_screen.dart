@@ -11,6 +11,7 @@ import '../painters/board_painters.dart';
 import '../theme.dart';
 import '../widgets/online_widgets.dart';
 import '../widgets/piece_view.dart';
+import '../../l10n/strings.dart';
 
 /// The weekly festival: its reward track (free and premium) and the
 /// weekly leaderboard.
@@ -67,13 +68,14 @@ class _Locked extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Festivals unlock at level $level',
+              tr('Festivals unlock at level {n}', {'n': level}),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Each week a new festival comes to the isles, with its own board, '
-              'rewards and an exclusive dragon.',
+            Text(
+              tr(
+                'Each week a new festival comes to the isles, with its own board, rewards and an exclusive dragon.',
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -145,13 +147,13 @@ class _EventHeader extends StatelessWidget {
             children: [
               const Icon(Icons.timer_rounded, size: 18, color: Palette.ink),
               Text(
-                ' Ends in ${formatDuration(game.eventTimeLeft)}',
+                ' ${tr('Ends in {time}', {'time': formatDuration(game.eventTimeLeft)})}',
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               const Icon(Icons.star_rounded, color: Color(0xFFFFB300)),
               Text(
-                ' ${e.points} pts',
+                ' ${tr('{n} pts', {'n': e.points})}',
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -169,9 +171,11 @@ class _EventHeader extends StatelessWidget {
                       ItemIcon(ItemRef(chain.id, l), size: 34),
                       Text(
                         l == chain.maxLevel
-                            ? 'offer +${game.config.events.offerPoints}'
+                            ? tr('offer +{n}', {
+                                'n': game.config.events.offerPoints,
+                              })
                             : l == 1
-                            ? 'tap tree'
+                            ? tr('tap tree')
                             : '+${game.config.events.pointsForMerge(l)}',
                         style: const TextStyle(fontSize: 10.5),
                       ),
@@ -185,11 +189,11 @@ class _EventHeader extends StatelessWidget {
             shine: true,
             color: Palette.pink,
             onTap: onPlay,
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.play_arrow_rounded),
-                Text('Play festival board', style: TextStyle(fontSize: 17)),
+                Text(tr('Play festival board'), style: TextStyle(fontSize: 17)),
               ],
             ),
           ),
@@ -217,10 +221,10 @@ class _RewardTrack extends StatelessWidget {
           Row(
             children: [
               const SizedBox(width: 62),
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Text(
-                    'Free',
+                    tr('Free'),
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                   ),
                 ),
@@ -228,8 +232,8 @@ class _RewardTrack extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: e.premium
-                      ? const Text(
-                          'Premium',
+                      ? Text(
+                          tr('Premium'),
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
@@ -248,7 +252,7 @@ class _RewardTrack extends StatelessWidget {
                                 if (await confirmGems(
                                       context,
                                       ev.premiumCostGems,
-                                      'Unlock the premium track',
+                                      tr('Unlock the premium track'),
                                     ) &&
                                     context.mounted) {
                                   game.unlockPremium();
@@ -259,7 +263,7 @@ class _RewardTrack extends StatelessWidget {
                                 children: [
                                   const Icon(Icons.lock_open_rounded, size: 16),
                                   Text(
-                                    ' Premium ${ev.premiumCostGems} ',
+                                    ' ${tr('Premium')} ${ev.premiumCostGems} ',
                                     style: const TextStyle(fontSize: 13),
                                   ),
                                   const CurrencyIcon(
@@ -445,8 +449,8 @@ class _TrackReward extends StatelessWidget {
                     color: Palette.green,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    'Claim',
+                  child: Text(
+                    tr('Claim'),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 10.5,

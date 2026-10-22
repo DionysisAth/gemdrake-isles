@@ -7,6 +7,7 @@ import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 
 import '../config/game_config.dart';
 import '../logic/game_controller.dart';
+import '../l10n/strings.dart';
 
 /// Real-money purchases through Google Play Billing and the App Store.
 abstract class PurchaseService extends ChangeNotifier {
@@ -51,7 +52,7 @@ class NoPurchaseService extends PurchaseService {
 
   @override
   Future<void> buy(String productId) async =>
-      _messages.add('The store is not available right now.');
+      _messages.add(tr('The store is not available right now.'));
 
   @override
   Future<void> restore() async {}
@@ -128,7 +129,7 @@ class StorePurchaseService extends PurchaseService {
     final details = _products[productId];
     final def = _config.product(productId);
     if (details == null || def == null) {
-      _messages.add('This item is not available right now.');
+      _messages.add(tr('This item is not available right now.'));
       return;
     }
     final param = PurchaseParam(productDetails: details);
@@ -141,14 +142,14 @@ class StorePurchaseService extends PurchaseService {
       }
     } catch (e) {
       debugPrint('Buy failed: $e');
-      _messages.add('The purchase could not be started. Please try again.');
+      _messages.add(tr('The purchase could not be started. Please try again.'));
     }
   }
 
   @override
   Future<void> restore() async {
     if (!_available) {
-      _messages.add('The store is not available right now.');
+      _messages.add(tr('The store is not available right now.'));
       return;
     }
     await _iap.restorePurchases();
@@ -160,11 +161,13 @@ class StorePurchaseService extends PurchaseService {
         case PurchaseStatus.pending:
           _pending.add(p.productID);
           _messages.add(
-            'Payment pending. Your reward arrives as soon as it goes through.',
+            tr(
+              'Payment pending. Your reward arrives as soon as it goes through.',
+            ),
           );
         case PurchaseStatus.error:
           _pending.remove(p.productID);
-          _messages.add('The purchase did not go through.');
+          _messages.add(tr('The purchase did not go through.'));
         case PurchaseStatus.canceled:
           _pending.remove(p.productID);
         case PurchaseStatus.purchased:

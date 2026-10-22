@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'config/game_config.dart';
+import 'l10n/strings.dart';
 import 'logic/game_controller.dart';
 import 'services/ads_service.dart';
 import 'services/analytics.dart';
@@ -40,6 +41,8 @@ Future<void> main() async {
     notifications: notifications,
     clock: TimeSync.now,
   );
+  // The chosen language, or the phone's.
+  await L10n.use(game.state.settings.language);
   final OnlineGames platform = PlatformGames.enabledFor(services)
       ? PlatformGames(services)
       : NoOnlineGames();

@@ -4,6 +4,7 @@ import 'dart:ui' show Color;
 
 import 'package:flutter/services.dart' show AssetBundle;
 
+import '../l10n/strings.dart';
 import '../model/item_ref.dart';
 
 /// All game content and economy numbers, loaded from `assets/config/*.json`.
@@ -159,8 +160,8 @@ Color parseColor(String hex) {
 
 class ItemDef {
   ItemDef({
-    required this.name,
-    required this.desc,
+    required this._name,
+    required this._desc,
     required this.value,
     required this.sell,
     required this.xp,
@@ -176,8 +177,10 @@ class ItemDef {
     energy: j['energy'] as int? ?? 0,
   );
 
-  final String name;
-  final String desc;
+  final String _name;
+  String get name => tr(_name);
+  final String _desc;
+  String get desc => tr(_desc);
 
   /// Coin value used when pricing orders.
   final int value;
@@ -191,7 +194,7 @@ class ItemDef {
 class ChainDef {
   ChainDef({
     required this.id,
-    required this.name,
+    required this._name,
     required this.unlockLevel,
     required this.orderable,
     required this.hatchOnMaxMerge,
@@ -216,7 +219,8 @@ class ChainDef {
   );
 
   final String id;
-  final String name;
+  final String _name;
+  String get name => tr(_name);
   final int unlockLevel;
   final bool orderable;
 
@@ -338,8 +342,8 @@ class GeneratorLevelDef {
 class GeneratorDef {
   GeneratorDef({
     required this.id,
-    required this.name,
-    required this.desc,
+    required this._name,
+    required this._desc,
     required this.unlockLevel,
     required this.spawnCell,
     required this.style,
@@ -366,8 +370,10 @@ class GeneratorDef {
   }
 
   final String id;
-  final String name;
-  final String desc;
+  final String _name;
+  String get name => tr(_name);
+  final String _desc;
+  String get desc => tr(_desc);
   final int unlockLevel;
   final Point<int> spawnCell;
   final String style;
@@ -384,7 +390,7 @@ class GeneratorDef {
 class RarityDef {
   RarityDef({
     required this.id,
-    required this.name,
+    required this._name,
     required this.color,
     required this.coinsPerMinute,
   });
@@ -397,14 +403,15 @@ class RarityDef {
   );
 
   final String id;
-  final String name;
+  final String _name;
+  String get name => tr(_name);
   final Color color;
   final double coinsPerMinute;
 }
 
 class DragonLevelDef {
   DragonLevelDef({
-    required this.name,
+    required this._name,
     required this.multiplier,
     required this.gemsPerHour,
   });
@@ -415,7 +422,8 @@ class DragonLevelDef {
     gemsPerHour: (j['gemsPerHour'] as num? ?? 0).toDouble(),
   );
 
-  final String name;
+  final String _name;
+  String get name => tr(_name);
   final double multiplier;
   final double gemsPerHour;
 }
@@ -423,9 +431,9 @@ class DragonLevelDef {
 class DragonTypeDef {
   DragonTypeDef({
     required this.id,
-    required this.name,
+    required this._name,
     required this.rarity,
-    required this.desc,
+    required this._desc,
     required this.body,
     required this.belly,
     required this.wing,
@@ -446,9 +454,11 @@ class DragonTypeDef {
   );
 
   final String id;
-  final String name;
+  final String _name;
+  String get name => tr(_name);
   final String rarity;
-  final String desc;
+  final String _desc;
+  String get desc => tr(_desc);
   final Color body;
   final Color belly;
   final Color wing;
@@ -593,13 +603,13 @@ class EconomyConfig {
 class CharacterDef {
   CharacterDef({
     required this.id,
-    required this.name,
-    required this.title,
+    required this._name,
+    required this._title,
     required this.unlockLevel,
     required this.skin,
     required this.hat,
     required this.hatColor,
-    required this.lines,
+    required this._lines,
     this.unlockIsland = 1,
   });
 
@@ -616,13 +626,16 @@ class CharacterDef {
   );
 
   final String id;
-  final String name;
-  final String title;
+  final String _name;
+  String get name => tr(_name);
+  final String _title;
+  String get title => tr(_title);
   final int unlockLevel;
   final Color skin;
   final String hat;
   final Color hatColor;
-  final List<String> lines;
+  final List<String> _lines;
+  List<String> get lines => [for (final l in _lines) tr(l)];
   final int unlockIsland;
 }
 
@@ -733,7 +746,7 @@ class OrdersConfig {
 }
 
 class PerkDef {
-  PerkDef({required this.type, required this.value, required this.text});
+  PerkDef({required this.type, required this.value, required this._text});
 
   factory PerkDef.fromJson(Map<String, dynamic> j) => PerkDef(
     type: j['type'] as String,
@@ -744,14 +757,15 @@ class PerkDef {
   /// One of: energyMax, storageSlots, offlineHours, dragonBoost.
   final String type;
   final double value;
-  final String text;
+  final String _text;
+  String get text => tr(_text);
 }
 
 class IslandTaskDef {
   IslandTaskDef({
     required this.id,
-    required this.name,
-    required this.desc,
+    required this._name,
+    required this._desc,
     required this.cost,
     required this.xp,
     required this.requiresLevel,
@@ -773,8 +787,10 @@ class IslandTaskDef {
   );
 
   final String id;
-  final String name;
-  final String desc;
+  final String _name;
+  String get name => tr(_name);
+  final String _desc;
+  String get desc => tr(_desc);
   final int cost;
   final int xp;
   final int requiresLevel;
@@ -786,9 +802,9 @@ class IslandTaskDef {
 class IslandDef {
   IslandDef({
     required this.id,
-    required this.name,
+    required this._name,
     required this.theme,
-    required this.completeText,
+    required this._completeText,
     required this.tasks,
     this.hatchTable = const [],
   });
@@ -805,9 +821,11 @@ class IslandDef {
   );
 
   final String id;
-  final String name;
+  final String _name;
+  String get name => tr(_name);
   final String theme;
-  final String completeText;
+  final String _completeText;
+  String get completeText => tr(_completeText);
   final List<IslandTaskDef> tasks;
 
   /// What regular eggs hatch into while on this island.
@@ -818,7 +836,7 @@ class LockTypeDef {
   LockTypeDef({
     required this.symbol,
     required this.id,
-    required this.name,
+    required this._name,
     required this.hits,
     required this.hidesContent,
   });
@@ -833,7 +851,8 @@ class LockTypeDef {
 
   final String symbol;
   final String id;
-  final String name;
+  final String _name;
+  String get name => tr(_name);
   final int hits;
 
   /// Hidden contents can't be merged onto until the lock is cleared.
@@ -893,7 +912,7 @@ class TutorialStepDef {
   TutorialStepDef({
     required this.id,
     required this.speaker,
-    required this.text,
+    required this._text,
     required this.advance,
     this.target,
     this.count = 1,
@@ -910,7 +929,8 @@ class TutorialStepDef {
 
   final String id;
   final String speaker;
-  final String text;
+  final String _text;
+  String get text => tr(_text);
 
   /// `tap` (player taps the bubble) or `event:<name>`.
   final String advance;
@@ -930,7 +950,7 @@ LootEntry rewardFromJson(Map<String, dynamic> j) =>
 class DailyTaskDef {
   DailyTaskDef({
     required this.id,
-    required this.text,
+    required this._text,
     required this.stat,
     required this.targets,
     required this.reward,
@@ -949,7 +969,8 @@ class DailyTaskDef {
   final String id;
 
   /// Description with `{n}` replaced by the target.
-  final String text;
+  final String _text;
+  String get text => tr(_text);
 
   /// Stats counter (see GameState.stats) that measures progress.
   final String stat;
@@ -963,8 +984,8 @@ class DailyTaskDef {
 class ShopItemDef {
   ShopItemDef({
     required this.id,
-    required this.name,
-    required this.desc,
+    required this._name,
+    required this._desc,
     required this.costGems,
     required this.icon,
     required this.loot,
@@ -982,8 +1003,10 @@ class ShopItemDef {
   );
 
   final String id;
-  final String name;
-  final String desc;
+  final String _name;
+  String get name => tr(_name);
+  final String _desc;
+  String get desc => tr(_desc);
   final int costGems;
 
   /// Item key to draw, or `energy`.
@@ -1045,8 +1068,8 @@ class MetaConfig {
 class EventDef {
   EventDef({
     required this.id,
-    required this.name,
-    required this.desc,
+    required this._name,
+    required this._desc,
     required this.chain,
     required this.generator,
     required this.dragon,
@@ -1064,8 +1087,10 @@ class EventDef {
   );
 
   final String id;
-  final String name;
-  final String desc;
+  final String _name;
+  String get name => tr(_name);
+  final String _desc;
+  String get desc => tr(_desc);
   final String chain;
   final String generator;
 
@@ -1126,14 +1151,15 @@ class EventsConfig {
 class LeaderboardDef {
   LeaderboardDef(Map<String, dynamic> j)
     : key = j['key'] as String,
-      name = j['name'] as String,
+      _name = j['name'] as String,
       metric = j['metric'] as String,
       weekly = j['weekly'] as bool? ?? false,
       androidId = j['android'] as String? ?? '',
       iosId = j['ios'] as String? ?? '';
 
   final String key;
-  final String name;
+  final String _name;
+  String get name => tr(_name);
 
   /// What is submitted (see `GameController.metric`).
   final String metric;
@@ -1147,8 +1173,8 @@ class LeaderboardDef {
 class AchievementDef {
   AchievementDef(Map<String, dynamic> j)
     : id = j['id'] as String,
-      name = j['name'] as String,
-      desc = j['desc'] as String,
+      _name = j['name'] as String,
+      _desc = j['desc'] as String,
       metric = j['metric'] as String,
       target = j['target'] as int,
       gems = j['gems'] as int? ?? 0,
@@ -1156,8 +1182,10 @@ class AchievementDef {
       iosId = j['ios'] as String? ?? '';
 
   final String id;
-  final String name;
-  final String desc;
+  final String _name;
+  String get name => tr(_name);
+  final String _desc;
+  String get desc => tr(_desc);
   final String metric;
   final int target;
   final int gems;
@@ -1245,10 +1273,10 @@ class StoreProductDef {
     required this.id,
     required this.kind,
     required this.section,
-    required this.name,
-    this.desc = '',
+    required this._name,
+    this._desc = '',
     required this.icon,
-    this.badge = '',
+    this._badge = '',
     this.priceHint = '',
     this.once = false,
     this.minLevel = 1,
@@ -1289,12 +1317,15 @@ class StoreProductDef {
 
   /// Where it's shown: offer, gems, bundles (shop) or festival.
   final String section;
-  final String name;
-  final String desc;
+  final String _name;
+  String get name => tr(_name);
+  final String _desc;
+  String get desc => tr(_desc);
 
   /// Item key, `energy`, `vip`, `pass` or `gems:<size 1-5>`.
   final String icon;
-  final String badge;
+  final String _badge;
+  String get badge => tr(_badge);
 
   /// Shown only if the store can't be reached; the real price comes from
   /// the store in the player's currency.

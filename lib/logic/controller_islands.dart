@@ -11,7 +11,7 @@ extension IslandTravel on GameController {
       ..._giveMissingGenerators(),
       for (final c in config.chains)
         if (c.unlockIsland == state.island + 1 && chainUnlocked(c.id))
-          '${c.name} in orders',
+          tr('{name} in orders', {'name': c.name}),
       for (final c in config.orders.characters)
         if (c.unlockIsland == state.island + 1) '${c.name}, ${c.title}',
     ];

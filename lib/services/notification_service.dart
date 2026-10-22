@@ -3,6 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_10y.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../l10n/strings.dart';
+
 /// A local reminder to show at [at] while the game is closed.
 class Reminder {
   const Reminder(this.id, this.at, this.title, this.body);
@@ -56,15 +58,15 @@ class LocalNotificationService implements NotificationService {
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
 
-  static const _details = NotificationDetails(
+  static NotificationDetails get _details => NotificationDetails(
     android: AndroidNotificationDetails(
       'reminders',
-      'Reminders',
-      channelDescription: 'Energy full, dragon hoard full and daily gifts',
+      tr('Reminders'),
+      channelDescription: tr('Energy full, dragon hoard full and daily gifts'),
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
     ),
-    iOS: DarwinNotificationDetails(),
+    iOS: const DarwinNotificationDetails(),
   );
 
   @override

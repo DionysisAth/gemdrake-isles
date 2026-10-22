@@ -12,6 +12,7 @@ import '../painters/board_painters.dart';
 import '../painters/dragon_painter.dart';
 import '../theme.dart';
 import 'piece_view.dart';
+import '../../l10n/strings.dart';
 
 /// Orders from island characters, shown above the board.
 class OrdersBar extends StatefulWidget {
@@ -180,7 +181,13 @@ class _OrderCard extends StatelessWidget {
               .where((l) => game.countAvailable(l.item) < l.count)
               .map((l) => game.config.item(l.item).name)
               .join(', ');
-          showToast(context, '${character.name} still needs: $missing');
+          showToast(
+            context,
+            tr('{name} still needs: {items}', {
+              'name': character.name,
+              'items': missing,
+            }),
+          );
         }
       },
       child: _Glow(
@@ -284,8 +291,8 @@ class _OrderCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(9),
                       border: Border.all(color: Colors.white, width: 1.2),
                     ),
-                    child: const Text(
-                      'Deliver!',
+                    child: Text(
+                      tr('Deliver!'),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 12,

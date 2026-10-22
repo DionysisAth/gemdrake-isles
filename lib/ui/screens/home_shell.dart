@@ -22,6 +22,7 @@ import '../widgets/tutorial_overlay.dart';
 import 'book_screen.dart';
 import 'event_screen.dart';
 import 'island_screen.dart';
+import '../../l10n/strings.dart';
 
 /// Top-level screen: HUD, the Board and Island tabs, popups, the per-second
 /// clock and app lifecycle (pause/resume, welcome back).
@@ -315,7 +316,7 @@ class _BottomNav extends StatelessWidget {
                   child: _NavButton(
                     key: targets.keyFor('tab:board'),
                     icon: const NavIcon(NavIconKind.board),
-                    label: 'Board',
+                    label: tr('Board'),
                     active: tab == 0,
                     badge: readyOrders,
                     onTap: () => onTab(0),
@@ -326,7 +327,7 @@ class _BottomNav extends StatelessWidget {
                   child: _NavButton(
                     key: targets.keyFor('tab:island'),
                     icon: const NavIcon(NavIconKind.island),
-                    label: 'Island',
+                    label: tr('Island'),
                     active: tab == 1,
                     badge: islandBadge,
                     onTap: () => onTab(1),
@@ -336,7 +337,7 @@ class _BottomNav extends StatelessWidget {
                 Expanded(
                   child: _NavButton(
                     icon: NavIcon(NavIconKind.festival, locked: eventLocked),
-                    label: 'Festival',
+                    label: tr('Festival'),
                     active: tab == 2,
                     badge: game.eventBadge,
                     onTap: () => onTab(2),
@@ -346,7 +347,7 @@ class _BottomNav extends StatelessWidget {
                 Expanded(
                   child: _NavButton(
                     icon: const NavIcon(NavIconKind.book),
-                    label: 'Book',
+                    label: tr('Book'),
                     active: tab == 3,
                     badge: game.bookBadge + game.achievementBadge,
                     onTap: () => onTab(3),

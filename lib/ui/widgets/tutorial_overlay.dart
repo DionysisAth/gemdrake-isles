@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../game_scope.dart';
 import '../painters/dragon_painter.dart';
 import '../theme.dart';
+import '../../l10n/strings.dart';
 
 /// Guided first-session tutorial: a character speech bubble plus a pointing
 /// hand on whatever the player should touch next. Steps come from
@@ -58,8 +59,8 @@ class _TutorialOverlayState extends State<TutorialOverlay>
         if (needTab != null && needTab != widget.tab) {
           target = needTab == 1 ? 'tab:island' : 'tab:board';
           text = needTab == 1
-              ? "Let's go to the Island!"
-              : "Let's head back to the board!";
+              ? tr("Let's go to the Island!")
+              : tr("Let's head back to the board!");
         }
         final box = context.findRenderObject() as RenderBox?;
         Offset toLocal(Offset g) =>
@@ -236,10 +237,10 @@ class _Bubble extends StatelessWidget {
                 ),
                 Text(text, style: const TextStyle(fontSize: 15, height: 1.25)),
                 if (tapHint)
-                  const Align(
+                  Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      'Tap to continue',
+                      tr('Tap to continue'),
                       style: TextStyle(fontSize: 12, color: Palette.inkSoft),
                     ),
                   ),

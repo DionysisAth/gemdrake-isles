@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../config/game_config.dart';
+import '../l10n/strings.dart';
 
 /// Rewarded video ads. The player always chooses to watch; there are no
 /// forced interstitials (see design doc 13.4).
@@ -90,34 +91,34 @@ class _SimulatedAdState extends State<_SimulatedAd> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Ad break',
+            Text(
+              tr('Ad break'),
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 12),
             const Icon(Icons.play_circle_fill, color: Colors.white, size: 64),
             const SizedBox(height: 12),
-            const Text(
-              'Rewarded video placeholder',
+            Text(
+              tr('Rewarded video placeholder'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(height: 16),
             if (_left > 0)
               Text(
-                'Reward in $_left...',
+                tr('Reward in {n}...', {'n': _left}),
                 style: const TextStyle(color: Colors.white70),
               )
             else
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Claim reward'),
+                child: Text(tr('Claim reward')),
               ),
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text(
-                'Close',
-                style: TextStyle(color: Colors.white54),
+              child: Text(
+                tr('Close'),
+                style: const TextStyle(color: Colors.white54),
               ),
             ),
           ],
@@ -221,7 +222,7 @@ class AdMobAdsService implements AdsService {
       if (economy.adsFallbackToSimulated && usingTestAds && context.mounted) {
         return _fallback.showRewarded(context, placement);
       }
-      _problem = 'No video is available right now. Please try again soon.';
+      _problem = tr('No video is available right now. Please try again soon.');
       return false;
     }
     _ad = null;
@@ -252,7 +253,7 @@ class AdMobAdsService implements AdsService {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(
+      builder: (_) => Center(
         child: Card(
           child: Padding(
             padding: EdgeInsets.all(20),
@@ -261,7 +262,7 @@ class AdMobAdsService implements AdsService {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 12),
-                Text('Loading video...'),
+                Text(tr('Loading video...')),
               ],
             ),
           ),
