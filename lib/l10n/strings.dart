@@ -88,3 +88,33 @@ String tr(String en, [Map<String, Object?> args = const {}]) {
 /// "Baby Fire Dragon" in the current language.
 String dragonName(String level, String type) =>
     tr('{level} {type} Dragon', {'level': level, 'type': type});
+
+/// Uppercase as each language writes it: Greek drops its accents, Turkish
+/// keeps the dot on İ.
+String upper(String s) {
+  switch (L10n.code) {
+    case 'el':
+      const plain = {
+        'ά': 'α',
+        'έ': 'ε',
+        'ή': 'η',
+        'ί': 'ι',
+        'ό': 'ο',
+        'ύ': 'υ',
+        'ώ': 'ω',
+        'ΐ': 'ϊ',
+        'ΰ': 'ϋ',
+        'Ά': 'Α',
+        'Έ': 'Ε',
+        'Ή': 'Η',
+        'Ί': 'Ι',
+        'Ό': 'Ο',
+        'Ύ': 'Υ',
+        'Ώ': 'Ω',
+      };
+      s = s.split('').map((c) => plain[c] ?? c).join();
+    case 'tr':
+      s = s.replaceAll('i', 'İ');
+  }
+  return s.toUpperCase();
+}

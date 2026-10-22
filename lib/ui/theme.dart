@@ -238,3 +238,25 @@ String formatNumber(num n) {
   if (n >= 10000) return '${(n / 1000).toStringAsFixed(1)}K';
   return n.floor().toString();
 }
+
+/// One line of text that shrinks instead of overflowing (long words in
+/// some languages).
+class FitText extends StatelessWidget {
+  const FitText(
+    this.text, {
+    super.key,
+    this.style,
+    this.alignment = Alignment.center,
+  });
+
+  final String text;
+  final TextStyle? style;
+  final AlignmentGeometry alignment;
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+    fit: BoxFit.scaleDown,
+    alignment: alignment,
+    child: Text(text, maxLines: 1, style: style),
+  );
+}

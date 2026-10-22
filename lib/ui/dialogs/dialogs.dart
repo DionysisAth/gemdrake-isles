@@ -632,7 +632,7 @@ Future<void> showHatch(
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              rarity.name.toUpperCase(),
+              upper(rarity.name),
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,

@@ -192,8 +192,16 @@ class _EventHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.play_arrow_rounded),
-                Text(tr('Play festival board'), style: TextStyle(fontSize: 17)),
+                const Icon(Icons.play_arrow_rounded),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      tr('Play festival board'),
+                      style: const TextStyle(fontSize: 17),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

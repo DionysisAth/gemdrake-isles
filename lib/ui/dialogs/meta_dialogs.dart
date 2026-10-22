@@ -219,7 +219,7 @@ class _CalendarDay extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(
+          FitText(
             tr('Day {n}', {'n': day}),
             style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
           ),
@@ -645,10 +645,9 @@ class _ShopCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
+                child: FitText(
                   item.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  alignment: Alignment.centerLeft,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -1019,12 +1018,7 @@ Future<ui.Image> renderDragonCard(
     }
 
     text(grown ? tr('My dragon grew into a') : tr('I hatched a'), h * .08, 64);
-    text(
-      rarity.name.toUpperCase(),
-      h * .72,
-      84,
-      color: const Color(0xFFFFF1A8),
-    );
+    text(upper(rarity.name), h * .72, 84, color: const Color(0xFFFFF1A8));
     text('${dragonName(level, type.name)}!', h * .78, 76);
     text('Gemdrake Isles', h * .9, 70, color: const Color(0xFFFFD1EC));
     return recorder.endRecording().toImage(w.toInt(), h.toInt());
@@ -1061,7 +1055,12 @@ Future<void> showBackup(BuildContext context) {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.copy_rounded, size: 20),
-                Text(' ${tr('Copy backup code')}'),
+                Flexible(
+                  child: Text(
+                    ' ${tr('Copy backup code')}',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1088,7 +1087,12 @@ Future<void> showBackup(BuildContext context) {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.ios_share_rounded, size: 20),
-                  Text(' ${tr('Save code elsewhere')}'),
+                  Flexible(
+                    child: Text(
+                      ' ${tr('Save code elsewhere')}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1101,7 +1105,12 @@ Future<void> showBackup(BuildContext context) {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.restore_rounded, size: 20),
-                Text(' ${tr('Restore from a code')}'),
+                Flexible(
+                  child: Text(
+                    ' ${tr('Restore from a code')}',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ],
             ),
           ),
