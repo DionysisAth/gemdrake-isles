@@ -599,9 +599,8 @@ class _FreeChestCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FitText(
+                Text(
                   tr('Free Chest'),
-                  alignment: Alignment.centerLeft,
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15.5,
@@ -615,23 +614,32 @@ class _FreeChestCard extends StatelessWidget {
                       : tr('Come back tomorrow for another one.'),
                   style: const TextStyle(fontSize: 12),
                 ),
+                // Under the text so long words have the card's full width.
+                if (left > 0) ...[
+                  const SizedBox(height: 6),
+                  GameButton(
+                    color: Palette.green,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    onTap: () => watchAdFor(context, AdReward.freeChest),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.play_circle_fill_rounded, size: 18),
+                        Text(
+                          ' ${tr('Free')}',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          if (left > 0)
-            GameButton(
-              color: Palette.green,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              onTap: () => watchAdFor(context, AdReward.freeChest),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.play_circle_fill_rounded, size: 18),
-                  Text(' ${tr('Free')}', style: TextStyle(fontSize: 14)),
-                ],
-              ),
-            )
-          else
+          if (left <= 0)
             const Icon(Icons.check_circle_rounded, color: Palette.green),
         ],
       ),
