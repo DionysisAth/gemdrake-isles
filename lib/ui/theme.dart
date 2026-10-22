@@ -260,3 +260,24 @@ class FitText extends StatelessWidget {
     child: Text(text, maxLines: 1, style: style),
   );
 }
+
+/// Text that wraps like normal text, then shrinks if it still doesn't fit
+/// the height it was given (long sentences in some languages).
+class ShrinkText extends StatelessWidget {
+  const ShrinkText(this.text, {super.key, this.style});
+
+  final String text;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: SizedBox(
+        width: box.maxWidth,
+        child: Text(text, style: style),
+      ),
+    ),
+  );
+}

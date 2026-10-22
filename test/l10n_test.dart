@@ -12,7 +12,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gemdrake_isles/l10n/strings.dart';
 import 'package:gemdrake_isles/logic/game_controller.dart';
+import 'package:gemdrake_isles/config/game_config.dart';
 import 'package:gemdrake_isles/model/game_state.dart';
+import 'package:gemdrake_isles/model/item_ref.dart';
 import 'package:gemdrake_isles/services/ads_service.dart';
 import 'package:gemdrake_isles/ui/app.dart';
 import 'package:gemdrake_isles/ui/dialogs/dialogs.dart';
@@ -51,10 +53,7 @@ void main() {
 
   test('picks the first phone language the game has', () {
     expect(L10n.systemLanguage(const [Locale('el', 'GR')]), 'el');
-    expect(
-      L10n.systemLanguage(const [Locale('sv'), Locale('de', 'AT')]),
-      'de',
-    );
+    expect(L10n.systemLanguage(const [Locale('sv'), Locale('de', 'AT')]), 'de');
     expect(L10n.systemLanguage(const [Locale('in')]), 'id');
     expect(L10n.systemLanguage(const [Locale('zh', 'TW')]), 'zh');
     expect(L10n.systemLanguage(const [Locale('sv')]), 'en');
@@ -65,6 +64,48 @@ void main() {
     L10n.useTable('el', {'Level {n}!': 'Επίπεδο {n}!'});
     expect(tr('Level {n}!', {'n': 5}), 'Επίπεδο 5!');
     expect(tr('Not translated'), 'Not translated');
+  });
+
+  test('Android and iOS list the same languages', () {
+    final android = File('android/app/src/main/res/xml/locales_config.xml')
+        .readAsStringSync();
+    final ios = File('ios/Runner/Info.plist').readAsStringSync();
+    for (final code in languages.keys) {
+      expect(android, contains('"$code"'), reason: code);
+      expect(ios, contains('<string>$code'), reason: code);
+    }
+  });
+
+  testWidgets('picking a language in Settings switches the game', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final game = newController();
+    game.state.loginClaimedDay = game.today;
+    await tester.pumpWidget(
+      GemdrakeApp(game: game, ads: SimulatedAdsService(seconds: 0)),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Board'), findsOneWidget);
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text('Language'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text('Deutsch'));
+    await tester.runAsync(
+      () => Future.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(game.state.settings.language, 'de');
+    expect(L10n.code, 'de');
+    expect(find.text('Brett'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 3));
   });
 
   test('config texts follow the language', () {
@@ -104,9 +145,8 @@ void main() {
               key.currentContext!.findRenderObject() as RenderRepaintBoundary;
           final img = await ro.toImage(pixelRatio: 2);
           final data = await img.toByteData(format: ui.ImageByteFormat.png);
-          File(
-            '$shots/${code}_$name.png',
-          ).writeAsBytesSync(data!.buffer.asUint8List());
+          File('$shots/${code}_$name.png')
+              .writeAsBytesSync(data!.buffer.asUint8List());
         });
       }
 
@@ -161,6 +201,35 @@ void main() {
         'task',
         (c) => showTaskComplete(c, game.currentIsland.tasks.first, false),
       );
+      await dialog('egg', (c) => showChainInfo(c, const ItemRef('egg', 3)));
+      await dialog(
+        'chest',
+        (c) => showChainInfo(c, const ItemRef('treasure', 4)),
+      );
+      final gen = game.state.board.cells.indexWhere(
+        (p) => p?.isGenerator ?? false,
+      );
+      await dialog('generator', (c) => showGeneratorInfo(c, Slot.board(gen)));
+      await dialog(
+        'arrival',
+        (c) => showIslandArrival(c, game.config.island(1), [
+          tr('{name} in orders', {'name': game.config.chain('tool').name}),
+        ]),
+      );
+      await dialog(
+        'rewards',
+        (c) => showChestRewards(c, tr('Free Chest'), [
+          LootEntry(weight: 1, gems: 25),
+          LootEntry(weight: 1, item: const ItemRef('egg', 2)),
+          LootEntry(weight: 1, dragon: 'fire'),
+        ]),
+      );
+      // The festival board with its reward bar.
+      await tab('Festival', 'festival');
+      await tester.tap(find.text(tr('Play festival board')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await snap('festival_board');
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 3));
     });

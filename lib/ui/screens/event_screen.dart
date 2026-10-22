@@ -270,9 +270,11 @@ class _RewardTrack extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(Icons.lock_open_rounded, size: 16),
-                                  Text(
-                                    ' ${tr('Premium')} ${ev.premiumCostGems} ',
-                                    style: const TextStyle(fontSize: 13),
+                                  Flexible(
+                                    child: FitText(
+                                      ' ${tr('Premium')} ${ev.premiumCostGems} ',
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
                                   ),
                                   const CurrencyIcon(
                                     CurrencyKind.gem,

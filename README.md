@@ -51,6 +51,7 @@ services (Google Play Games, Game Center); nothing needs a server of our own (se
 | **Sharing**: share a picture of your island, or a 9:16 card of a rare dragon from the hatch popup | share button on the island, hatch popup |
 | **Backup codes**: copy or save your whole game as a code and restore it on another device | Settings → Backup & restore |
 | **In-app purchases**: Starter Pack (once), gem packs, Energy and Dragon bundles, a Festival Pass for the premium track, and the **Dragon Club** monthly subscription (daily gems, +max energy, +hoard hours). Products and what they give are data in `store.json`; prices come from the stores | `store.json`, `purchase_service.dart`, `controller_purchases.dart`, `store_widgets.dart` |
+| **14 languages**: English, Greek, German, Spanish, French, Italian, Portuguese, Russian, Turkish, Polish, Indonesian, Japanese, Korean and Chinese. The game starts in the phone's language (English if it isn't one of these) and can be changed in Settings → Language, or in Android 13+ app settings | `lib/l10n/strings.dart`, `assets/i18n/`, see [Languages](#languages) |
 | **Free Chest** for a rewarded video (once a day), **species eggs** (Fire, Crystal, Shadow) and a **bigger board** (+1 row, twice) for gems | `economy.json` → `ads.freeChest`, `meta.json` → `shop` |
 
 **Look and feel:** a new app icon (`tool/icon/`, rendered by `tool/icon/make_icons.py`), animated
@@ -70,7 +71,7 @@ Requires Flutter 3.47+ (Dart 3.13+).
 ```bash
 flutter pub get
 flutter run            # on a connected iOS/Android device or simulator
-flutter test           # 100 logic + widget tests
+flutter test           # logic + widget tests, and every screen in every language
 flutter test test_shots  # renders screens/effects to PNGs (SHOTS=dir) for visual checks
 flutter analyze
 ```
@@ -101,7 +102,10 @@ lib/
 assets/
   config/                   ALL economy and content data (data-driven, remote-config ready)
   audio/                    Generated SFX + music (tool/generate_audio.py)
-  fonts/                    Fredoka (SIL OFL)
+  fonts/                    Fredoka, plus M PLUS Rounded for Greek, Cyrillic and extra
+                            Latin letters (both SIL OFL)
+  i18n/                     Translations: <language>.json maps each English text to its
+                            translation
 ```
 
 - **Data-driven:** the Dart code has no balancing numbers. Change chains, drop tables, prices, energy
@@ -112,6 +116,31 @@ assets/
   nothing. For release, back `GameController.clock` with server time (see the note in the controller).
 - **Saving:** state is serialized after every action (coalesced within 250 ms) and on app pause.
   Corrupt or outdated saves are repaired or replaced instead of crashing.
+
+## Languages
+
+Texts are written in English: in the code as `tr('Level {n}!', {'n': level})` and in the config
+files as plain strings. `assets/i18n/<code>.json` maps each English text to its translation; a
+text with no translation shows in English. Config texts (item names, stories, tasks...) translate
+through their getters in `game_config.dart`, so new config text needs no code changes.
+
+On start the game uses the language chosen in Settings, or else the first of the phone's languages
+it has (`L10n.systemLanguage`). It follows the phone if that changes while the game is open.
+Chinese, Japanese and Korean use the phone's own font; Greek and Cyrillic use M PLUS Rounded.
+
+**Adding or changing texts:**
+```bash
+python3 tool/i18n/extract.py           # lists every text in tool/i18n/en.json
+python3 tool/i18n/extract.py --check   # what each language is missing (CI fails on wrong {placeholders})
+```
+Then add the new texts to each `assets/i18n/<code>.json` (or write a numbered list and run
+`python3 tool/i18n/build.py <code> list.txt`). `test/l10n_test.dart` opens every screen in every
+language and fails if any text overflows; `SHOTS=dir flutter test test/l10n_test.dart` also saves
+screenshots of them.
+
+**Adding a language:** add it to `languages` in `lib/l10n/strings.dart`, to
+`android/app/src/main/res/xml/locales_config.xml` and to `CFBundleLocalizations` in
+`ios/Runner/Info.plist`, and add `assets/i18n/<code>.json`.
 
 ## Going live
 

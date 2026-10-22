@@ -31,6 +31,7 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - run: python3 tool/i18n/extract.py --check
       # Signs with your upload key when the ANDROID_KEYSTORE_* secrets are
       # set (see README); otherwise with the debug key, for testing only.
       - name: Set up release signing

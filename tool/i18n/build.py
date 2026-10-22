@@ -20,6 +20,9 @@ def main(code, src):
         num, _, text = line.partition('|')
         i = int(num)
         text = text.replace('\\n', '\n').strip()
+        if code == 'fr':
+            # French puts a space before ! ? : ; that must not break.
+            text = re.sub(r' ([!?:;])', '\u00a0\\1', text)
         if i >= len(en):
             errors.append(f'{i}: no such text'); continue
         key = en[i]

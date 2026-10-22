@@ -114,16 +114,27 @@ class _DailyBody extends StatelessWidget {
                   color: Color(0xFFFF7A2F),
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  s.loginStreak == 1
-                      ? tr('Streak: 1 day')
-                      : tr('Streak: {n} days', {'n': s.loginStreak}),
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                Flexible(
+                  child: FitText(
+                    s.loginStreak == 1
+                        ? tr('Streak: 1 day')
+                        : tr('Streak: {n} days', {'n': s.loginStreak}),
+                    alignment: Alignment.centerLeft,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
+                const SizedBox(width: 8),
                 const Spacer(),
-                Text(
-                  tr('New day in {time}', {'time': formatDuration(left)}),
-                  style: const TextStyle(fontSize: 12, color: Palette.inkSoft),
+                Flexible(
+                  flex: 2,
+                  child: FitText(
+                    tr('New day in {time}', {'time': formatDuration(left)}),
+                    alignment: Alignment.centerRight,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Palette.inkSoft,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -588,9 +599,13 @@ class _FreeChestCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                FitText(
                   tr('Free Chest'),
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                  alignment: Alignment.centerLeft,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15.5,
+                  ),
                 ),
                 Text(
                   left > 0

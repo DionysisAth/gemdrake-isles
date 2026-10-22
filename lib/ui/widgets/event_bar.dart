@@ -131,26 +131,28 @@ class EventBar extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        next == null
-                            ? tr('Every reward reached!')
-                            : tr(
-                                'Next reward at {n} pts.\nMerge festival items and offer the top one!',
-                                {'n': next},
-                              ),
-                        style: const TextStyle(fontSize: 11, height: 1.2),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ShrinkText(
+                          next == null
+                              ? tr('Every reward reached!')
+                              : tr(
+                                  'Next reward at {n} pts.\nMerge festival items and offer the top one!',
+                                  {'n': next},
+                                ),
+                          style: const TextStyle(fontSize: 11, height: 1.2),
+                        ),
                       ),
-                    ),
-                    if (nextIndex >= 0)
-                      RewardTile(
-                        reward: splitReward(game.milestoneReward(nextIndex))
-                            .first,
-                        size: 26,
-                      ),
-                  ],
+                      if (nextIndex >= 0)
+                        RewardTile(
+                          reward: splitReward(game.milestoneReward(nextIndex))
+                              .first,
+                          size: 26,
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -4,7 +4,8 @@
 Texts come from tr('...') calls in lib/ and the text fields of the config
 files. Writes tool/i18n/en.json ({text: ""} sorted) and, with --check,
 reports what each assets/i18n/<code>.json is missing or has extra, and
-placeholders ({n}) that don't match.
+fails on placeholders ({n}) that don't match. Missing texts show in
+English until translated.
 
     python3 tool/i18n/extract.py            # update tool/i18n/en.json
     python3 tool/i18n/extract.py --check    # check the translations
@@ -90,7 +91,9 @@ def main():
         for t in missing[:5]: print('   missing:', t[:80])
         for t in extra[:5]: print('   unused:', t[:80])
         for t in wrong[:5]: print('   placeholders:', t[:60], '->', tr[t][:60])
-        bad += len(missing) + len(wrong)
+        bad += len(wrong)
+    # Missing texts just stay in English; wrong placeholders would show
+    # "{n}" to players, so those fail.
     sys.exit(1 if bad else 0)
 
 
