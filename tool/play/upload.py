@@ -4,7 +4,7 @@
 Needs a Google Cloud service account with access to the app in Play Console
 (Users and permissions), and `pip install google-auth requests`.
 
-    # Store listing text (tool/play/listing/<lang>/) and graphics
+    # Store listing text and video (tool/play/listing/<lang>/) and graphics
     python3 tool/play/upload.py --key play-key.json --listing \\
         --graphics build/store
 
@@ -44,6 +44,10 @@ def upload_listing(s, pkg, edit, graphics):
             "shortDescription": (lang_dir / "short_description.txt").read_text().strip(),
             "fullDescription": (lang_dir / "full_description.txt").read_text().strip(),
         }
+        # Promo video: a YouTube link (the trailer), shown above the screenshots.
+        video = lang_dir / "video.txt"
+        if video.exists():
+            body["video"] = video.read_text().strip()
         check(s.put(f"{API}/{pkg}/edits/{edit}/listings/{lang}", json=body), f"listing {lang}")
         print(f"Listing text set ({lang})")
         if not graphics:
