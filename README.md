@@ -218,6 +218,12 @@ Test purchases: in Play Console add license testers; on iOS use a Sandbox accoun
   installing a signed one (use a backup code first to keep progress).
 - **iOS:** needs an Apple Developer account ($99/year), then signing in Xcode or a CI signing
   setup; the CI build is unsigned.
+- **Firebase (Android):** project `gemdrake-isles`. `android/app/google-services.json` comes
+  from the Firebase console (Project settings → Your apps); the Google services Gradle plugin
+  and the Firebase BoM with Analytics are set up in `android/settings.gradle.kts` and
+  `android/app/build.gradle.kts`. Analytics collects Firebase's automatic events (installs,
+  sessions, screens, app updates); ad personalization and advertising-ID collection are turned
+  off in `AndroidManifest.xml`. iOS has no Firebase yet (it needs `GoogleService-Info.plist`).
 
 ### 4. Store listings
 
@@ -289,4 +295,5 @@ islands, and invite rewards.
   dependency.
 - **Merge rule:** 2 → 1 with the 5 → 3 bonus. Switch to "3 → 1" by setting `standardConsume: 3` in
   `economy.json`.
-- **Backend:** none yet. Save, analytics and time sit behind interfaces ready for Firebase or PlayFab.
+- **Backend:** none of our own. Firebase Analytics runs on Android; save and time sit behind
+  interfaces ready for Firebase or PlayFab.

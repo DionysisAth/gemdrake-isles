@@ -4,7 +4,7 @@ title: Gemdrake Isles Privacy Policy
 
 # Gemdrake Isles: Privacy Policy
 
-_Last updated: 30 September 2026_
+_Last updated: 28 October 2026_
 
 Gemdrake Isles ("the game") is made by an independent developer ("we"). This policy
 explains what information the game uses and why. We don't run our own servers, don't ask
@@ -35,6 +35,14 @@ time in **Settings → Privacy options**. On iOS, the game asks for permission b
 tracking, and works the same whether or not you allow it.
 
 How Google uses this information: <https://policies.google.com/technologies/partner-sites>
+
+## Analytics (Google Analytics for Firebase)
+
+On Android, the game uses Google Analytics for Firebase to understand how the game is played
+and to find problems: for example which screens are used, how long sessions last, the app
+version, device model, operating system and approximate country (from your IP address). It
+uses an app instance ID, not your name, email or advertising ID, and the data is not used for
+ads. How Google handles it: <https://firebase.google.com/support/privacy>
 
 ## In-app purchases
 
